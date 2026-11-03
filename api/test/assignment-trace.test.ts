@@ -68,11 +68,10 @@ describe('AssignmentTrace', () => {
     expect(new Set(cands.map((c) => c.excludedBy))).toEqual(new Set(['UNAVAILABLE']));
   });
 
-  it('records Bureau overflow, and the first reason that excluded each candidate', async () => {
+  it('records Bureau overflow, naming the unavailable officers as UNAVAILABLE', async () => {
     const today = clock.today();
     const officers = await prisma.user.findMany({ where: { role: 'OFFICER' } });
     for (const u of officers) await prisma.officerAvailability.create({ data: { userId: u.id, kind: 'LEAVE', startsOn: today, endsOn: addDays(today, 5), reason: 'Leave', createdById: u.id } });
-    // An unavailable AND recused-looking officer must still read UNAVAILABLE (first in the engine's order).
     const { applicationId } = await submitAndAssign();
     const t = await prisma.assignmentTrace.findFirstOrThrow({ where: { applicationId }, orderBy: { id: 'desc' } });
     const cands = t.candidates as unknown as TraceCandidate[];

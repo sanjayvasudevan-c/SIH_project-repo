@@ -3,6 +3,8 @@ export class HttpError extends Error {
     public status: number,
     message: string,
     public details?: unknown,
+    /** Optional machine-readable code; emitted only when set. */
+    public code?: string,
   ) {
     super(message);
   }
