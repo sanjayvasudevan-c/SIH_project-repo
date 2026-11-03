@@ -2,7 +2,7 @@
 
 Formerly `demo-production/FEATURE_INVENTORY.md`, moved here so it can be found.
 
-What the full design contains, what this repository builds, and how each built feature is checked. Re-sourced on 2026-11-03 at commit `c40339c` on branch `claude/new-session-35imia`; the measured baseline comes from [`INITIAL_AUDIT.md`](INITIAL_AUDIT.md) and is listed below. All data in the prototype, the form check and the benchmarks is synthetic.
+What the full design contains, what this repository builds, and how each built feature is checked. Re-sourced on 2026-11-03 on branch `claude/new-session-35imia` (audited at commit `c40339c`, published in the commit that adds this note); the measured baseline comes from [`INITIAL_AUDIT.md`](INITIAL_AUDIT.md) and is listed below. All data in the prototype, the form check and the benchmarks is synthetic.
 
 ## What is built, and the scope that was chosen
 
