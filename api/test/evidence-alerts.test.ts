@@ -203,13 +203,21 @@ describe('/api/evidence/alerts and engine-run totals', () => {
     expect(e.totals.alertsSuppressed).toBeNull();
   });
 
-  it('14. an abandoned run outside the date window is still counted; inverted and malformed dates are rejected', async () => {
-    await prisma.engineRun.create({ data: { startedAt: new Date(Date.now() - 3_600_000), instanceId: 't', simulatedToday: new Date('2020-01-01T00:00:00Z'), provenance: 'TEST_RUN', status: 'RUNNING' } });
-    const r = (await get('/api/evidence/engine-runs?from=2026-01-01&to=2026-12-31')).body;
-    expect(r.totals.runCount).toBe(0);
-    expect(r.totals.abandonedCount).toBe(1);
-    expect((await get('/api/evidence/engine-runs?from=2026-02-01&to=2026-01-01')).status).toBe(400);
-    expect((await get('/api/evidence/engine-runs?from=yesterday')).status).toBe(400);
+  it('14. abandonedCount follows the date window and status filter; summary.scheduler.stuckRuns counts all dates', async () => {
+    const mk = (simulatedToday: string, status: 'RUNNING' | 'OK', ageMs: number) =>
+      prisma.engineRun.create({ data: { startedAt: new Date(Date.now() - ageMs), instanceId: 't', simulatedToday: new Date(`${simulatedToday}T00:00:00Z`), provenance: 'TEST_RUN', status } });
+    await mk('2020-01-01', 'RUNNING', 3_600_000); // stuck, dated outside the 2026 window
+    await mk('2026-06-01', 'RUNNING', 3_600_000); // stuck, inside
+    await mk('2026-06-01', 'RUNNING', 60_000); // in flight, inside
+    await mk('2026-06-01', 'OK', 3_600_000); // old but finished
+    const inWin = (await get('/api/evidence/engine-runs?from=2026-01-01&to=2026-12-31')).body.totals;
+    expect(inWin.runCount).toBe(3);
+    expect(inWin.abandonedCount).toBe(1);
+    expect((await get('/api/evidence/engine-runs?from=2019-01-01&to=2020-12-31')).body.totals.abandonedCount).toBe(1);
+    expect((await get('/api/evidence/engine-runs?from=2026-01-01&to=2026-12-31&status=OK')).body.totals.abandonedCount).toBe(0); // status filter applies
+    expect((await get('/api/evidence/engine-runs?status=RUNNING')).body.totals.abandonedCount).toBe(2);
+    const sum = (await get('/api/evidence/summary')).body;
+    expect(sum.scheduler.stuckRuns).toBe(2); // all dates, unfiltered
   });
 
   it('15. every windowed evidence endpoint rejects a non-existent calendar date with 400 and accepts a leap day', async () => {

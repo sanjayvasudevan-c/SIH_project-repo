@@ -34,7 +34,12 @@ export function evidenceRouter(): Router {
     '/summary',
     h(async (req, res) => {
       parse(none, req.query);
-      const [head, art, last] = await Promise.all([headCommit(), readTestResult(), prisma.engineRun.findFirst({ orderBy: { id: 'desc' } })]);
+      const [head, art, last, stuck] = await Promise.all([
+        headCommit(),
+        readTestResult(),
+        prisma.engineRun.findFirst({ orderBy: { id: 'desc' } }),
+        prisma.engineRun.count({ where: { status: 'RUNNING', startedAt: { lt: new Date(clock.realNow().getTime() - ABANDONED_AFTER_MS) } } }),
+      ]);
       // A clean PASS needs a current artifact that recorded PASS with nothing left unverified.
       const current = !!art && !!head && commitIsCurrent(art.commit, head);
       const unverified = art && art.notVerified ? art.notVerified : 0;
@@ -47,7 +52,7 @@ export function evidenceRouter(): Router {
         detail: status === 'NOT_VERIFIED' && art && current ? `${unverified} checks recorded as not verified; not a clean pass` : null,
         checks: art && current ? { passed: art.passed, failed: art.failed, notVerified: art.notVerified ?? null } : { passed: null, failed: null, notVerified: null },
         lastRunAt: art && current ? art.runAt ?? null : null,
-        scheduler: { lastRunAt: last?.startedAt.toISOString() ?? null, lastStatus: last?.status ?? null, lastDurationMs: last?.durationMs ?? null },
+        scheduler: { lastRunAt: last?.startedAt.toISOString() ?? null, lastStatus: last?.status ?? null, lastDurationMs: last?.durationMs ?? null, stuckRuns: stuck },
         definition: {
           status:
             'Read from the test-result file recorded by the last test run; this page never runs tests. PASS: a result was recorded against the code version currently checked out, with at least one check passed, none failed and none left unverified. FAIL: the recorded run for the current code version had failing checks. STALE: the recorded result belongs to a different code version than the one now checked out, so it says nothing about this version. NOT_VERIFIED: no readable result exists, or one exists but it is not a clean pass (nothing passed, or some checks were recorded as not verified). Only PASS means the checks were verified for this code version.',
@@ -78,8 +83,7 @@ export function evidenceRouter(): Router {
         prisma.$queryRaw<{ runCount: number; failedCount: number; abandonedCount: number; alertsCreated: number | null; alertsSuppressed: number | null }[]>`
           SELECT count(*)::int AS "runCount",
                  (count(*) FILTER (WHERE status = 'FAILED'))::int AS "failedCount",
-                 -- Abandonment is a real-time fact, so it is counted over ALL runs, whatever the date window or status filter says.
-                 (SELECT count(*) FROM "EngineRun" WHERE status = 'RUNNING' AND "startedAt" < ${staleBefore})::int AS "abandonedCount",
+                 (count(*) FILTER (WHERE status = 'RUNNING' AND "startedAt" < ${staleBefore}))::int AS "abandonedCount", -- elapsed REAL time classifies; the window and status filter select the rows
                  SUM("alertsCreated")::int AS "alertsCreated", SUM("alertsSuppressed")::int AS "alertsSuppressed"
           FROM "EngineRun" ${cond}`,
       ]);
@@ -92,7 +96,7 @@ export function evidenceRouter(): Router {
             'The From and To dates (YYYY-MM-DD, inclusive; all dates if none given) apply to the date the engine treated as today when each cycle ran. On a system running in real time that is the real date; in this demo\'s back-dated history it is the simulated date, the same clock the alerts and deadlines use. The start time shown on each row is the real wall-clock time and is not what the window selects. The status filter applies to rows and totals alike.',
           rows: 'One row per recorded engine cycle in the window, newest first, paged. Each row shows what that cycle checked, created and suppressed, and how it ended. Provenance on a row says how it was produced: TEST_RUN (automated tests), BENCHMARK (load test), SIMULATED (run on a pinned or back-dated clock, as the seed does), LIVE_DEMO (run on the real clock).',
           totals: 'Counted over every run in the window and status filter, in one query, not from the page shown: runCount = runs; failedCount = runs that ended FAILED. alertsCreated and alertsSuppressed are blank (not 0) when no run is recorded in the window, because then nothing was measured.',
-          abandoned: `A run still marked running after ${ABANDONED_AFTER_MS / 60_000} minutes of real time is counted as abandoned, not in progress, because a crash, hard kill or out-of-memory stop cannot update its own row. abandonedCount is judged on real elapsed time and counts abandoned runs across ALL dates, so the date window cannot hide one.`,
+          abandoned: `A run still marked running more than ${ABANDONED_AFTER_MS / 60_000} minutes of real elapsed time after it started is counted as abandoned, not in progress, because a crash, hard kill or out-of-memory stop cannot update its own row. abandonedCount is: of the runs in the window and status filter, those still marked running more than ${ABANDONED_AFTER_MS / 60_000} minutes of real elapsed time after they started. A stuck run dated outside the window is not counted here; the Overview counts all dates.`,
           alertsCreated: 'Alerts newly logged by the runs in the window, summed from the run records. It equals the alert-log total for the same window only when every alert was raised by a recorded run; the two answer different questions (alerts logged vs. what runs reported).',
           alertsSuppressed: 'Duplicate alerts the runs declined to create because the alert log\'s unique key (item, kind, level) already held them, summed over the runs in the window. These were prevented, not delivered twice; this build has no external delivery channel.',
         },
