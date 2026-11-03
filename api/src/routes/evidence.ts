@@ -5,6 +5,7 @@ import { prisma } from '../lib/db.js';
 import { h, parse } from '../lib/http.js';
 import { verifyChains } from '../lib/audit.js';
 import { requireRole } from '../policy/roles.js';
+import { auditAnalytics, auditQuery, assignment, compliance, windowQuery, workflow } from './evidence/aggregates.js';
 import { headCommit, readArtifacts, readTestResult, commitIsCurrent } from './evidence/artifacts.js';
 
 const none = z.object({});
@@ -109,6 +110,12 @@ export function evidenceRouter(): Router {
       res.json({ artifacts: await readArtifacts() });
     }),
   );
+
+  // Aggregates: each returns { definition, provenance, data } from one set of queries (see evidence/aggregates.ts).
+  r.get('/workflow', h(async (req, res) => res.json(await workflow(parse(windowQuery, req.query)))));
+  r.get('/assignment', h(async (req, res) => res.json(await assignment(parse(windowQuery, req.query)))));
+  r.get('/compliance', h(async (req, res) => res.json(await compliance(parse(windowQuery, req.query)))));
+  r.get('/audit-analytics', h(async (req, res) => res.json(await auditAnalytics(parse(auditQuery, req.query)))));
 
   return r;
 }

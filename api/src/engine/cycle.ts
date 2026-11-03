@@ -19,7 +19,7 @@ import { buildFlags } from './flags.js';
 export type CycleResult = Record<string, number | string>;
 
 export const CYCLE_LOCK_ID = 727002;
-const COMPLIANCE: ItemType[] = ['UNDERTAKING', 'DOC_EXPIRY'];
+export const COMPLIANCE: ItemType[] = ['UNDERTAKING', 'DOC_EXPIRY'];
 
 export const ITEM_LABEL: Record<ItemType, string> = {
   STAGE_SLA: 'stage deadline',
