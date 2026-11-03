@@ -7,17 +7,19 @@ import { verifyChains } from '../lib/audit.js';
 import * as clock from '../lib/clock.js';
 import { requireRole } from '../policy/roles.js';
 import { alerts } from './evidence/alerts.js';
+import { parseDateOnly } from '../lib/dates.js';
 import { auditAnalytics, auditQuery, assignment, compliance, windowQuery, workflow } from './evidence/aggregates.js';
 import { headCommit, readArtifacts, readTestResult, commitIsCurrent } from './evidence/artifacts.js';
 
 const none = z.object({});
-const runsQuery = z.object({
-  from: z.coerce.date().optional(),
-  to: z.coerce.date().optional(),
+const runsQuery0 = z.object({
+  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD').optional(),
+  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD').optional(),
   status: z.enum(['RUNNING', 'OK', 'FAILED']).optional(),
   page: z.coerce.number().int().min(1).max(10_000).default(1),
   pageSize: z.coerce.number().int().min(1).max(200).default(25),
 });
+const runsQuery = runsQuery0.refine((v) => !v.from || !v.to || v.from <= v.to, { message: 'from must not be after to', path: ['from'] });
 /** A run still RUNNING after this long was killed (hard kill, serverless freeze, out of memory) and can never finish by itself. */
 export const ABANDONED_AFTER_MS = 15 * 60_000;
 const traceParams = z.object({ applicationId: z.string().min(1).max(64) });
@@ -56,10 +58,12 @@ export function evidenceRouter(): Router {
       const q = parse(runsQuery, req.query);
       const where: Prisma.EngineRunWhereInput = {};
       if (q.status) where.status = q.status;
-      if (q.from || q.to) where.startedAt = { ...(q.from ? { gte: q.from } : {}), ...(q.to ? { lte: q.to } : {}) };
+      // The window is the date the engine treated as "today" (simulatedToday, a DATE): the same clock as alerts, deadlines and
+      // applications. Inclusive on both ends, so a run made today is inside from=to=today. startedAt stays a displayed column.
+      if (q.from || q.to) where.simulatedToday = { ...(q.from ? { gte: parseDateOnly(q.from) } : {}), ...(q.to ? { lte: parseDateOnly(q.to) } : {}) };
       // Totals use the SAME filters as the rows, in one query, so they never depend on which page was asked for.
       const ts = (d: Date) => Prisma.sql`${d.toISOString()}::timestamp`; // ISO UTC text cast to timestamp: no session time-zone shift
-      const cond = Prisma.sql`WHERE TRUE ${q.status ? Prisma.sql`AND status::text = ${q.status}` : Prisma.empty} ${q.from ? Prisma.sql`AND "startedAt" >= ${ts(q.from)}` : Prisma.empty} ${q.to ? Prisma.sql`AND "startedAt" <= ${ts(q.to)}` : Prisma.empty}`;
+      const cond = Prisma.sql`WHERE TRUE ${q.status ? Prisma.sql`AND status::text = ${q.status}` : Prisma.empty} ${q.from ? Prisma.sql`AND "simulatedToday" >= ${q.from}::date` : Prisma.empty} ${q.to ? Prisma.sql`AND "simulatedToday" <= ${q.to}::date` : Prisma.empty}`;
       const staleBefore = ts(new Date(clock.realNow().getTime() - ABANDONED_AFTER_MS));
       const [total, rows, sums] = await Promise.all([
         prisma.engineRun.count({ where }),
@@ -67,7 +71,8 @@ export function evidenceRouter(): Router {
         prisma.$queryRaw<{ runCount: number; failedCount: number; abandonedCount: number; alertsCreated: number | null; alertsSuppressed: number | null }[]>`
           SELECT count(*)::int AS "runCount",
                  (count(*) FILTER (WHERE status = 'FAILED'))::int AS "failedCount",
-                 (count(*) FILTER (WHERE status = 'RUNNING' AND "startedAt" < ${staleBefore}))::int AS "abandonedCount",
+                 -- Abandonment is a real-time fact, so it is counted over ALL runs, whatever the date window or status filter says.
+                 (SELECT count(*) FROM "EngineRun" WHERE status = 'RUNNING' AND "startedAt" < ${staleBefore})::int AS "abandonedCount",
                  SUM("alertsCreated")::int AS "alertsCreated", SUM("alertsSuppressed")::int AS "alertsSuppressed"
           FROM "EngineRun" ${cond}`,
       ]);

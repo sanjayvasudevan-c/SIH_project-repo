@@ -240,7 +240,7 @@ export async function compliance(q: Q) {
     prisma.$queryRaw<{ reminders: number; late: number }[]>`SELECT count(*)::int AS reminders, (count(*) FILTER (WHERE g.late))::int AS late FROM "AlertLog" g WHERE g.kind = 'REMINDER' ${b.sql(Prisma.sql`g."createdAt"`)}`,
     prisma.$queryRaw<{ level: number; n: number }[]>`SELECT g."offsetOrLevel" AS level, count(*)::int AS n FROM "AlertLog" g WHERE g.kind = 'ESCALATION' ${b.sql(Prisma.sql`g."createdAt"`)} GROUP BY 1`,
     prisma.engineRun.aggregate({
-      where: { startedAt: { ...(b.from ? { gte: b.from } : {}), ...(b.toExcl ? { lt: b.toExcl } : {}) } },
+      where: { simulatedToday: dueWhere }, // the date the engine treated as today: the same clock as the alerts above
       _sum: { alertsSuppressed: true },
       _count: { _all: true },
     }),
@@ -263,7 +263,7 @@ export async function compliance(q: Q) {
   return {
     definition: {
       scope: SCOPE,
-      window: 'Deadline items are selected by their due date in the window; alerts by the date the engine raised them; engine runs by their start time. The same From/To applies to all of them (inclusive; all dates if none given).',
+      window: 'Deadline items are selected by their due date in the window; alerts by the date the engine raised them; engine runs by the date the engine treated as today (equal to the real date on a system running in real time; the simulated date in this demo\'s back-dated history), the same clock as alerts. The same From/To applies to all of them (inclusive; all dates if none given).',
       deadlines: {
         asOf: `Evaluated on the system's current date (${isoDate(today)}), the same date the deadline engine uses. Denominator for every state: openTotal, the open (not paused, met, missed or closed) deadline items due in the window; the four states add up to it.`,
         overdue: 'Open item whose due date has passed: days remaining < 0, counted in working days for stage deadlines (weekends and holidays skipped) and calendar days for undertakings and document expiries. This is the engine\'s own test for raising an overdue alert.',

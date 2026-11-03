@@ -176,4 +176,39 @@ describe('/api/evidence/alerts and engine-run totals', () => {
     expect(t.abandonedCount).toBe(1);
     expect(await prisma.engineRun.count({ where: { status: 'RUNNING' } })).toBe(2);
   });
+
+  it('12. alerts and engine runs share one clock: alerts.total equals totals.alertsCreated in every window', async () => {
+    const { d1, d2 } = await raiseAlerts();
+    for (const q of ['', `?from=${d1}&to=${d2}`, `?from=${d2}&to=${d2}`, `?from=${d1}&to=${d1}`]) {
+      const a = (await get(`/api/evidence/alerts${q}`)).body.data;
+      const r = (await get(`/api/evidence/engine-runs${q}`)).body;
+      expect(a.total).toBeGreaterThan(0);
+      expect(r.totals.alertsCreated).toBe(a.total);
+      expect(r.totals.runCount).toBe(r.total);
+    }
+  });
+
+  it('13. a run made on the simulated date is inside from=to=that date; an empty window has genuine 0 alerts but null run sums', async () => {
+    const run = await runEngineCycle({ source: 'test' });
+    const day = run.today as string;
+    const r = (await get(`/api/evidence/engine-runs?from=${day}&to=${day}`)).body;
+    expect(r.total).toBe(1);
+    expect(r.totals.runCount).toBe(1);
+    expect((await get(`/api/evidence/compliance?from=${day}&to=${day}`)).body.data.alerts.engineRunCount).toBe(1); // compliance windows runs the same way
+    const empty = '?from=2000-01-01&to=2000-01-02';
+    const a = (await get(`/api/evidence/alerts${empty}`)).body.data;
+    const e = (await get(`/api/evidence/engine-runs${empty}`)).body;
+    expect(a.total).toBe(0); // the engine has run: a measured zero
+    expect(e.totals.alertsCreated).toBeNull(); // no run recorded in this window: absent
+    expect(e.totals.alertsSuppressed).toBeNull();
+  });
+
+  it('14. an abandoned run outside the date window is still counted; inverted and malformed dates are rejected', async () => {
+    await prisma.engineRun.create({ data: { startedAt: new Date(Date.now() - 3_600_000), instanceId: 't', simulatedToday: new Date('2020-01-01T00:00:00Z'), provenance: 'TEST_RUN', status: 'RUNNING' } });
+    const r = (await get('/api/evidence/engine-runs?from=2026-01-01&to=2026-12-31')).body;
+    expect(r.totals.runCount).toBe(0);
+    expect(r.totals.abandonedCount).toBe(1);
+    expect((await get('/api/evidence/engine-runs?from=2026-02-01&to=2026-01-01')).status).toBe(400);
+    expect((await get('/api/evidence/engine-runs?from=yesterday')).status).toBe(400);
+  });
 });
