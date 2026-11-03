@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 262" role="img" aria-label="Read latency, p95" font-family="system-ui, -apple-system, Segoe UI, sans-serif">
+  <title>Read latency, p95</title>
+  <text x="16" y="28" font-size="18" font-weight="600" fill="currentColor">Read latency, p95</text>
+  <line x1="182" y1="52" x2="182" y2="222" stroke="currentColor" stroke-opacity="0.5"/>
+  <text x="170" y="69" text-anchor="end" font-size="14" fill="currentColor"><title>Action Center (officer)</title>Action Center (office…</text>
+  <rect x="182" y="56" width="47.3" height="20" rx="2" fill="#1E7B45"/>
+  <text x="237.3" y="71" font-size="14" fill="currentColor">461 ms</text>
+  <text x="170" y="103" text-anchor="end" font-size="14" fill="currentColor"><title>Action Center summary (senior)</title>Action Center summary…</text>
+  <rect x="182" y="90" width="20.4" height="20" rx="2" fill="#1E7B45"/>
+  <text x="210.4" y="105" font-size="14" fill="currentColor">199 ms</text>
+  <text x="170" y="137" text-anchor="end" font-size="14" fill="currentColor"><title>Applications list (officer)</title>Applications list (of…</text>
+  <rect x="182" y="124" width="83.7" height="20" rx="2" fill="#1E7B45"/>
+  <text x="273.7" y="139" font-size="14" fill="currentColor">815 ms</text>
+  <text x="170" y="171" text-anchor="end" font-size="14" fill="currentColor"><title>Team report (senior)</title>Team report (senior)</text>
+  <rect x="182" y="158" width="190" height="20" rx="2" fill="#1E7B45"/>
+  <text x="380" y="173" font-size="14" fill="currentColor">1,851 ms</text>
+  <text x="170" y="205" text-anchor="end" font-size="14" fill="currentColor"><title>Authority queue</title>Authority queue</text>
+  <rect x="182" y="192" width="35.7" height="20" rx="2" fill="#1E7B45"/>
+  <text x="225.7" y="207" font-size="14" fill="currentColor">348 ms</text>
+  <text x="16" y="248" font-size="12" fill="currentColor" fill-opacity="0.7">commit 565c210 · 2026-11-03 · synthetic data</text>
+</svg>
