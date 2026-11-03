@@ -157,8 +157,11 @@ export async function seedRulePacks(db: PrismaClient, opts: { today: Date }): Pr
   await review(created.version.id, opened);
   clock.setOverride(null);
   // Everything seeded counts as seen: the college banner shows only changes published after the seed.
+  // Anchored to the newest seeded publishedAt, never to wall-clock time: publishedAt is stamped from the
+  // simulated clock, so mixing in real time would mark a later publish as already seen whenever the
+  // simulated clock sits behind the moment the seed ran.
   const last = await db.rulePackVersion.aggregate({ _max: { publishedAt: true } });
-  const seenAt = new Date(Math.max(clock.now().getTime(), last._max.publishedAt?.getTime() ?? 0));
+  const seenAt = last._max.publishedAt ?? clock.now();
   await db.user.updateMany({ data: { noticesSeenAt: seenAt } });
   return { base: base.id, v2: v2.id, v3: v3.id, next: created.version.id };
 }
