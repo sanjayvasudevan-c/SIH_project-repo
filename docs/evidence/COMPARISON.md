@@ -13,7 +13,8 @@ Source: `Application.rulePackVersionId` (`api/prisma/schema.prisma`) is written 
 Caveats:
 - Pinning is partial by design. Substantive rules (application types and eligibility, documents, fees, norms, programmes, form-check rules, letters, change notice) stay pinned to the version the case was filed under. Operational rules (schedule, reminders, escalation, assignment, committees, calendar) follow the cycle's current published version. `mergeSections` in `api/src/rules/resolved.ts` is the line between the two.
 - The split is a judgement: what a college must supply should not change under it, while who gets reminded and when should follow the current handbook. Whether AICTE draws the line in the same place is for AICTE to confirm.
-- Tested: `rules-api.test.ts` (live relaxing SLA change rebases open cases) and `rules-consumers.test.ts` (pinned filing).
+- Open cases can additionally be moved onto a new version by a provably relaxing amendment (`rebaseAfterPublish`, within its `applyScope`); see property 2.
+- Tested: `rules-api.test.ts` (a new critical document applies to new filings only; filed cases stay pinned; a live relaxing SLA change rebases open cases) and `rules-a11.test.ts` (a new-cases-only document leaves filed cases pinned).
 
 A generic workflow or ticketing engine would need a rule store with immutable versions, a per-case version reference, and an explicit decision about which settings are pinned and which are live.
 

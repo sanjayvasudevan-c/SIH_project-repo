@@ -6,7 +6,7 @@ What it would take to run this beyond a laptop, and what is still unproven. Ever
 
 **What it proves:** the stack needs no paid software licence.
 
-Source: the stack described in [`ARCHITECTURE_VS_PROTOTYPE.md`](ARCHITECTURE_VS_PROTOTYPE.md): Node.js, Express, React, Vite, Prisma, PostgreSQL 16, Python with scikit-learn and FastAPI. The submission abstract states the same ("fully open source, with no licence cost").
+Source: the stack described in [`ARCHITECTURE_VS_PROTOTYPE.md`](ARCHITECTURE_VS_PROTOTYPE.md): Node.js, Express, React, Vite, Prisma, PostgreSQL 16, Python with scikit-learn and FastAPI. The submitted SIH abstract (held outside this repository) states the same ("fully open source, with no licence cost").
 
 Caveats:
 - This is about licences only. Hosting, operations staff and support are real costs and are not estimated here.
@@ -14,7 +14,7 @@ Caveats:
 
 ## Rollout
 
-Source: the submission abstract (`3_abstract.txt`). This is the plan we submitted, not an observed schedule.
+Source: the SIH abstract we submitted, which is held outside this repository, so this table is the only copy a reader here can check. This is the plan we submitted, not an observed schedule.
 
 | Stage | Months | What happens |
 |---|---|---|
@@ -28,7 +28,7 @@ Caveats:
 
 ## Hosting
 
-Planned: NIC or MeghRaj (the submission abstract). Not tested. The prototype ran natively in the audit and on Vercel with Neon for the public demo; the Docker Compose stack is defined but was not exercised in the audit ([`INITIAL_AUDIT.md`](INITIAL_AUDIT.md)).
+Planned: NIC or MeghRaj (per the submitted abstract). Not tested. The prototype ran natively in the audit and on Vercel with Neon for the public demo; the Docker Compose stack is defined but was not exercised in the audit ([`INITIAL_AUDIT.md`](INITIAL_AUDIT.md)).
 
 ## Security and production work that is absent
 
