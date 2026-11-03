@@ -32,6 +32,28 @@ The request covers several independent subsystems. This plan is the one that pro
 - **Limitations inline**, under the number they qualify, never in a trailing section.
 - **No new chart library and no new framework.** recharts and `chartTokens` only.
 - **Status is never colour alone** — pair every colour with a label or icon.
+
+## Data quality contract (amended 2026-11-03, binding on Tasks 3 and 4)
+
+The user's stated priority is **clean, understandable dashboards backed by accurate data**, explicitly *not* a page full of charts that look impressive and are hard to read. That reorders this plan: correctness of the aggregation is the gate, and presentation serves comprehension rather than density. Tasks 3 and 4 are bound by all of the following.
+
+**Every KPI carries a written definition** — numerator, denominator, time window, exclusions — in `api/src/routes/evidence.ts` beside the query that computes it, and surfaced to the reader in the UI. A KPI whose denominator is not stated does not ship.
+
+**Missing is not zero.** Every aggregate distinguishes three states: a measured value, a genuine zero, and absent data. `null`/`absent` must never render as `0`, a flat line, or a 0% share. Charts show their empty state for absent data and say what is absent.
+
+**No invented history.** No back-filled series, no interpolated gaps, no trend line through two points, and no comparison against a period for which no data exists. A time series starts where the data starts.
+
+**Provenance per value, four kinds:** `MEASURED` (counted from live rows), `DERIVED` (computed from measured values — the formula stated), `SYNTHETIC` (benchmark or seeded data), `TARGET` (a goal with no measurement behind it). Targets are never drawn so as to read as achievements.
+
+**Internal agreement.** A KPI card, the chart beneath it and any table of the same measure are computed from one query, not three. Where that is impossible, the API returns one object and the UI derives both from it.
+
+**Filters apply to every related visualisation or to none.** A date range that silently misses one panel on the same tab is a defect.
+
+**Censored workflows are stated, not averaged away.** Processing time over cases that have not finished is a censored sample: report the median with the completed-case count and the in-flight count, and say so. Do not present a mean over incomplete cases as an average processing time.
+
+**The four questions.** For every chart, a reader who has never seen this codebase must be able to answer, from the page alone: what is measured, what the value means, what period it covers, and what conclusion may reasonably be drawn. A chart that fails any of the four is cut rather than captioned into submission.
+
+**Aggregation is tested against source records.** Each aggregate gets a test that builds known rows and asserts the endpoint's number equals an independently counted expectation — not merely that the shape is right.
 - **Selection behaviour must not change.** Task 2 touches the assignment engine to retain identities it currently discards; the officer chosen for any given input must be identical before and after.
 - **Commit locally. Do NOT push.** The user has withdrawn blanket push permission.
 - Branch `claude/new-session-35imia`. No PR.
@@ -401,7 +423,19 @@ git commit -m "Evidence API: ADMIN-only read-only router over the stored evidenc
 - Consumes: every endpoint in Task 3's table.
 - Produces: the route `/admin/evidence`, ADMIN-only.
 
-Tabs, each a section of `docs/evidence/README.md`: **Overview** (KPI cards), **Workflow** (lifecycle funnel, status distribution, processing time, volume over time), **Assignment** (workload, capacity utilisation, fairness spread, and the per-decision explanation from `assignment-trace`), **Scheduler** (run timeline, deadline monitoring, alert analytics, reliability), **Audit** (filterable event analytics and the live integrity result), **Form check** (confusion matrix, per-fault recall), **Benchmarks** (run comparison).
+**Amended for restraint.** The brief is clean and understandable, not dense. Each tab gets **one response** from its aggregate endpoint and derives every card, chart and table on that tab from it, so they cannot disagree. Each tab carries **at most four visuals**; if a fifth seems necessary, one of the four was not earning its place. A chart that cannot answer all four questions from the page alone is cut, not captioned.
+
+| Tab | Visuals (at most four) | Source |
+|---|---|---|
+| **Overview** | Four KPI cards only — validation status, last scheduler run, audit integrity, applications in flight. No chart. | `summary`, `audit-integrity`, `engine-runs` |
+| **Workflow** | Lifecycle funnel; status distribution; processing-time median with its censored counts; volume over time | `workflow` |
+| **Assignment** | Utilisation per officer with its capacity line; utilisation spread; the per-decision explanation table from `assignment-trace` | `assignment` |
+| **Scheduler and compliance** | Run timeline (duration and status); deadline states; escalations by level; alerts created against suppressed | `compliance`, `engine-runs` |
+| **Audit** | Events by action; events by actor role; the live integrity result — counts only, no case state | `audit-analytics` |
+| **Form check** | Confusion matrix; recall per fault type. Synthetic, stated in the panel body. | `artifacts` |
+| **Performance** | Latency percentiles per screen; benchmark runs compared only within the same environment | `artifacts` |
+
+Every panel renders, in this order: a descriptive title naming the measure and its unit; the provenance chip; the one-line KPI definition from the endpoint's `definition` field (rendered verbatim, not paraphrased in the UI); then the visual or its empty state; then a methodology note only where the measure could be misread.
 
 Rules that make the page honest rather than decorative:
 
@@ -411,6 +445,11 @@ Rules that make the page honest rather than decorative:
 - The fairness panel reports the **spread** (standard deviation of projected utilisation) and names the policy version; it must not use the word "fair" about equal counts.
 - The form-check panel states "synthetic data" in the panel body, not only in a caption, and shows the 0.315 unit-error recall beside the 0.863 overall.
 - Benchmark runs are compared only within the same `machine` block; runs from different environments are shown side by side with their environments, never averaged.
+- **Absent data renders as an empty state naming what is absent**, never as `0`, a flat line or a 0% share. A `null` from the API is "not measured", not zero.
+- **No invented history**: a series starts where its data starts, with no back-fill, no interpolation across gaps and no trend line through two points.
+- **One query per tab.** A card and the chart under it are two renderings of one number, never two computations of it.
+- **The date filter applies to every panel on its tab**, or the tab has no filter. A filter that misses one panel is a defect, not a cosmetic gap.
+- **Targets are drawn so they cannot read as achievements** — dashed, labelled "target", and never on the same axis style as a measured series.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -534,4 +573,124 @@ Expected: 5 chart tests; 196 API tests.
 ```bash
 git add api/scripts/load-test.ts scripts/evidence-charts.mjs scripts/evidence-charts.test.mjs docs/evidence
 git commit -m "Benchmarks: measure duplicate alert prevention instead of inferring it"
+```
+
+---
+
+### Task 6: Aggregation endpoints with stated KPI definitions
+
+*Added by the amendment above. **Execution order is 1, 2, 3, 6, 4, 5** — Task 4 draws what this task computes, so this precedes it.*
+
+**Files:**
+- Create: `api/src/routes/evidence/aggregates.ts` (the queries and their definitions)
+- Modify: `api/src/routes/evidence.ts` (mount the aggregate routes)
+- Test: `api/test/evidence-aggregates.test.ts`
+
+**Interfaces:**
+- Consumes: `EngineRun` (Task 1), `AssignmentTrace` (Task 2), and the existing `Application`, `DeadlineItem`, `AlertLog`, `Assignment`, `OfficerProfile`, `AuditLog` tables.
+- Produces: the endpoints below. Task 4 consumes them and derives every card, chart and table on a tab from **one** response per tab.
+
+Each endpoint returns `{ definition, provenance, data }`, where `definition` is the written KPI definition (numerator, denominator, window, exclusions) that the UI renders verbatim, and `provenance` is `MEASURED`, `DERIVED`, `SYNTHETIC` or `TARGET`.
+
+| Endpoint | Measure, and the definition it must state |
+|---|---|
+| `GET /api/evidence/workflow?from&to` | **Funnel**: distinct applications that have *reached* each stage, counted from `AuditLog` stage transitions, not from current status — an application now at `DECIDED` has still passed through scrutiny. Denominator for each stage's share is applications submitted in the window. **Status distribution**: current `status` counts, denominator = applications in the window. **Processing time**: median working days from submission to decision over **decided** cases only, reported with `decidedCount` and `inFlightCount`; a censored sample, never a mean over unfinished cases. **Volume over time**: submitted, decided and overdue per day, starting at the first record — no back-fill. |
+| `GET /api/evidence/assignment?from&to` | Per officer: `capacityPoints`, open `weight` sum, `utilisation = openPoints / capacity` (**DERIVED**, formula stated). **Spread**: the standard deviation of utilisation across officers *with capacity > 0*, with `officerCount` as the denominator. Never the word "fair". Plus the eligible/excluded counts from `AssignmentTrace` and the pinned `rulePackVersion` label. |
+| `GET /api/evidence/compliance?from&to` | Deadline items by state (`atRisk`, `overdue`, `dueSoon`, `met`) with the working-day definition of each stated; escalations by level 1/2/3; alerts by `kind` and by `late`; and `alertsSuppressed` summed from `EngineRun` as the **measured** duplicate-prevention figure. |
+| `GET /api/evidence/audit-analytics?from&to&actor&action&entity` | Event counts by actor role, by action and by entity, plus the live `verifyChains()` result. ADMIN-only like the rest; never returns `fromState`/`toState` bodies, only counts, so no case detail leaks through an analytics endpoint. |
+
+- [ ] **Step 1: Write the failing tests**
+
+Each test builds known rows and asserts the endpoint's number against an independently counted expectation.
+
+```ts
+// api/test/evidence-aggregates.test.ts
+it('counts the funnel from stage transitions, not current status', async () => {
+  // Drive one application all the way to DECIDED, then assert it is counted in every
+  // stage it passed through — not only in the last one.
+  const { applicationId } = await driveToDecided();
+  const r = await request(app).get('/api/evidence/workflow').set(...bearer(admin));
+  const f = r.body.data.funnel;
+  expect(f.find((s: { stage: string }) => s.stage === 'SCRUTINY')!.reached).toBeGreaterThanOrEqual(1);
+  expect(f.find((s: { stage: string }) => s.stage === 'DECIDED')!.reached).toBeGreaterThanOrEqual(1);
+});
+
+it('reports processing time over decided cases only, with the censored counts', async () => {
+  const r = await request(app).get('/api/evidence/workflow').set(...bearer(admin));
+  const p = r.body.data.processingTime;
+  expect(p.decidedCount).toBeGreaterThan(0);
+  expect(p).toHaveProperty('inFlightCount');
+  expect(p).toHaveProperty('medianWorkingDays');
+  expect(p).not.toHaveProperty('mean');
+  expect(r.body.definition.processingTime).toMatch(/decided|censor/i);
+});
+
+it('returns null rather than 0 for a measure with no data in the window', async () => {
+  const r = await request(app).get('/api/evidence/workflow?from=1990-01-01&to=1990-01-02').set(...bearer(admin));
+  expect(r.body.data.processingTime.medianWorkingDays).toBeNull();
+  expect(r.body.data.processingTime.decidedCount).toBe(0);
+});
+
+it('computes utilisation spread only over officers with capacity, and names the denominator', async () => {
+  const r = await request(app).get('/api/evidence/assignment').set(...bearer(admin));
+  const a = r.body.data;
+  const withCapacity = await prisma.officerProfile.count({ where: { capacityPoints: { gt: 0 } } });
+  expect(a.spread.officerCount).toBe(withCapacity);
+  expect(JSON.stringify(r.body)).not.toMatch(/\bfair\b/i);
+});
+
+it('the alerts total equals the AlertLog rows in the window, and suppressed comes from EngineRun', async () => {
+  await runEngineCycle({ source: 'test' });
+  const r = await request(app).get('/api/evidence/compliance').set(...bearer(admin));
+  expect(r.body.data.alerts.total).toBe(await prisma.alertLog.count());
+  const sup = await prisma.engineRun.aggregate({ _sum: { alertsSuppressed: true } });
+  expect(r.body.data.alerts.suppressed).toBe(sup._sum.alertsSuppressed ?? 0);
+});
+
+it('the funnel and the status distribution agree on the application total', async () => {
+  const r = await request(app).get('/api/evidence/workflow').set(...bearer(admin));
+  const statusTotal = r.body.data.statusDistribution.reduce((n: number, s: { count: number }) => n + s.count, 0);
+  expect(statusTotal).toBe(r.body.data.submittedTotal);
+});
+
+it('audit analytics returns counts only, never case state', async () => {
+  const r = await request(app).get('/api/evidence/audit-analytics').set(...bearer(admin));
+  expect(r.status).toBe(200);
+  expect(JSON.stringify(r.body)).not.toMatch(/fromState|toState|rowHash/);
+});
+
+it('a date filter narrows every measure in the response, not some of them', async () => {
+  const wide = await request(app).get('/api/evidence/workflow').set(...bearer(admin));
+  const narrow = await request(app).get('/api/evidence/workflow?from=2099-01-01&to=2099-01-02').set(...bearer(admin));
+  expect(narrow.body.data.submittedTotal).toBe(0);
+  expect(narrow.body.data.volumeOverTime).toEqual([]);
+  expect(narrow.body.data.statusDistribution.every((s: { count: number }) => s.count === 0)).toBe(true);
+  expect(wide.body.data.submittedTotal).toBeGreaterThan(0);
+});
+```
+
+- [ ] **Step 2: Run the tests to verify they fail**
+
+Run: `cd api && npx vitest run test/evidence-aggregates.test.ts`
+Expected: FAIL with 404 on every route.
+
+- [ ] **Step 3: Implement the aggregates**
+
+One exported function per endpoint in `aggregates.ts`, each returning `{ definition, provenance, data }`. Prefer a single SQL round trip per endpoint via `prisma.$queryRaw` where a Prisma aggregate cannot express it; working-day arithmetic reuses `api/src/lib/workdays.ts` rather than re-deriving it. The funnel reads `AuditLog` actions, so check the action names actually written by `api/src/workflow/actions.ts` instead of assuming them.
+
+- [ ] **Step 4: Mount and run the tests**
+
+Run: `cd api && npx vitest run test/evidence-aggregates.test.ts`
+Expected: 8 passed.
+
+- [ ] **Step 5: Run the full suite and the typecheck**
+
+Run: `npm test && npm --workspace api run typecheck`
+Expected: all green, count = previous + 8.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add api/src/routes/evidence api/src/routes/evidence.ts api/test/evidence-aggregates.test.ts
+git commit -m "Evidence API: aggregates that state their own KPI definitions"
 ```
