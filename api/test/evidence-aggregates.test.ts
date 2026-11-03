@@ -7,6 +7,7 @@ import { runEngineCycle } from '../src/engine/cycle.js';
 import { bearer, firstUser, resetDb, setToday, shiftDays, userByEmail } from './helpers.js';
 import { addWorkingDays } from '../src/lib/workdays.js';
 import { act, submitApp, toDecision } from './fixtures.js';
+import { addDays } from '../src/lib/dates.js';
 
 const app = createApp();
 type Row = Record<string, unknown> & { stage?: string; reached?: number; count?: number };
@@ -74,6 +75,50 @@ describe('/api/evidence aggregates', () => {
     expect(r.body.data.processingTime.medianWorkingDays).toBeNull();
     expect(r.body.data.processingTime.decidedCount).toBe(0);
     expect(r.body.data.funnel.every((s: Row) => s.share === null)).toBe(true); // 0 / 0 is absent, not 0%
+  });
+
+  it('lists recentDecisions: an independent trace page, newest first, windowed, with BLOCKED as no officer', async () => {
+    await fileOnly('college.abc@demo.in');
+    await fileOnly('college.002@demo.in');
+    // Everyone who could take the next case is on leave, so it is BLOCKED (no officer, nobody eligible).
+    const today = clock.today();
+    for (const u of await prisma.user.findMany({ where: { role: { in: ['OFFICER', 'BUREAU'] } } }))
+      await prisma.officerAvailability.create({ data: { userId: u.id, kind: 'LEAVE', startsOn: today, endsOn: addDays(today, 5), reason: 'Leave', createdById: u.id } });
+    const blockedApp = await fileOnly('college.003@demo.in');
+
+    const r = await get('/api/evidence/assignment');
+    const list = r.body.data.recentDecisions as Row[];
+    const expected = await prisma.assignmentTrace.findMany({ orderBy: [{ decidedAt: 'desc' }, { id: 'desc' }], take: 10 });
+    expect(expected.length).toBeGreaterThanOrEqual(3);
+    expect(list.map((d) => d.traceId)).toEqual(expected.map((t) => t.id.toString()));
+    expect(list.map((d) => d.applicationId)).toEqual(expected.map((t) => t.applicationId));
+    for (let i = 0; i < expected.length; i++) {
+      const t = expected[i]!;
+      const cands = t.candidates as unknown as { eligible: boolean }[];
+      expect(list[i]).toMatchObject({ taskType: t.taskType, outcome: t.outcome, decidedAt: t.decidedAt.toISOString(), considered: cands.length, eligible: cands.filter((c) => c.eligible).length });
+      expect(list[i]!.applicationNo).toBe((await prisma.application.findUniqueOrThrow({ where: { id: t.applicationId } })).applicationNo);
+      const name = t.chosenOfficerId ? (await prisma.user.findUniqueOrThrow({ where: { id: t.chosenOfficerId } })).name : null;
+      expect(list[i]!.chosenOfficer).toBe(name);
+    }
+    for (let i = 1; i < list.length; i++) expect(String(list[i - 1]!.decidedAt) >= String(list[i]!.decidedAt)).toBe(true);
+    const blocked = list.find((d) => d.applicationId === blockedApp)!;
+    expect(blocked.outcome).toBe('BLOCKED');
+    expect(blocked.chosenOfficer).toBeNull();
+    expect(blocked.eligible).toBe(0);
+    expect(blocked.considered).toBeGreaterThan(0);
+    expect(r.body.definition.recentDecisions).toMatch(/newest/i);
+    expect(r.body.provenance.recentDecisions).toBe('MEASURED');
+    const day = expected[0]!.decidedAt.toISOString().slice(0, 10); // traces carry the engine's (possibly simulated) clock
+    // Capped at 10.
+    for (let i = 0; i < 9; i++) await prisma.assignmentTrace.create({ data: { applicationId: blockedApp, taskType: 'SCRUTINY', decidedAt: expected[0]!.decidedAt, chosenOfficerId: null, outcome: 'BLOCKED', weight: 1, candidates: [], reasonText: 'x' } });
+    expect(((await get('/api/evidence/assignment')).body.data.recentDecisions as Row[]).length).toBe(10);
+    // The window narrows it with the other windowed measures; an empty window gives [].
+        expect(((await get(`/api/evidence/assignment?from=${day}&to=${day}`)).body.data.recentDecisions as Row[]).length).toBe(10);
+    expect((await get('/api/evidence/assignment?from=2099-01-01&to=2099-01-02')).body.data.recentDecisions).toEqual([]);
+    await prisma.assignmentTrace.updateMany({ where: { applicationId: blockedApp }, data: { decidedAt: new Date('2020-01-01T10:00:00Z') } });
+    const narrowed = (await get(`/api/evidence/assignment?from=${day}&to=${day}`)).body.data.recentDecisions as Row[];
+    expect(narrowed.some((d) => d.applicationId === blockedApp)).toBe(false);
+    expect(narrowed.length).toBe(expected.filter((t) => t.applicationId !== blockedApp).length);
   });
 
   it('computes utilisation spread only over officers with capacity, and names the denominator', async () => {

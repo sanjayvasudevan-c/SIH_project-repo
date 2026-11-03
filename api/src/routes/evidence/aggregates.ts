@@ -158,7 +158,7 @@ export function aboveCapText(name: string, util: number, cap: number, continuity
 export async function assignment(q: Q) {
   const b = bounds(q);
   // Assignments made in the window (by assignedAt); traces by decidedAt. Open = not released.
-  const [officers, cover, blocked, outcomes, cand, excl, versions, policy] = await Promise.all([
+  const [officers, cover, blocked, outcomes, cand, excl, versions, policy, recent] = await Promise.all([
     // Current open book (never windowed) and, separately, the part of it assigned in the window. Only role OFFICER: committee and
     // bureau profiles do not hold assigned work the same way and would show as idle officers.
     prisma.$queryRaw<{ officerId: string; name: string; role: string; capacityPoints: number; maxUtil: number; openPoints: number; openTasks: number; openPointsAssignedInWindow: number }[]>`
@@ -184,7 +184,18 @@ export async function assignment(q: Q) {
       JOIN "RulePackVersion" v ON v.id = a."rulePackVersionId" JOIN "ApprovalCycle" cy ON cy.id = v."cycleId"
       WHERE TRUE ${b.sql(Prisma.sql`a."assignedAt"`)} GROUP BY 1 ORDER BY 1`,
     newestRules(),
+    prisma.assignmentTrace.findMany({
+      where: { decidedAt: { ...(b.from ? { gte: b.from } : {}), ...(b.toExcl ? { lt: b.toExcl } : {}) } },
+      orderBy: [{ decidedAt: 'desc' }, { id: 'desc' }],
+      take: 10,
+    }),
   ]);
+  const [apps, chosen] = await Promise.all([
+    prisma.application.findMany({ where: { id: { in: [...new Set(recent.map((t) => t.applicationId))] } }, select: { id: true, applicationNo: true } }),
+    prisma.user.findMany({ where: { id: { in: recent.map((t) => t.chosenOfficerId).filter((x): x is string => !!x) } }, select: { id: true, name: true } }),
+  ]);
+  const appNo = new Map(apps.map((a) => [a.id, a.applicationNo]));
+  const officerName = new Map(chosen.map((u) => [u.id, u.name]));
   // capacityPoints > 0 is enforced by the database (officer_capacity_positive), so every listed officer has a utilisation.
   const rows = officers.map((o) => ({ ...o, utilisation: o.openPoints / o.capacityPoints }));
   const u = rows.map((r) => r.utilisation);
@@ -204,9 +215,10 @@ export async function assignment(q: Q) {
       coverage:
         'tracedCount / assignmentTotal: assignments made in the window that have a recorded decision table (trace), over all assignments made in the window. Traces are written when the engine assigns automatically; a manual assignment or manual reassignment writes none, so coverage is partial and a case without a trace is not an error. blockedCount is decisions where no officer could be assigned (no assignment exists for them).',
       candidates: 'Over decisions recorded in the window: candidatesConsidered = officers evaluated across all decisions; eligible = those eligible; excluded counts the stated reason. A decision evaluates several officers, so these are candidate rows, not cases.',
+      recentDecisions: 'The ten most recent automatic assignment decisions recorded in the From/To window, newest first (all dates if none given). chosenOfficer is blank for a decision where no officer could be assigned (outcome BLOCKED). considered = officers evaluated for that decision; eligible = those eligible. Manual assignments and reassignments write no decision table and so never appear here.',
       continuityOverrides: `Officers whose current utilisation is above their own normal cap (maxUtil). This is expected, not an error, when it comes from the continuity allowance (portfolio or returning officer, up to ${capFor.continuityUtilCap}), the urgent-task allowance (up to ${capFor.urgentMaxUtil}) or capacity reduced after the work was assigned. The decision table does not record which applied, so all three are named. Not affected by the date window.`,
     },
-    provenance: { officers: 'MEASURED', utilisation: 'DERIVED', spread: 'DERIVED', coverage: 'MEASURED', candidates: 'MEASURED', continuityOverrides: 'DERIVED' } as Record<string, Provenance>,
+    provenance: { officers: 'MEASURED', utilisation: 'DERIVED', spread: 'DERIVED', coverage: 'MEASURED', candidates: 'MEASURED', recentDecisions: 'MEASURED', continuityOverrides: 'DERIVED' } as Record<string, Provenance>,
     data: {
       window: b.window,
       officers: rows,
@@ -226,6 +238,20 @@ export async function assignment(q: Q) {
           text: aboveCapText(o.name, o.utilisation, o.maxUtil, capFor.continuityUtilCap, capFor.urgentMaxUtil),
         })),
       },
+      recentDecisions: recent.map((t) => {
+        const cands = t.candidates as unknown as { eligible?: boolean }[];
+        return {
+          traceId: t.id.toString(),
+          applicationId: t.applicationId,
+          applicationNo: appNo.get(t.applicationId) ?? null,
+          taskType: t.taskType,
+          outcome: t.outcome,
+          chosenOfficer: t.chosenOfficerId ? (officerName.get(t.chosenOfficerId) ?? null) : null,
+          decidedAt: t.decidedAt.toISOString(),
+          considered: cands.length,
+          eligible: cands.filter((c) => c.eligible).length,
+        };
+      }),
       rulePackVersions: versions,
       policy: { label: policy.label },
     },
