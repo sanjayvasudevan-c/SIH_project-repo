@@ -62,7 +62,10 @@ export function buildCharts(bench, metrics) {
   const peak = (series) => Math.max(...series.map((s) => s.value));
   const counts = (title, series, unit) => barChart({ title, caption, series, max: peak(series), unit });
 
-  const reads = bench.reads.map((r) => ({ label: r.screen, value: r.p95ms }));
+  // Short chart labels keep the officer/senior distinction inside the label column; full names live in the docs tables.
+  const SHORT = { 'Action Center (officer)': 'Action Center', 'Action Center summary (senior)': 'Summary (senior)', 'Applications list (officer)': 'Applications list', 'Hybrid (rules or model)': 'Hybrid' };
+  const short = (l) => SHORT[l] ?? l;
+  const reads = bench.reads.map((r) => ({ label: short(r.screen), value: r.p95ms }));
   const engine = [
     { label: 'First cycle', value: bench.engine.firstCycle.newAlerts },
     { label: 'Second cycle', value: bench.engine.secondCycle.newAlerts },
@@ -75,13 +78,13 @@ export function buildCharts(bench, metrics) {
     { label: 'Assignments', value: d.assignments },
   ];
   // Recall is drawn and labelled exactly as stored in metrics.json (already 3 decimals).
-  const modes = Object.entries(metrics.modes).map(([label, m]) => ({ label, value: m.recall, text: m.recall.toFixed(3) }));
+  const modes = Object.entries(metrics.modes).map(([label, m]) => ({ label: short(label), value: m.recall, text: m.recall.toFixed(3) }));
 
   return {
     'read-latency.svg': counts('Read latency, p95', reads, 'ms'),
-    'engine-cycle.svg': counts('New alerts per engine cycle', engine, 'alerts'),
+    'engine-cycle.svg': counts('New alerts per cycle (alerts, not time)', engine, 'alerts'),
     'dataset-scale.svg': counts('Dataset scale', scale, ''),
-    'formcheck-modes.svg': barChart({ title: 'Form check recall by mode', caption, series: modes, max: 1, unit: '' }),
+    'formcheck-modes.svg': barChart({ title: 'Form check recall by mode', caption: 'source: formcheck/metrics.json · synthetic data', series: modes, max: 1, unit: '' }),
   };
 }
 
