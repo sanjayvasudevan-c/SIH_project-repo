@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import type { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/db.js';
 import { h, parse } from '../lib/http.js';
 import { verifyChains } from '../lib/audit.js';
+import * as clock from '../lib/clock.js';
 import { requireRole } from '../policy/roles.js';
 import { auditAnalytics, auditQuery, assignment, compliance, windowQuery, workflow } from './evidence/aggregates.js';
 import { headCommit, readArtifacts, readTestResult, commitIsCurrent } from './evidence/artifacts.js';
@@ -16,6 +17,8 @@ const runsQuery = z.object({
   page: z.coerce.number().int().min(1).max(10_000).default(1),
   pageSize: z.coerce.number().int().min(1).max(200).default(25),
 });
+/** A run still RUNNING after this long was killed (hard kill, serverless freeze, out of memory) and can never finish by itself. */
+export const ABANDONED_AFTER_MS = 15 * 60_000;
 const traceParams = z.object({ applicationId: z.string().min(1).max(64) });
 
 export function evidenceRouter(): Router {
@@ -53,14 +56,25 @@ export function evidenceRouter(): Router {
       const where: Prisma.EngineRunWhereInput = {};
       if (q.status) where.status = q.status;
       if (q.from || q.to) where.startedAt = { ...(q.from ? { gte: q.from } : {}), ...(q.to ? { lte: q.to } : {}) };
-      const [total, rows] = await Promise.all([
+      // Totals use the SAME filters as the rows, in one query, so they never depend on which page was asked for.
+      const ts = (d: Date) => Prisma.sql`${d.toISOString()}::timestamp`; // ISO UTC text cast to timestamp: no session time-zone shift
+      const cond = Prisma.sql`WHERE TRUE ${q.status ? Prisma.sql`AND status::text = ${q.status}` : Prisma.empty} ${q.from ? Prisma.sql`AND "startedAt" >= ${ts(q.from)}` : Prisma.empty} ${q.to ? Prisma.sql`AND "startedAt" <= ${ts(q.to)}` : Prisma.empty}`;
+      const staleBefore = ts(new Date(clock.realNow().getTime() - ABANDONED_AFTER_MS));
+      const [total, rows, sums] = await Promise.all([
         prisma.engineRun.count({ where }),
         prisma.engineRun.findMany({ where, orderBy: { id: 'desc' }, skip: (q.page - 1) * q.pageSize, take: q.pageSize }),
+        prisma.$queryRaw<{ runCount: number; failedCount: number; abandonedCount: number; alertsCreated: number | null; alertsSuppressed: number | null }[]>`
+          SELECT count(*)::int AS "runCount",
+                 (count(*) FILTER (WHERE status = 'FAILED'))::int AS "failedCount",
+                 (count(*) FILTER (WHERE status = 'RUNNING' AND "startedAt" < ${staleBefore}))::int AS "abandonedCount",
+                 SUM("alertsCreated")::int AS "alertsCreated", SUM("alertsSuppressed")::int AS "alertsSuppressed"
+          FROM "EngineRun" ${cond}`,
       ]);
       res.json({
         total,
         page: q.page,
         pageSize: q.pageSize,
+        totals: sums[0]!, // SUM over zero rows is NULL: "no runs" is not reported as 0 alerts
         rows: rows.map((e) => ({
           ...e,
           id: e.id.toString(),
