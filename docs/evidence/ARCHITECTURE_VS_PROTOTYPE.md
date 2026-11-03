@@ -1,10 +1,12 @@
 # Architecture versus prototype
 
+Formerly `demo-production/FEATURE_INVENTORY.md`, moved here so it can be found.
+
 What the full design contains, what this repository builds, and how each built feature is checked. Re-sourced on 2026-11-03 at commit `c40339c` on branch `claude/new-session-35imia`; the measured baseline comes from [`INITIAL_AUDIT.md`](INITIAL_AUDIT.md) and is listed below. All data in the prototype, the form check and the benchmarks is synthetic.
 
 ## What is built, and the scope that was chosen
 
-The submission describes a nine-phase design (phases 0 to 8). This repository builds phases 0 to 4, the yearly rule packs and the government-style public interface, which is about 40% of the full design. That is deliberate scope: the core of an approval platform (who holds a case, the clocks, the audit trail and the rules that govern it) was built and tested before anything that needs production infrastructure.
+The submission describes a nine-phase design (phases 0 to 8). This repository builds phases 0 to 4, the yearly rule packs and the government-style public interface, which is about 40% of the full design, counted by scope (phases 0 to 4 plus the rule-pack and interface add-ons) rather than by line count. That is deliberate scope: the core of an approval platform (who holds a case, the clocks, the audit trail and the rules that govern it) was built and tested before anything that needs production infrastructure.
 
 | Phase | Contents (phases 5 to 8 as listed in the submission abstract) | In this repository |
 |---|---|---|
@@ -40,7 +42,7 @@ Measured baseline on this branch, run by the controller: 183 API tests pass (Vit
 | Form check | Python FastAPI service: rules sent by the API plus an Isolation Forest trained on synthetic forms. The API falls back to the same rules in Node when the service is down (800 ms timeout). Advisory only; it never blocks filing. |
 | Rules | Yearly rule packs (cycles, versions, amendments) stored in PostgreSQL with an immutability trigger; every consumer reads them through `api/src/rules/service.ts`. Pinning is partial by design: substantive rules (application types and eligibility, documents, fees, norms, programmes, form-check rules, letters, change notice) stay pinned to the version a case was filed under; operational rules (schedule, reminders, escalation, assignment, committees, calendar) follow the cycle's current published version (`mergeSections` in `api/src/rules/resolved.ts`). A published amendment can also move open cases, subject to its apply scope. |
 | Audit | `AuditLog` with per-chain SHA-256 hashes (per application, `global`, `rules`). The application role cannot UPDATE or DELETE audit rows, and any edit that does not recompute the whole forward chain is detected. The table owner can disable the trigger, so this is not tamper-proof against a privileged database administrator. |
-| Data | Synthetic seed: 2 regions, 20 named demo accounts, about 60 institutions, 192 applications built through the real actions on a back-dated clock; 4 rule pack versions (the audit measured 192 applications, 20 demo users and 4 versions; the region and institution counts are the earlier inventory's and were not re-measured). `npm run demo:reset` restores it in under a second from a template database. |
+| Data | Synthetic seed, measured on the freshly seeded database: 2 regions, 207 users (of which 20 have documented demo logins), 120 institutions, 191 applications built through the real actions on a back-dated clock (the count varies between 191 and 192 between setups; see Known issues), 4 rule pack versions. Reproduce each count with `SELECT count(*) FROM "Region"` (and likewise `"User"`, `"Institution"`, `"Application"`, `"RulePackVersion"`), for example `psql "$DATABASE_URL" -c 'SELECT count(*) FROM "User"' -c 'SELECT count(*) FROM "Institution"'`. `npm run demo:reset` restores it in under a second from a template database. |
 
 ## Roles (demo accounts, password `demo1234`, synthetic data only)
 
