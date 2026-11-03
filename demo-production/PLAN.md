@@ -4,7 +4,7 @@ Everything lives in `demo-production/`; application code is not touched except f
 
 ```
 demo-production/
-  FEATURE_INVENTORY.md    Phase 1 (done)
+  ../docs/evidence/ARCHITECTURE_VS_PROTOTYPE.md   Phase 1 (done; moved out of this folder)
   STORYBOARD.md           Phase 2 (this proposal)
   automation/             Phase 3: Playwright scenarios, one per scene, plus reset.sh and record.mjs
   recordings/             raw .webm per scene + key screenshots (git-ignored above a size limit; see README)

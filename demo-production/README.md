@@ -13,7 +13,7 @@ A product showcase of the AICTE Demo Website, produced from the real running app
 
 | Path | What it is |
 |---|---|
-| `FEATURE_INVENTORY.md` | Phase 1 audit: architecture and every feature with route, role, test steps, success condition and verification status. |
+| [`../docs/evidence/ARCHITECTURE_VS_PROTOTYPE.md`](../docs/evidence/ARCHITECTURE_VS_PROTOTYPE.md) | Architecture versus prototype: phases 0 to 8 against what is built, then every feature with route, role, test steps, success condition and verification status (moved from here). |
 | `STORYBOARD.md` | Chapters, each in the pattern purpose → real interaction → verified result → takeaway, and how the six editing principles are applied. |
 | `PLAN.md` | Execution plan and stages. |
 | `narration/script.json` | Narration text per chapter and part (A purpose, B interaction, C result, D takeaway), with an emotion level per line. |
