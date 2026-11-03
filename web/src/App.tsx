@@ -15,6 +15,7 @@ import { CaseViewPage } from './pages/CaseView';
 import { AuthorityQueuePage, BureauQueuePage, CommitteeQueuePage, EvcQueuePage } from './pages/Queues';
 import { AvailabilityPage } from './pages/Availability';
 import { AdminPage } from './pages/admin/Admin';
+import { EvidenceCenterPage } from './pages/admin/evidence/EvidenceCenter';
 import { TeamPage } from './pages/manager/Team';
 import { WorkforcePage } from './pages/manager/Workforce';
 import { CompliancePage } from './pages/college/Compliance';
@@ -108,6 +109,8 @@ export function App() {
         <Route path="/rules/versions/:id/impact" element={<RequireRole roles={RULES}><ImpactPage /></RequireRole>} />
         <Route path="/rules/versions/:id/review" element={<RequireRole roles={['RULE_APPROVER']}><ReviewPage /></RequireRole>} />
         <Route path="/admin" element={<RequireRole roles={['ADMIN']}><AdminPage /></RequireRole>} />
+        <Route path="/admin/evidence" element={<RequireRole roles={['ADMIN']}><EvidenceCenterPage /></RequireRole>} />
+        <Route path="/admin/evidence/:section" element={<RequireRole roles={['ADMIN']}><EvidenceCenterPage /></RequireRole>} />
         <Route path="/styleguide" element={<RequireRole roles={['ADMIN']}><StyleguidePage /></RequireRole>} />
         <Route path="*" element={<NoAccessPage />} />
       </Route>

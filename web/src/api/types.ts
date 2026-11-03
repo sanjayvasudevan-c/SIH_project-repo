@@ -329,3 +329,12 @@ export interface FilingContext {
   programmes: { code: string; label: string; level: string; discipline: string; inPurview: boolean }[];
   types: { type: AppType; label: string; category: string; channel: string; eligible: boolean; route: string[]; documents: DocCfg[] }[];
 }
+
+// ── Evidence Center ──────────────────────────────────────────────────────────
+/** Where a figure comes from. `null` in an envelope means the API did not declare it. */
+export type Provenance = 'MEASURED' | 'DERIVED' | 'SYNTHETIC' | 'TARGET' | 'LIVE_DEMO' | 'TEST_RUN' | 'BENCHMARK' | 'SIMULATED';
+export interface EvidenceEnvelope<T> {
+  definition: Record<string, string>;
+  provenance: Record<string, Provenance | null>;
+  data: T;
+}
