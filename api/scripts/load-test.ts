@@ -127,11 +127,28 @@ function gitCommit() {
 }
 
 async function pgVersion() {
-  const rows = await prisma.$queryRaw<{ version: string }[]>`SELECT version()`;
-  return /PostgreSQL (\S+)/.exec(rows[0].version)?.[1] ?? rows[0].version;
+  // Metadata only: a hiccup here must not discard a measured run.
+  try {
+    const rows = await prisma.$queryRaw<{ version: string }[]>`SELECT version()`;
+    return /PostgreSQL (\S+)/.exec(rows[0].version)?.[1] ?? rows[0].version;
+  } catch {
+    return 'unknown';
+  }
+}
+
+// Validated before the ~3.5 minute run, so a typo cannot cost a whole run. The value must be a path,
+// never the next flag (`--out --metrics x` would otherwise write to a file named "--metrics").
+function parseOut(argv: string[]): string | undefined {
+  const i = argv.indexOf('--out');
+  if (i === -1) return undefined;
+  const out = argv[i + 1];
+  if (!out || out.startsWith('--')) throw new Error(`--out needs a path (got ${out === undefined ? 'nothing' : `"${out}"`}); usage: npm run load:test -- --out <path>`);
+  mkdirSync(path.dirname(out), { recursive: true });
+  return out;
 }
 
 async function main() {
+  const out = parseOut(process.argv.slice(2));
   await recreateFromTemplate();
   const t0 = process.hrtime.bigint();
   const data = await bulkCopy();
@@ -154,13 +171,7 @@ async function main() {
   };
   const json = JSON.stringify(report, null, 2);
   console.log(json);
-  const outIdx = process.argv.indexOf('--out');
-  if (outIdx !== -1) {
-    const out = process.argv[outIdx + 1];
-    if (!out) throw new Error('--out needs a path');
-    mkdirSync(path.dirname(out), { recursive: true });
-    writeFileSync(out, json + '\n');
-  }
+  if (out) writeFileSync(out, json + '\n');
   await prisma.$disconnect();
   await recreateFromTemplate();
 }
