@@ -167,7 +167,7 @@ describe('/api/evidence', () => {
     for (const w of ['PASS', 'FAIL', 'STALE', 'NOT_VERIFIED']) expect(sum.definition.status).toContain(w);
     expect(sum.definition.status).toMatch(/never runs tests|does not run tests|never run/i);
     expect(sum.definition.scheduler).not.toMatch(/no heartbeat/i);
-    expect(sum.definition.scheduler).toMatch(/process\'s own most recent check-in/i);
+    expect(sum.definition.scheduler).toMatch(/most recent check-in of the instance marked as leader/i);
     expect(sum.definition.scheduler).toMatch(/does not by itself mean/i);
     expect(runs.definition.abandoned).toMatch(/15 minutes/);
     expect(runs.definition.window).toMatch(/date the engine treated as today/i);

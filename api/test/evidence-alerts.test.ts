@@ -231,6 +231,26 @@ describe('/api/evidence/alerts and engine-run totals', () => {
     }
   });
 
+  it('15b. a malformed (not just impossible) date is a 400, never a 500', async () => {
+    for (const ep of ['engine-runs', 'alerts', 'compliance', 'workflow', 'assignment', 'audit-analytics']) {
+      for (const bad of ['from=garbage', 'from=', 'from=2026-1-01', 'to=2026-10-01T00:00', 'from=yesterday']) {
+        const r = await get(`/api/evidence/${ep}?${bad}`);
+        expect(r.status, `${ep} ${bad}`).toBe(400);
+      }
+    }
+  });
+
+  it('16b. with no engine run and no alert ever, compliance says none recorded (null), as alerts does', async () => {
+    await prisma.alertLog.deleteMany();
+    await prisma.engineRun.deleteMany();
+    const a = (await get('/api/evidence/alerts')).body;
+    const c = (await get('/api/evidence/compliance')).body;
+    expect(a.data.total).toBeNull();
+    expect(c.data.alerts.total).toBeNull();
+    expect(c.data.alerts.reminderTiming).toBeNull();
+    expect(a.data.reminderTiming).toBeNull();
+  });
+
   it('16. the same empty window reads the same in alerts and compliance, with one wording for zero', async () => {
     await raiseAlerts();
     const q = '?from=2099-01-01&to=2099-01-02';

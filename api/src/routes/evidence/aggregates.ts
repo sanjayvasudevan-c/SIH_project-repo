@@ -16,7 +16,7 @@ import type { Provenance } from './artifacts.js';
 export const day = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD')
-  .refine((v) => isoDate(parseDateOnly(v)) === v, { message: 'Not a real calendar date' })
+  .refine((v) => /^\d{4}-\d{2}-\d{2}$/.test(v) && isoDate(parseDateOnly(v)) === v, { message: 'Not a real calendar date' })
   .optional();
 const ordered = { message: 'from must not be after to', path: ['from'] };
 const notBackwards = (v: { from?: string; to?: string }) => !v.from || !v.to || v.from <= v.to; // an inverted window is a mistake, not an empty answer
@@ -237,7 +237,7 @@ export async function compliance(q: Q) {
   const b = bounds(q);
   const today = clock.today();
   const dueWhere = { ...(b.from ? { gte: b.from } : {}), ...(b.toExcl ? { lt: b.toExcl } : {}) };
-  const [items, statusCounts, byKind, remindersRow, byLevel, runs] = await Promise.all([
+  const [items, statusCounts, byKind, remindersRow, byLevel, runs, ever] = await Promise.all([
     prisma.deadlineItem.findMany({
       where: { status: 'OPEN', dueDate: dueWhere },
       select: { type: true, dueDate: true, unit: true, totalDays: true, application: { select: { cycleId: true, rulePackVersionId: true } } },
@@ -251,7 +251,9 @@ export async function compliance(q: Q) {
       _sum: { alertsSuppressed: true },
       _count: { _all: true },
     }),
+    prisma.$queryRaw<{ ever: boolean }[]>`SELECT (EXISTS (SELECT 1 FROM "EngineRun") OR EXISTS (SELECT 1 FROM "AlertLog")) AS ever`,
   ]);
+  const engineEverRan = ever[0]?.ever ?? false; // same test as /alerts: never ran means "none recorded", not "measured as zero"
   // The engine's own tests, per open item (api/src/engine/cycle.ts processItem): d = days to due, in the item's unit.
   const c = { overdue: 0, atRisk: 0, dueSoon: 0, onTrack: 0 };
   for (const it of items) {
@@ -265,7 +267,7 @@ export async function compliance(q: Q) {
   const status = (s: string) => statusCounts.find((x) => x.status === s)?._count._all ?? 0;
   const reminders = remindersRow[0]?.reminders ?? 0;
   const lateReminders = remindersRow[0]?.late ?? 0;
-  const total = byKind.reduce((s, k) => s + k.n, 0);
+  const total = engineEverRan ? byKind.reduce((s, k) => s + k.n, 0) : null;
   const rules = await newestRules();
   return {
     definition: {
@@ -281,7 +283,7 @@ export async function compliance(q: Q) {
       },
       escalations: `Escalation alerts raised in the window, by level. Level 1, 2 and 3 are raised when an item is ${rules.escalation.thresholds.join(" / ")} days overdue (working days for stage deadlines, calendar days for undertakings and document expiries). Each level is raised once per item.`,
       alerts:
-        'total = alerts logged in the window (by kind). reminderTiming covers REMINDER alerts only: late = a reminder raised more than one day after its reminder date because the engine had not run in time, onTime = the other reminders, so onTime + late = reminders (not total); the other alert kinds have no timeliness measure in this system and are counted neither way. suppressed = duplicate alerts the engine declined to create, summed from engine run records in the window. The log\'s unique key (item, kind, level) is why a repeated cycle creates no second alert; this build has no external delivery channel. ' + ZERO_ALERTS + ' Suppressed is blank (not 0) when no engine run is dated in the window (engineRunCount 0): then no run reported anything for the window, which is a different question from how many alerts were logged.',
+        'total = alerts logged in the window (by kind); blank (null), with reminderTiming, when no engine run and no alert has ever been recorded (none recorded, not a measured zero). reminderTiming covers REMINDER alerts only: late = a reminder raised more than one day after its reminder date because the engine had not run in time, onTime = the other reminders, so onTime + late = reminders (not total); the other alert kinds have no timeliness measure in this system and are counted neither way. suppressed = duplicate alerts the engine declined to create, summed from engine run records in the window. The log\'s unique key (item, kind, level) is why a repeated cycle creates no second alert; this build has no external delivery channel. ' + ZERO_ALERTS + ' Suppressed is blank (not 0) when no engine run is dated in the window (engineRunCount 0): then no run reported anything for the window, which is a different question from how many alerts were logged.',
     },
     provenance: { deadlines: 'DERIVED', escalations: 'MEASURED', alerts: 'MEASURED', suppressed: 'MEASURED' } as Record<string, Provenance>,
     data: {
@@ -292,7 +294,7 @@ export async function compliance(q: Q) {
       alerts: {
         total,
         byKind: byKind.map((k) => ({ kind: k.k, count: k.n })),
-        reminderTiming: { reminders, onTime: reminders - lateReminders, late: lateReminders },
+        reminderTiming: engineEverRan ? { reminders, onTime: reminders - lateReminders, late: lateReminders } : null,
         suppressed: runs._count._all > 0 ? (runs._sum.alertsSuppressed ?? 0) : null,
         engineRunCount: runs._count._all,
       },

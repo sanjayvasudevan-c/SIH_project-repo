@@ -36,7 +36,7 @@ export async function alerts(q: Q) {
       reminderTiming:
         'Timeliness of REMINDER alerts only. reminders = reminder alerts in the window; late = reminders raised more than one day after their reminder date because the engine had not run in time; onTime = reminders - late, so onTime + late = reminders (not total). The other alert kinds (at-risk, overdue, escalation, digest) have no timeliness measure in this system, so they are not counted as on time or late. Blank when total is blank.',
       perDay:
-        'Alerts per simulated calendar day, only for days on which at least one alert was logged; days with none are left out, never shown as zero, and nothing is back-filled. The simulated clock moves only when the engine is run, so a missing day usually means the engine did not run that day, not that no alerts were due. perDay therefore records when the engine ran and is not an operational trend: do not read a rising or falling line as the workload getting better or worse. The counts add up to total.',
+        'Alerts per simulated calendar day, only for days on which at least one alert was logged; days with none are left out, never shown as zero, and nothing is back-filled. The simulated date in this demo can be moved forward, and alerts are only logged when the engine runs, so a missing day usually means the engine did not run on that date, not that no alerts were due. perDay therefore records when the engine ran and is not an operational trend: do not read a rising or falling line as the workload getting better or worse. The counts add up to total.',
       escalationsByLevel:
         'Escalation alerts in the window counted by escalation level (1, 2 or 3, raised as a deadline item becomes more overdue). Only levels with at least one alert are listed. The counts add up to the escalation kind in byKind.',
       notifications:
@@ -44,7 +44,7 @@ export async function alerts(q: Q) {
       notRecorded:
         'Acknowledgement (someone confirming they have seen an alert) and resolution time (how long until the underlying problem was fixed) are not recorded by this system, so no figure for either exists here. They are listed so their absence is visible rather than mistaken for zero.',
     },
-    provenance: { total: 'MEASURED', byKind: 'MEASURED', reminderTiming: 'MEASURED', perDay: 'MEASURED', escalationsByLevel: 'MEASURED', notifications: 'MEASURED', notRecorded: 'MEASURED' } as Record<string, Provenance>,
+    provenance: { total: 'MEASURED', byKind: 'MEASURED', reminderTiming: 'MEASURED', perDay: 'MEASURED', escalationsByLevel: 'MEASURED', notifications: 'MEASURED', notRecorded: null } as Record<string, Provenance | null>,
     data: {
       window: b.window,
       engineEverRan,
