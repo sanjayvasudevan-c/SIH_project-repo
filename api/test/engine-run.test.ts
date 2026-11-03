@@ -108,6 +108,7 @@ describe('EngineRun provenance', () => {
       expect(await prov()).toBe('SIMULATED'); // overridden clock
       clock.setOverride(null);
       expect(await prov()).toBe('LIVE_DEMO'); // real clock, no offset
+      expect(await prov({ source: 'seed-final' })).toBe('SIMULATED'); // seed run on a real clock is still seeded history
       await clock.advance(3);
       expect(await prov()).toBe('SIMULATED'); // offset clock
       expect(await prov({ source: 'load-test' })).toBe('BENCHMARK'); // beats SIMULATED

@@ -248,7 +248,8 @@ function runProvenance(meta: Record<string, string>): string {
   if (process.env.VITEST || process.env.NODE_ENV === 'test') return 'TEST_RUN';
   if (meta.source === 'load-test') return 'BENCHMARK';
   // A run on a pinned or offset clock (the seed's back-dated clock, time travel) is simulated, not live.
-  return clock.hasOverride() || clock.getOffsetDays() !== 0 ? 'SIMULATED' : 'LIVE_DEMO';
+  // The seed's final cycle runs after its back-dated clock is released, but it still belongs to the seeded history.
+  return clock.hasOverride() || clock.getOffsetDays() !== 0 || meta.source?.startsWith('seed') ? 'SIMULATED' : 'LIVE_DEMO';
 }
 
 /** One full cycle, recorded as an EngineRun row. Callers hold the cycle lock (runCycleWithLock). */

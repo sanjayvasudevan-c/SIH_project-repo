@@ -569,7 +569,7 @@ model StoredBlob {
 }
 
 /// One row per deadline-engine cycle: the persisted run history. alertsSuppressed counts inserts that
-/// AlertLog's unique key swallowed (duplicate alerts prevented). provenance: LIVE_DEMO | TEST_RUN | BENCHMARK.
+/// AlertLog's unique key swallowed (duplicate alerts prevented). provenance: LIVE_DEMO | SIMULATED | TEST_RUN | BENCHMARK.
 model EngineRun {
   id               BigInt    @id @default(autoincrement())
   startedAt        DateTime
