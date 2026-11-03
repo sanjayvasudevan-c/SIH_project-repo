@@ -1,7 +1,12 @@
 // scripts/evidence-charts.test.mjs — run with: node --test scripts/*.test.mjs
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { barChart, truncate, loadJson } from './evidence-charts.mjs';
+import { mkdtempSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
+import { barChart, truncate, loadJson, buildCharts } from './evidence-charts.mjs';
 
 test('bar chart carries its caption and no undefined', () => {
   const svg = barChart({ title: 'Read latency', caption: 'commit 8140a1f · 2026-11-03', series: [{ label: 'Action Center', value: 471 }], max: 500, unit: 'ms' });
@@ -22,4 +27,71 @@ test('long screen names are truncated to stay inside the viewBox', () => {
 
 test('a missing producer file names the file and the command that makes it', () => {
   assert.throws(() => loadJson('/nope/bench.json', 'npm run load:test'), /\/nope\/bench\.json.*load:test/s);
+});
+
+const benchFixture = () => ({
+  commit: 'abc1234',
+  date: '2026-11-03T08:26:18.480Z',
+  data: { applications: 1234, deadlineItems: 2345, openDeadlineItems: 1111, assignments: 987 },
+  engine: { firstCycle: { newAlerts: 777 }, secondCycle: { newAlerts: 0 } },
+  reads: [
+    { screen: 'Action Center (officer)', p95ms: 461 },
+    { screen: 'Team report (senior)', p95ms: 1851 },
+  ],
+});
+const metricsFixture = () => ({
+  modes: { 'Rules only': { recall: 0.5 }, 'Hybrid (rules or model)': { recall: 0.863 } },
+});
+
+test('buildCharts writes four clean SVGs with known values in the right chart', () => {
+  const charts = buildCharts(benchFixture(), metricsFixture());
+  assert.deepStrictEqual(Object.keys(charts).sort(), ['dataset-scale.svg', 'engine-cycle.svg', 'formcheck-modes.svg', 'read-latency.svg']);
+  for (const [name, svg] of Object.entries(charts)) {
+    assert.ok(!svg.includes('undefined') && !svg.includes('NaN'), `${name} has undefined/NaN`);
+  }
+  assert.match(charts['read-latency.svg'], /1,851 ms/);
+  assert.match(charts['read-latency.svg'], /commit abc1234 · 2026-11-03/);
+  assert.match(charts['dataset-scale.svg'], /1,234/);
+  assert.match(charts['engine-cycle.svg'], /777 alerts/);
+  assert.match(charts['formcheck-modes.svg'], /0\.863/);
+  assert.ok(!charts['read-latency.svg'].includes('0.863'));
+});
+
+test('the CLI writes all four files from fixture JSON in a temp directory', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'charts-'));
+  writeFileSync(join(dir, 'bench.json'), JSON.stringify(benchFixture()));
+  writeFileSync(join(dir, 'metrics.json'), JSON.stringify(metricsFixture()));
+  execFileSync(process.execPath, [fileURLToPath(new URL('./evidence-charts.mjs', import.meta.url)), '--bench', join(dir, 'bench.json'), '--metrics', join(dir, 'metrics.json'), '--out', join(dir, 'out')], { stdio: 'pipe' });
+  assert.deepStrictEqual(readdirSync(join(dir, 'out')).sort(), ['dataset-scale.svg', 'engine-cycle.svg', 'formcheck-modes.svg', 'read-latency.svg']);
+  assert.match(readFileSync(join(dir, 'out', 'read-latency.svg'), 'utf8'), /461 ms/);
+});
+
+test('a bench JSON without reads fails naming the field and the producer, not a TypeError', () => {
+  const b = benchFixture();
+  delete b.reads;
+  assert.throws(() => buildCharts(b, metricsFixture()), (e) => !(e instanceof TypeError) && /reads/.test(e.message) && /load:test -- --out <path>/.test(e.message));
+});
+
+test('truncated bench JSON: missing data, engine, a renamed field and an empty reads list all name what is wrong', () => {
+  for (const [field, mutate] of [
+    ['data', (b) => delete b.data],
+    ['engine', (b) => delete b.engine],
+    ['reads[1].p95ms', (b) => { b.reads[1] = { screen: 'x', p95: 5 }; }],
+    ['reads', (b) => { b.reads = []; }],
+    ['data.applications', (b) => { b.data.applications = '15000'; }],
+  ]) {
+    const b = benchFixture();
+    mutate(b);
+    assert.throws(() => buildCharts(b, metricsFixture()), (e) => !(e instanceof TypeError) && e.message.includes(field) && /load:test/.test(e.message), field);
+  }
+});
+
+test('malformed metrics JSON names the field and the evaluate command', () => {
+  assert.throws(() => buildCharts(benchFixture(), { modes: { Hybrid: {} } }), /modes\["Hybrid"\]\.recall.*training\.evaluate/s);
+  assert.throws(() => buildCharts(benchFixture(), {}), /modes.*training\.evaluate/s);
+});
+
+test('barChart refuses an empty series or a point with no value instead of printing -Infinity or a bare TypeError', () => {
+  assert.throws(() => barChart({ title: 'T', caption: 'c', series: [], max: 1 }), /no data points/);
+  assert.throws(() => barChart({ title: 'T', caption: 'c', series: [{ label: 'a' }], max: 1 }), (e) => !(e instanceof TypeError) && /series\[0\] \(a\).*numeric value/.test(e.message));
 });
