@@ -22,7 +22,7 @@ The submission describes a nine-phase design (phases 0 to 8). This repository bu
 | 7 | Offline OCR cross-check of uploaded documents against form values | Not built |
 | 8 | Production hardening: PgBouncer, read replica, audit partitions, stateless replicas, backups with point-in-time recovery, monitoring, two-factor sign-in, AICTE single sign-on, encryption at rest, virus scanning, row-level security, SMS and e-mail gateways, full Hindi and regional languages, security and accessibility audits, DPDP Act review, AICTE portal adapter | Not built. Nothing here is production-ready. |
 
-Also absent, and stated so that nothing below is read as covering it: there is no CI (`.github/workflows` does not exist), no lint configuration, no Evidence Center screen, no persisted scheduler run history, and no external notification channel (e-mail or SMS), so there is no external delivery to be exactly-once or otherwise.
+Also absent, and stated so that nothing below is read as covering it: there is no lint configuration (CI exists since this pack: `.github/workflows/ci.yml` runs typecheck, both test suites and the web build, and has not yet been observed running on GitHub), no Evidence Center screen, no persisted scheduler run history, and no external notification channel (e-mail or SMS), so there is no external delivery to be exactly-once or otherwise.
 
 ### How to read the Status column
 
@@ -103,7 +103,7 @@ COLLEGE (`college.abc@demo.in`), OFFICER (`priya@`, `arjun@`, `meena@`, `ravi@` 
 | Phases 5 to 8 | Not built; see the phase table above. |
 | Docker compose stack | Defined, but never exercised: the audit ran the services natively (a PostgreSQL service, `tsx` API, Vite dev server, schedulers via npm scripts). |
 | Hosted mode (Vercel and Neon) | Implemented per earlier sessions; not tested in the 2026-11-03 audit, which made no network calls to the live site. |
-| CI, lint | Absent: no `.github/workflows`, no ESLint, Prettier or Ruff configuration. `tsc --noEmit` and `tsc -b` are the only static gates, run by hand. |
+| CI, lint | CI added with this pack (`.github/workflows/ci.yml`: typecheck, API tests, form-check tests, web build, chart tests; first GitHub run not yet observed). Lint is absent: no ESLint, Prettier or Ruff configuration, so `tsc --noEmit` and `tsc -b` are the only static gates. |
 | Scheduler run history, decision trace, Evidence Center screen | Not built. |
 
 ## Known issues

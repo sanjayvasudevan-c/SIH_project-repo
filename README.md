@@ -223,7 +223,7 @@ This script (steps 1–11) is automated with Playwright during development and p
 
 ## Modules
 
-**Workflow.** Each application type has a route, defined in the rule pack the case is pinned to, resolved at submission and stored on the case. A case is one record with a moving pointer: stage, status and holder. Every action goes through `performAction`, which validates the payload, checks `can(user, action, application)` (role, scope, transition table, current holder or assignment, separation of duties), then runs one database transaction that changes the case, moves assignments, updates deadline items, appends the audit row and creates notifications. There is no approve or reject anywhere except the competent authority's Decide.
+**Workflow.** Each application type has a route, defined in the rule pack version the case was filed under, resolved at submission and stored on the case. A case is one record with a moving pointer: stage, status and holder. Every action goes through `performAction`, which validates the payload, checks `can(user, action, application)` (role, scope, transition table, current holder or assignment, separation of duties), then runs one database transaction that changes the case, moves assignments, updates deadline items, appends the audit row and creates notifications. There is no approve or reject anywhere except the competent authority's Decide.
 
 **Assignment.** When a stage needs an officer, the engine locks the region, loads eligible officers with their live load from open assignments, drops anyone away, over capacity, barred or recused, prefers continuity (the institution's portfolio officer for scrutiny and verification, the returning officer for re-scrutiny), and otherwise picks the lowest score (0.70 projected utilisation, 0.20 recent assignments, 0.10 specialisation mismatch). If no officer in the region qualifies it overflows to the Bureau; if nobody qualifies the task goes to the head of department's queue. Every assignment stores a plain-language reason ("Assigned to Priya Raman (Officer, South): portfolio officer for ABC Engineering College; utilisation 0.15 after this task. 50 eligible; none excluded. Tier 0. Rules 2027-28 v1."). Leave covering today releases and reassigns an officer's open tasks without moving deadlines.
 
@@ -259,7 +259,7 @@ docker compose exec db psql -U aicte_app -d aicte -c "UPDATE \"AuditLog\" SET re
 
 **Maker-checker.** Rule editors draft, edit, import and submit; rule approvers review, approve or reject with remarks, and publish (now, or scheduled for the effective date). An approver cannot approve a version they created or edited. The impact preview, a read-only dry run, shows which cases would move, what would change for recent filings, form check hit counts, utilisation and who can file today, in plain sentences.
 
-**Rollback.** Rolling back drafts a new version whose content equals an older one; it goes through the same review and publication, and the older and newer versions both stay on record. Cases keep the version they are pinned to.
+**Rollback.** Rolling back drafts a new version whose content equals an older one; it goes through the same review and publication, and the older and newer versions both stay on record. Filed cases keep the substantive rules of the version they were filed under; operational rules (schedule, reminders, escalation, assignment, committees, calendar) follow the cycle's current published version.
 
 ## What is placeholder
 

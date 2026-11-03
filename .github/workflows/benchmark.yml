@@ -49,8 +49,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm --workspace api run prisma:generate
-      - name: Create roles and databases
-        run: psql "postgresql://postgres:postgres@localhost:5432/postgres" -v ON_ERROR_STOP=1 -f db/init/00_roles.sql
       - name: Migrate and seed
         run: npm --workspace api run setup:db
       - name: Load test
