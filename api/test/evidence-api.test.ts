@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { createApp } from '../src/app.js';
 import { prisma } from '../src/lib/db.js';
+import * as clock from '../src/lib/clock.js';
 import { runEngineCycle } from '../src/engine/cycle.js';
 import { headCommit } from '../src/routes/evidence/artifacts.js';
 import { tamperOneRow } from '../scripts/demo-tamper.js';
@@ -161,14 +162,24 @@ describe('/api/evidence', () => {
     const sum = (await request(app).get('/api/evidence/summary').set(...bearer(admin))).body;
     const runs = (await request(app).get('/api/evidence/engine-runs').set(...bearer(admin))).body;
     for (const d of [...Object.values(sum.definition), ...Object.values(runs.definition)]) expect(String(d).length).toBeGreaterThan(40);
-    expect(Object.keys(sum.definition)).toEqual(['status', 'scheduler']);
+    expect(Object.keys(sum.definition)).toEqual(['status', 'scheduler', 'stuckRuns']);
     expect(Object.keys(runs.definition).sort()).toEqual(['abandoned', 'alertsCreated', 'alertsSuppressed', 'rows', 'totals', 'window']);
     for (const w of ['PASS', 'FAIL', 'STALE', 'NOT_VERIFIED']) expect(sum.definition.status).toContain(w);
     expect(sum.definition.status).toMatch(/never runs tests|does not run tests|never run/i);
-    expect(sum.definition.scheduler).toMatch(/no heartbeat is recorded/i);
+    expect(sum.definition.scheduler).not.toMatch(/no heartbeat/i);
+    expect(sum.definition.scheduler).toMatch(/process\'s own most recent check-in/i);
+    expect(sum.definition.scheduler).toMatch(/does not by itself mean/i);
     expect(runs.definition.abandoned).toMatch(/15 minutes/);
     expect(runs.definition.window).toMatch(/date the engine treated as today/i);
     expect(sum.provenance.scheduler).toBe('MEASURED');
+    expect(sum.scheduler.heartbeat).toBeNull(); // nothing has reported
+    await prisma.schedulerHeartbeat.deleteMany();
+    await prisma.schedulerHeartbeat.create({ data: { instanceId: 'sched-1', isLeader: true, lastRunAt: new Date(clock.now().getTime() - 30_000), lastResult: {} } });
+    await prisma.schedulerHeartbeat.create({ data: { instanceId: 'standby', isLeader: false, lastRunAt: clock.now(), lastResult: {} } });
+    const hb = (await request(app).get('/api/evidence/summary').set(...bearer(admin))).body.scheduler.heartbeat;
+    expect(hb).toMatchObject({ instanceId: 'sched-1', isLeader: true });
+    expect(hb.ageSeconds).toBeGreaterThanOrEqual(29); // aged on the same clock that wrote it
+    expect(hb.ageSeconds).toBeLessThan(120);
     expect(runs.provenance).toEqual({ rows: 'MEASURED', totals: 'MEASURED' });
     expect(JSON.stringify([sum, runs])).not.toMatch(/\bfair|tamper-proof|exactly-once|exactly once|production-ready/i);
   });

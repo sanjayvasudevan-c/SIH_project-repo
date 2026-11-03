@@ -34,11 +34,13 @@ export function evidenceRouter(): Router {
     '/summary',
     h(async (req, res) => {
       parse(none, req.query);
-      const [head, art, last, stuck] = await Promise.all([
+      const [head, art, last, stuck, beat] = await Promise.all([
         headCommit(),
         readTestResult(),
         prisma.engineRun.findFirst({ orderBy: { id: 'desc' } }),
         prisma.engineRun.count({ where: { status: 'RUNNING', startedAt: { lt: new Date(clock.realNow().getTime() - ABANDONED_AFTER_MS) } } }),
+        // Same selection as /api/health: the most recent leader row.
+        prisma.schedulerHeartbeat.findFirst({ where: { isLeader: true }, orderBy: { lastRunAt: 'desc' } }),
       ]);
       // A clean PASS needs a current artifact that recorded PASS with nothing left unverified.
       const current = !!art && !!head && commitIsCurrent(art.commit, head);
@@ -52,14 +54,21 @@ export function evidenceRouter(): Router {
         detail: status === 'NOT_VERIFIED' && art && current ? `${unverified} checks recorded as not verified; not a clean pass` : null,
         checks: art && current ? { passed: art.passed, failed: art.failed, notVerified: art.notVerified ?? null } : { passed: null, failed: null, notVerified: null },
         lastRunAt: art && current ? art.runAt ?? null : null,
-        scheduler: { lastRunAt: last?.startedAt.toISOString() ?? null, lastStatus: last?.status ?? null, lastDurationMs: last?.durationMs ?? null, stuckRuns: stuck },
+        scheduler: { lastRunAt: last?.startedAt.toISOString() ?? null, lastStatus: last?.status ?? null, lastDurationMs: last?.durationMs ?? null,
+          stuckRuns: stuck,
+          // lastRunAt is written with clock.now() (scheduler.ts, serverless.ts), so the age is measured on that same clock.
+          heartbeat: beat
+            ? { instanceId: beat.instanceId, isLeader: beat.isLeader, lastSeenAt: beat.lastRunAt.toISOString(), ageSeconds: Math.max(0, Math.round((clock.now().getTime() - beat.lastRunAt.getTime()) / 1000)) }
+            : null,
+        },
         definition: {
           status:
-            'Read from the test-result file recorded by the last test run; this page never runs tests. PASS: a result was recorded against the code version currently checked out, with at least one check passed, none failed and none left unverified. FAIL: the recorded run for the current code version had failing checks. STALE: the recorded result belongs to a different code version than the one now checked out, so it says nothing about this version. NOT_VERIFIED: no readable result exists, or one exists but it is not a clean pass (nothing passed, or some checks were recorded as not verified). Only PASS means the checks were verified for this code version.',
+            'Read from the test-result file recorded by the last test run; this page never runs tests. PASS: a result was recorded against the code version currently checked out, with at least one check passed, none failed and none left unverified. FAIL: the recorded run for the current code version had failing checks. STALE: the recorded result belongs to a different code version than the one now checked out, or the current code version could not be determined, so it cannot be said to describe this version. NOT_VERIFIED: no readable result exists, or one exists but it is not a clean pass (nothing passed, or some checks were recorded as not verified). Only PASS means the checks were verified for this code version.',
           scheduler:
-            'The most recent deadline-engine cycle that was RECORDED (its start time, outcome and duration). No heartbeat is recorded, so this does not show that a scheduler process is running now: a recent time suggests it ran, an old or missing time does not prove it stopped, and a missing time means no cycle has been recorded.',
+            'Two separate facts. (1) The latest recorded engine cycle (lastRunAt, lastStatus, lastDurationMs), taken from the run history whoever ran it: the scheduler, the seed script, automated tests or time travel. Its start time is real wall-clock time. (2) heartbeat: the scheduler process\'s own most recent check-in (the latest leader instance), when one has reported to this database. ageSeconds is the time since that check-in, measured on the same system clock the scheduler used to write it, so on a demo whose clock has been moved forward it is measured against that moved clock. heartbeat null means no scheduler process has reported to this database; that does not by itself mean one is down (for example, none runs in a seeded demo database). A recent cycle without a heartbeat shows an engine run happened, not that a scheduler is running.',
+          stuckRuns: `Runs still marked running more than ${ABANDONED_AFTER_MS / 60_000} minutes of real elapsed time after they started, across ALL dates and with no filter: a crash, hard kill or out-of-memory stop cannot update its own row, so these are stuck, not in progress. 0 means none are recorded as stuck.`,
         },
-        provenance: { status: art && current ? 'MEASURED' : null, scheduler: 'MEASURED' } as { status: Provenance | null; scheduler: Provenance },
+        provenance: { status: art && current ? 'MEASURED' : null, scheduler: last ? 'MEASURED' : null } as { status: Provenance | null; scheduler: Provenance | null },
       });
     }),
   );
