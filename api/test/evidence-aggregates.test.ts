@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
+import * as clock from '../src/lib/clock.js';
 import { prisma } from '../src/lib/db.js';
 import { runEngineCycle } from '../src/engine/cycle.js';
 import { bearer, firstUser, resetDb, setToday, shiftDays, userByEmail } from './helpers.js';
@@ -154,12 +155,17 @@ describe('/api/evidence aggregates', () => {
     shiftDays(30); // its stage deadline is now overdue
     await runEngineCycle({ source: 'test' });
     await runEngineCycle({ source: 'test' }); // second pass: duplicates prevented
+    const base = { kind: 'REMINDER', offsetOrLevel: 7, triggerDate: clock.today(), createdAt: clock.now() };
+    await prisma.alertLog.createMany({ data: [{ ...base, itemId: 9_000_001n, late: true }, { ...base, itemId: 9_000_002n, late: false }] });
     const r = await get('/api/evidence/compliance');
     const c = r.body.data;
     expect(c.alerts.total).toBe(await prisma.alertLog.count());
     expect(c.alerts.total).toBeGreaterThan(0);
     expect(c.alerts.byKind.reduce((n: number, k: Row) => n + (k.count as number), 0)).toBe(c.alerts.total);
-    expect(c.alerts.byLate.late + c.alerts.byLate.onTime).toBe(c.alerts.total);
+    expect(c.alerts.byLate).toBeUndefined();
+    const rem = await prisma.alertLog.count({ where: { kind: 'REMINDER' } });
+    expect(c.alerts.reminderTiming).toEqual({ reminders: rem, late: await prisma.alertLog.count({ where: { kind: 'REMINDER', late: true } }), onTime: rem - (await prisma.alertLog.count({ where: { kind: 'REMINDER', late: true } })) });
+    expect(r.body.definition.alerts).toMatch(/REMINDER alerts only/i);
     const sup = await prisma.engineRun.aggregate({ _sum: { alertsSuppressed: true } });
     expect(c.alerts.suppressed).toBe(sup._sum.alertsSuppressed);
     expect(c.alerts.suppressed).toBeGreaterThan(0);

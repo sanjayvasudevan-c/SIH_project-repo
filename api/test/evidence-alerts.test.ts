@@ -28,16 +28,26 @@ describe('/api/evidence/alerts and engine-run totals', () => {
     return { d1: isoDate(d1), d2: isoDate(d2) };
   }
 
-  it('1. total equals the AlertLog row count; byKind and timing add up to it', async () => {
+  it('1. total equals the AlertLog row count; byKind adds up to it; reminderTiming covers reminders only', async () => {
     await raiseAlerts();
+    // Reminders need a compliance item the fixture lacks: add one late and one on-time reminder row, as the engine writes them.
+    const base = { kind: 'REMINDER', offsetOrLevel: 7, triggerDate: clock.today(), createdAt: clock.now() };
+    await prisma.alertLog.createMany({ data: [{ ...base, itemId: 9_000_001n, late: true }, { ...base, itemId: 9_000_002n, late: false }] });
     const n = await prisma.alertLog.count();
     expect(n).toBeGreaterThan(0);
-    const { data } = (await get('/api/evidence/alerts')).body;
+    const body = (await get('/api/evidence/alerts')).body;
+    const { data } = body;
     expect(data.total).toBe(n);
     expect(data.engineEverRan).toBe(true);
     expect(data.byKind.reduce((s: number, k: { count: number }) => s + k.count, 0)).toBe(n);
-    expect(data.timing.onTime + data.timing.late).toBe(n);
-    expect(data.timing.late).toBe(await prisma.alertLog.count({ where: { late: true } }));
+    const rem = await prisma.alertLog.count({ where: { kind: 'REMINDER' } });
+    const lateRem = await prisma.alertLog.count({ where: { kind: 'REMINDER', late: true } });
+    expect(rem).toBeGreaterThan(0);
+    expect(rem).toBeLessThan(n); // other kinds exist, and are not counted as on time
+    expect(data.reminderTiming).toEqual({ reminders: rem, late: lateRem, onTime: rem - lateRem });
+    expect(data.reminderTiming.onTime + data.reminderTiming.late).toBe(data.reminderTiming.reminders);
+    expect(data).not.toHaveProperty('timing');
+    expect(body.definition.reminderTiming).toMatch(/reminder alerts only/i);
   });
 
   it('2. perDay lists only days with alerts, matches an independent grouping and sums to total', async () => {
@@ -59,18 +69,18 @@ describe('/api/evidence/alerts and engine-run totals', () => {
     expect(empty.engineEverRan).toBe(true);
     expect(empty.total).toBe(0);
     expect(empty.perDay).toEqual([]);
-    expect(empty.timing).toEqual({ onTime: 0, late: 0 });
+    expect(empty.reminderTiming).toEqual({ reminders: 0, onTime: 0, late: 0 });
     await prisma.alertLog.deleteMany();
     await prisma.engineRun.deleteMany();
     const none = (await get('/api/evidence/alerts')).body.data;
     expect(none.engineEverRan).toBe(false);
     expect(none.total).toBeNull();
-    expect(none.timing).toBeNull();
+    expect(none.reminderTiming).toBeNull();
     expect(none.perDay).toEqual([]);
     expect(none.byKind).toEqual([]);
   });
 
-  it('4. the window narrows byKind, timing, perDay and escalationsByLevel together', async () => {
+  it('4. the window narrows byKind, reminderTiming, perDay and escalationsByLevel together', async () => {
     const { d2 } = await raiseAlerts();
     const all = (await get('/api/evidence/alerts')).body.data;
     const w = (await get(`/api/evidence/alerts?from=${d2}&to=${d2}`)).body;
@@ -80,7 +90,7 @@ describe('/api/evidence/alerts and engine-run totals', () => {
     const sum = (xs: { count: number }[]) => xs.reduce((s, x) => s + x.count, 0);
     expect(w.data.total).toBe(expected);
     expect(sum(w.data.byKind)).toBe(expected);
-    expect(w.data.timing.onTime + w.data.timing.late).toBe(expected);
+    expect(w.data.reminderTiming.reminders).toBe(await prisma.alertLog.count({ where: { kind: 'REMINDER', createdAt: { gte: new Date(`${d2}T00:00:00Z`), lt: addDays(new Date(`${d2}T00:00:00Z`), 1) } } }));
     expect(sum(w.data.perDay)).toBe(expected);
     expect(w.data.perDay.map((p: { day: string }) => p.day)).toEqual([d2]);
     expect(sum(w.data.escalationsByLevel)).toBe(w.data.byKind.find((k: { kind: string }) => k.kind === 'ESCALATION')?.count ?? 0);

@@ -230,14 +230,14 @@ export async function compliance(q: Q) {
   const b = bounds(q);
   const today = clock.today();
   const dueWhere = { ...(b.from ? { gte: b.from } : {}), ...(b.toExcl ? { lt: b.toExcl } : {}) };
-  const [items, statusCounts, byKind, byLate, byLevel, runs] = await Promise.all([
+  const [items, statusCounts, byKind, remindersRow, byLevel, runs] = await Promise.all([
     prisma.deadlineItem.findMany({
       where: { status: 'OPEN', dueDate: dueWhere },
       select: { type: true, dueDate: true, unit: true, totalDays: true, application: { select: { cycleId: true, rulePackVersionId: true } } },
     }),
     prisma.deadlineItem.groupBy({ by: ['status'], where: { dueDate: dueWhere }, _count: { _all: true } }),
     prisma.$queryRaw<Counted[]>`SELECT g.kind AS k, count(*)::int AS n FROM "AlertLog" g WHERE TRUE ${b.sql(Prisma.sql`g."createdAt"`)} GROUP BY 1 ORDER BY 1`,
-    prisma.$queryRaw<{ late: boolean; n: number }[]>`SELECT g.late, count(*)::int AS n FROM "AlertLog" g WHERE TRUE ${b.sql(Prisma.sql`g."createdAt"`)} GROUP BY 1`,
+    prisma.$queryRaw<{ reminders: number; late: number }[]>`SELECT count(*)::int AS reminders, (count(*) FILTER (WHERE g.late))::int AS late FROM "AlertLog" g WHERE g.kind = 'REMINDER' ${b.sql(Prisma.sql`g."createdAt"`)}`,
     prisma.$queryRaw<{ level: number; n: number }[]>`SELECT g."offsetOrLevel" AS level, count(*)::int AS n FROM "AlertLog" g WHERE g.kind = 'ESCALATION' ${b.sql(Prisma.sql`g."createdAt"`)} GROUP BY 1`,
     prisma.engineRun.aggregate({
       where: { startedAt: { ...(b.from ? { gte: b.from } : {}), ...(b.toExcl ? { lt: b.toExcl } : {}) } },
@@ -256,7 +256,8 @@ export async function compliance(q: Q) {
     else c.onTrack++;
   }
   const status = (s: string) => statusCounts.find((x) => x.status === s)?._count._all ?? 0;
-  const late = (v: boolean) => byLate.find((x) => x.late === v)?.n ?? 0;
+  const reminders = remindersRow[0]?.reminders ?? 0;
+  const lateReminders = remindersRow[0]?.late ?? 0;
   const total = byKind.reduce((s, k) => s + k.n, 0);
   const rules = await newestRules();
   return {
@@ -273,7 +274,7 @@ export async function compliance(q: Q) {
       },
       escalations: `Escalation alerts raised in the window, by level. Level 1, 2 and 3 are raised when an item is ${rules.escalation.thresholds.join(" / ")} days overdue (working days for stage deadlines, calendar days for undertakings and document expiries). Each level is raised once per item.`,
       alerts:
-        'total = alerts logged in the window (by kind, and by late = a reminder raised after its reminder date had already passed by more than one day, because the engine had not run in time). suppressed = duplicate alerts the engine declined to create, summed from engine run records in the window. The log\'s unique key (item, kind, level) is why a repeated cycle creates no second alert; this build has no external delivery channel. Suppressed is blank when no engine run started in the window; with engineRunCount 0, the alert and escalation totals mean "none recorded", not "measured as zero".',
+        'total = alerts logged in the window (by kind). reminderTiming covers REMINDER alerts only: late = a reminder raised more than one day after its reminder date because the engine had not run in time, onTime = the other reminders, so onTime + late = reminders (not total); the other alert kinds have no timeliness measure in this system and are counted neither way. suppressed = duplicate alerts the engine declined to create, summed from engine run records in the window. The log\'s unique key (item, kind, level) is why a repeated cycle creates no second alert; this build has no external delivery channel. Suppressed is blank when no engine run started in the window; with engineRunCount 0, the alert and escalation totals mean "none recorded", not "measured as zero".',
     },
     provenance: { deadlines: 'DERIVED', escalations: 'MEASURED', alerts: 'MEASURED', suppressed: 'MEASURED' } as Record<string, Provenance>,
     data: {
@@ -284,7 +285,7 @@ export async function compliance(q: Q) {
       alerts: {
         total,
         byKind: byKind.map((k) => ({ kind: k.k, count: k.n })),
-        byLate: { late: late(true), onTime: late(false) },
+        reminderTiming: { reminders, onTime: reminders - lateReminders, late: lateReminders },
         suppressed: runs._count._all > 0 ? (runs._sum.alertsSuppressed ?? 0) : null,
         engineRunCount: runs._count._all,
       },
