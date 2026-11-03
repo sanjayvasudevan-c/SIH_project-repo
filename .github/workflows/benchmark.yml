@@ -40,7 +40,6 @@ jobs:
       DEMO_MODE: 'true'
       CLIENT_ORIGIN: http://localhost:5173
       FORMCHECK_URL: http://localhost:8000
-      SETUP_NO_DOCKER: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

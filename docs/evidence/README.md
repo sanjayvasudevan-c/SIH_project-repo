@@ -122,9 +122,11 @@ command. Every tab links to the generated Markdown for the detail.
 
 ```
 typecheck ─┐
-lint ──────┼─▶ api tests (183) ─┬─▶ generate evidence artifacts ─▶ upload
-web build ─┘   python tests (99)┘
+web build ─┼─▶ api tests (183) ─┬─▶ generate evidence artifacts ─▶ upload
+           └─  python tests (99)┘
 ```
+
+A lint stage is not built: this repository has no linter configured, so none runs.
 
 Load tests do **not** run per pull request — the brief is right that it is the wrong gate. A separate
 `benchmark.yml`, manual and scheduled, runs `load:test` and commits the artifact with its commit hash.
@@ -161,7 +163,7 @@ Honest about cost, and ordered so the cheapest credibility wins come first.
 | # | Work | Why it ranks here | Size |
 |---|---|---|---|
 | **0** | **Correct the ML recall claim** (0.89 → 0.863, 2.9% → 2.2%) in the description, abstract and deck | The only item that can actively *lose* marks. Costs minutes. | XS |
-| **1** | **CI pipeline** (typecheck, lint, 183 + 99 tests) | Turns "the tests pass" into a verifiable badge, and stops the next date bomb. Nothing to build — the tests exist. | S |
+| **1** | **CI pipeline** (typecheck, 183 + 99 tests; a lint stage is not built and would need a linter configured first) | Turns "the tests pass" into a verifiable badge, and stops the next date bomb. Nothing to build — the tests exist. | S |
 | **2** | **`EngineRun` + scheduler history** | Closes the one MISSING item in an otherwise fully tested subsystem, and `alertsSuppressed` measures duplicate prevention directly. | M |
 | **3** | **`AssignmentTrace` + Evidence Center tabs A–E** | The judge-facing core: workflow, assignment fairness, scheduler, audit integrity. Answers "is it explainable and fair" with live data. | L |
 | **4** | **Benchmark provenance** — commit hash, p99, throughput, error rate, JSON + CSV artifacts, more than one dataset size and concurrency level | Makes the strongest existing claim reproducible instead of a dated note. | M |
