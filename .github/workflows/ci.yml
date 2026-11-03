@@ -1,4 +1,4 @@
-# Runs on every push and pull request, plus a daily schedule so a bug that only
+# Runs on pushes to main and on every pull request, plus a daily schedule so a bug that only
 # appears when the calendar moves on (as the seed date bug did) is caught without a push.
 # Everything runs against a throwaway PostgreSQL service container with the local dev
 # passwords already committed in db/init/00_roles.sql and .env.example. No secrets.
@@ -6,6 +6,7 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
   schedule:
@@ -15,11 +16,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  # event_name is in the key so a push can never cancel the daily scheduled run
+  # (the defence against the next date-dependent bug) or a manual dispatch.
+  group: ci-${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
-
-env:
-  CI_COMMIT: ${{ github.sha }}
 
 jobs:
   typecheck:
@@ -125,7 +125,16 @@ jobs:
         continue-on-error: true
         run: |
           (cd formcheck && python3 -m training.evaluate)
-          git diff --exit-code formcheck/EVALUATION.md formcheck/metrics.json
+          if ! git diff --exit-code formcheck/EVALUATION.md formcheck/metrics.json; then
+            {
+              echo "### ML evaluation drifted from the committed files"
+              echo "The retrained model on this runner produced a different evaluation. Not fatal (see the comment above); review before trusting last-digit differences."
+              echo '```diff'
+              git diff formcheck/EVALUATION.md formcheck/metrics.json
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
       - name: Upload form-check results
         if: always()
         uses: actions/upload-artifact@v4

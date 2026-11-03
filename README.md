@@ -12,7 +12,7 @@ A workflow, compliance and alert platform for AICTE approvals: it routes each ca
 
 This repository is a prototype covering phases 0 to 4 plus yearly rule packs and a government-style interface, about 40% of the full design by scope. It is not production-ready: phase 8 hardening is not built. All data, including the form check and benchmark data, is synthetic.
 
-[![CI](https://github.com/sanjayvasudevan-c/SIH_project-repo/actions/workflows/ci.yml/badge.svg)](https://github.com/sanjayvasudevan-c/SIH_project-repo/actions/workflows/ci.yml) ![Form-check tests](https://img.shields.io/badge/form--check%20tests-99%20passed-brightgreen)
+[![CI](https://github.com/sanjayvasudevan-c/SIH_project-repo/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/sanjayvasudevan-c/SIH_project-repo/actions/workflows/ci.yml) ![Form-check tests](https://img.shields.io/badge/form--check%20tests-99%20passed-brightgreen)
 
 The CI badge shows the latest run of the workflow, which covers five jobs: API typecheck, the 183 API integration tests, the form-check tests, the chart-generator tests and the web build. The form-check count is a static badge from a run on 3 November 2026.
 

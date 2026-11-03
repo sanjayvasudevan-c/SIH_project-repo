@@ -118,7 +118,7 @@ command. Every tab links to the generated Markdown for the detail.
 
 ### CI
 
-`.github/workflows/ci.yml`, with a Postgres 16 service container, on every push and pull request:
+`.github/workflows/ci.yml`, with a Postgres 16 service container, on pushes to `main`, every pull request, a daily schedule and manual dispatch:
 
 Five independent jobs with no `needs:` between them, so they run in parallel and any one can fail alone:
 
