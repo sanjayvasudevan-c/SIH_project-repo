@@ -1,0 +1,66 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { prisma } from '../src/lib/db.js';
+import { addDays, isoDate } from '../src/lib/dates.js';
+import { runCycleWithLock, runEngineCycle } from '../src/engine/cycle.js';
+import { buildFlags } from '../src/engine/flags.js';
+import * as clock from '../src/lib/clock.js';
+import { createApp } from '../src/app.js';
+import { resetDb, setToday, userByEmail } from './helpers.js';
+import { submitApp } from './fixtures.js';
+
+// buildFlags runs mid-cycle, after the item loop: the least invasive place to force a failure.
+vi.mock('../src/engine/flags.js', async (orig) => {
+  const actual = await orig<typeof import('../src/engine/flags.js')>();
+  return { ...actual, buildFlags: vi.fn(actual.buildFlags) };
+});
+
+describe('EngineRun history', () => {
+  beforeEach(resetDb);
+
+  it('records one OK row per cycle with the counters and the simulated date', async () => {
+    const r = await runEngineCycle({ source: 'test' });
+    const row = await prisma.engineRun.findUniqueOrThrow({ where: { id: BigInt(r.engineRunId as string) } });
+    expect(row.status).toBe('OK');
+    expect(row.finishedAt).not.toBeNull();
+    expect(row.durationMs).toBeGreaterThanOrEqual(0);
+    expect(row.itemsChecked).toBe(r.itemsChecked);
+    expect(row.provenance).toBe('TEST_RUN');
+    expect(isoDate(row.simulatedToday)).toBe(r.today);
+  });
+
+  it('counts suppressed alerts on a repeated cycle and creates none', async () => {
+    await submitApp(createApp(), await userByEmail('college.abc@demo.in'));
+    setToday(addDays(clock.today(), 30)); // its stage deadline is now overdue, so the first cycle alerts
+    const first = await runEngineCycle({ source: 'test' });
+    expect(Number(first.alertsCreated)).toBeGreaterThan(0);
+    const second = await runEngineCycle({ source: 'test' });
+    expect(second.alertsCreated).toBe(0);
+    expect(Number(second.alertsSuppressed)).toBeGreaterThan(0);
+    expect(Number(first.alertsSuppressed)).toBeLessThan(Number(second.alertsSuppressed) + 1);
+    const row = await prisma.engineRun.findUniqueOrThrow({ where: { id: BigInt(second.engineRunId as string) } });
+    expect(row.alertsCreated).toBe(0);
+    expect(row.alertsSuppressed).toBe(Number(second.alertsSuppressed));
+  });
+
+  it('marks the row FAILED with the error when the cycle throws midway [Review Focus 1]', async () => {
+    vi.mocked(buildFlags).mockRejectedValueOnce(new Error('boom: flags exploded'));
+    await expect(runEngineCycle({ source: 'test' })).rejects.toThrow('boom');
+    const row = await prisma.engineRun.findFirstOrThrow({ orderBy: { id: 'desc' } });
+    expect(row.status).toBe('FAILED');
+    expect(row.error).toContain('boom');
+    expect(row.finishedAt).not.toBeNull();
+    expect(row.durationMs).not.toBeNull();
+    expect(await prisma.engineRun.count({ where: { status: 'RUNNING' } })).toBe(0);
+  });
+
+  it('records a row per leader run and leaves none RUNNING', async () => {
+    // Two concurrent runCycleWithLock calls: the advisory lock serialises them, so two rows appear
+    // and neither is left RUNNING. (Both calls share this process, hence one instanceId here.)
+    const before = await prisma.engineRun.count();
+    await Promise.allSettled([runCycleWithLock({ source: 'a' }), runCycleWithLock({ source: 'b' })]);
+    const rows = await prisma.engineRun.findMany({ orderBy: { id: 'desc' }, take: 2 });
+    expect(await prisma.engineRun.count()).toBe(before + 2);
+    expect(rows.every((r) => r.status === 'OK')).toBe(true);
+    expect(rows.every((r) => r.instanceId.length > 0)).toBe(true);
+  });
+});
