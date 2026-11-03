@@ -721,7 +721,7 @@ git commit -m "Evidence API: aggregates that state their own KPI definitions"
 
 ### The clock rule (Ruling E14)
 
-`EngineRun.startedAt` is **real** time; `AlertLog.createdAt` and `simulatedToday` are **simulated**. One date filter over both would mean two things at once. Therefore: **each filter sits inside the group it governs, with the clock named beside it; current-state groups take no filter and say "current state"; the range is per-section and cleared on section change.**
+**Superseded by Ruling E22.** Engine runs are windowed by `simulatedToday` (the date the engine treated as today), so applications, deadlines, alerts and runs share one clock; real `startedAt` is a displayed column and the 15-minute abandoned test is the only thing that uses real time. Each filter still sits inside the group it governs, current-state groups take no filter and say so, and the range is per-section and cleared on section change. *(The original text of this rule, which windowed runs by real start time, was withdrawn after the dev database showed all 25 runs inside a 24-second real-time span and alerts disagreeing with runs for the same window.)*
 
 ### Revised execution order
 
@@ -737,7 +737,7 @@ Every section is built from `Panel` (Task 4a), so every panel has: a descriptive
 | **Overview** | `summary`, `workflow`, `engine-runs`, `audit-integrity` | Four KPI tiles (validation status, applications in flight, last scheduler run, audit integrity) + one trend: applications submitted and decided per day. No filter; "all dates". |
 | **Workflow** | `workflow` | Lifecycle funnel (with `onRoute`); status distribution; processing-time median with decided / in-flight counts; volume over time incl. the overdue series. Filter governs all four. Current overdue is on the Scheduler section, linked. |
 | **Assignment** | `assignment` (+ `assignment-trace` on drill-down) | Utilisation per officer (current state, **no filter**); spread; the above-cap exceptions with their causes; recent decisions → candidate table. Coverage `traced / total` stated. A windowed group holds `openPointsAssignedInWindow` and decision counts. |
-| **Scheduler & compliance** | `compliance`, `engine-runs` | *Current state* (no filter): deadline risk — at-risk / overdue / due soon / met. *Execution history* (filter, real clock): run duration by run, created vs suppressed, reliability tiles (runs / failed / abandoned), recent-runs table. |
+| **Scheduler & compliance** | `compliance`, `engine-runs` | *Current state* (no filter): deadline risk — at-risk / overdue / due soon / met. *Execution history* (filter, by the date the engine treated as today): run duration by run, created vs suppressed, reliability tiles (runs / failed / abandoned), recent-runs table. |
 | **Alerts** | `alerts` | Volume by kind; on-time vs late; alerts per simulated day; escalations by level; one insufficient-data panel for status. Filter governs all (simulated clock). |
 | **Audit** | `audit-analytics` | Events by action, by actor role, by entity (filters: date, actor, action, entity — options taken from values actually present); the integrity result with its **WHOLE_LOG** scope stated beside it and a note that filters do not change it. Counts only. |
 | **ML evaluation** | `artifacts` → `formcheck/metrics.json` | Headline metrics (stored vs **DERIVED** marked); derived confusion matrix; baseline comparison across the three modes; recall per fault type. "Synthetic data" in each panel body. Methodology and limitations. |
@@ -805,15 +805,15 @@ provenance: { rows: Provenance; totals: Provenance };   // rows carry their own 
 
 Required wording (plain language, for a judge who has never seen the code):
 - `summary.definition.status`: reads the recorded test-result artifact and **never runs tests**; names each of `PASS`, `FAIL`, `STALE` and `NOT_VERIFIED`; says `PASS` needs at least one passed check, none failed and none unverified, recorded against the current commit.
-- `summary.definition.scheduler`: the most recent *recorded* cycle only; **no heartbeat is recorded**, so it does not show that a scheduler process is running.
-- `engine-runs.definition.window`: the dates apply to the run's **real** start time, which differs from the simulated clock the alerts and deadlines use; `to` includes the whole day.
+- `summary.definition.scheduler`: the most recent *recorded* cycle (from the run history, whoever ran it) **and**, separately, the scheduler process's own heartbeat from `SchedulerHeartbeat` when one has reported; `heartbeat: null` means no scheduler process has reported to this database, which does **not by itself** mean one is down. *(An earlier version of this line said no heartbeat is recorded. That was false — the table exists and is written by `scheduler.ts` and `serverless.ts` — and was caught by review.)*
+- `engine-runs.definition.window`: the dates apply to **the date the engine treated as today** when the cycle ran (`simulatedToday`) — the same calendar the alerts, deadlines and applications use. It equals the real date on a system running in real time and is the simulated date in this demo's back-dated history. Both end dates are included. *(Ruling E22 — an earlier version windowed by real start time.)*
 - `engine-runs.definition.abandoned`: a run still marked running after 15 minutes is counted abandoned, not in progress, because a crash cannot update its own row.
 - `alertsCreated` / `alertsSuppressed`: summed over the runs in the window; equal to the alert log total only when every alert was raised by a recorded run.
 
 - [ ] **Step 1: Write the failing tests**
-  1. `summary` has a non-empty `definition.status` that mentions each of the four statuses, and a non-empty `definition.scheduler` that says no heartbeat is recorded.
-  2. `engine-runs` has a non-empty string for every key listed above, and `definition.window` names the real clock.
-  3. **Day-inclusive `to`:** with a run started now, `engine-runs?from=<today>&to=<today>` returns it and `totals.runCount >= 1`; `to=<yesterday>` does not.
+  1. `summary` has a non-empty `definition.status` that mentions each of the four statuses, and a non-empty `definition.scheduler` that explains the heartbeat.
+  2. `engine-runs` has a non-empty string for every key listed above, and `definition.window` says the dates apply to the date the engine treated as today.
+  3. **Inclusive window on the shared calendar:** a run whose `simulatedToday` is a given date is returned by `from=<that date>&to=<that date>`, and for any window `alerts.total === engine-runs.totals.alertsCreated` when every alert was raised by a recorded run.
   4. `rows`, `total` and `totals` agree under the same window — `total === totals.runCount` for every window tested.
   5. No response string contains "fair", "tamper-proof", "exactly-once" or "production-ready".
 - [ ] **Step 2:** Run the two test files; expect FAIL.
