@@ -111,11 +111,28 @@ describe('/api/evidence aggregates', () => {
     // Above-cap officers are listed from current state, with the possible causes in words.
     expect(a.continuityOverrides.count).toBe(0);
     const holder = open[0]!.officerId;
-    await prisma.officerProfile.update({ where: { userId: holder }, data: { maxUtil: 0.01 } });
-    const ov = (await get('/api/evidence/assignment')).body.data.continuityOverrides;
-    expect(ov.count).toBe(1);
-    expect(ov.rows[0].officerId).toBe(holder);
-    expect(ov.rows[0].text).toMatch(/continuity.*urgent.*reduced/);
+    const held = open.filter((x) => x.officerId === holder).reduce((n, x) => n + Number(x.weight), 0);
+    // Put the same officer at a chosen utilisation by setting capacity (normal cap 1.0; continuity ceiling 1.1, urgent 1.25).
+    const textAt = async (util: number): Promise<string> => {
+      await prisma.officerProfile.update({ where: { userId: holder }, data: { capacityPoints: held / util } });
+      const o = (await get('/api/evidence/assignment')).body.data.continuityOverrides;
+      expect(o.count).toBe(1);
+      expect(o.rows[0].officerId).toBe(holder);
+      expect(o.rows[0].text).not.toMatch(/not an error/i);
+      return o.rows[0].text;
+    };
+    const low = await textAt(1.05);
+    expect(low).toMatch(/continuity allowance/);
+    expect(low).toMatch(/urgent-task allowance/);
+    expect(low).toMatch(/capacity reduced/);
+    const mid = await textAt(1.2);
+    expect(mid).not.toMatch(/continuity allowance/);
+    expect(mid).toMatch(/urgent-task allowance/);
+    expect(mid).toMatch(/capacity reduced/);
+    const high = await textAt(1.3); // the Arjun Rao case: above both ceilings
+    expect(high).not.toMatch(/continuity allowance|urgent-task allowance \(/);
+    expect(high).toMatch(/neither allowance explains it/);
+    expect(high).toMatch(/capacity reduced/);
 
     // Fewer than two contributing officers: null, never 0. (The DB forbids capacity 0, so take the others out by role.)
     await prisma.user.updateMany({ where: { role: 'OFFICER', id: { not: profiles[0]!.userId } }, data: { role: 'SENIOR' } });

@@ -137,6 +137,17 @@ export async function workflow(q: Q) {
 }
 
 // ------------------------------------------------------------------------------------------------------------- assignment
+/** Which causes can arithmetically account for a utilisation above the officer's normal cap. Only those are named. */
+export function aboveCapText(name: string, util: number, cap: number, continuity: number, urgent: number): string {
+  const at = `${name} is at ${util.toFixed(2)} of capacity against a normal cap of ${cap.toFixed(2)}.`;
+  const causes: string[] = [];
+  if (util <= continuity + 1e-9) causes.push(`the continuity allowance (portfolio or returning officer, ceiling ${continuity})`);
+  if (util <= urgent + 1e-9) causes.push(`the urgent-task allowance (ceiling ${urgent})`);
+  causes.push('capacity reduced after the work was assigned');
+  const ruled = [util > continuity + 1e-9 ? `the continuity ceiling ${continuity}` : '', util > urgent + 1e-9 ? `the urgent-task ceiling ${urgent}` : ''].filter(Boolean);
+  const lead = ruled.length ? ` ${util.toFixed(2)} is above ${ruled.join(' and ')}, so ${ruled.length === 2 ? 'neither allowance explains it' : 'that allowance cannot explain it'}.` : '';
+  return `${at}${lead} This figure is consistent with: ${causes.join('; ')}. The decision table does not record which applied.`;
+}
 export async function assignment(q: Q) {
   const b = bounds(q);
   // Assignments made in the window (by assignedAt); traces by decidedAt. Open = not released.
@@ -167,21 +178,22 @@ export async function assignment(q: Q) {
       WHERE TRUE ${b.sql(Prisma.sql`a."assignedAt"`)} GROUP BY 1 ORDER BY 1`,
     newestRules(),
   ]);
-  const rows = officers.map((o) => ({ ...o, utilisation: o.capacityPoints > 0 ? o.openPoints / o.capacityPoints : null }));
-  const u = rows.filter((r) => r.utilisation !== null).map((r) => r.utilisation as number);
+  // capacityPoints > 0 is enforced by the database (officer_capacity_positive), so every listed officer has a utilisation.
+  const rows = officers.map((o) => ({ ...o, utilisation: o.openPoints / o.capacityPoints }));
+  const u = rows.map((r) => r.utilisation);
   const mean = u.length ? u.reduce((s, x) => s + x, 0) / u.length : null;
   const stdDev = u.length >= 2 && mean !== null ? Math.sqrt(u.reduce((s, x) => s + (x - mean) ** 2, 0) / u.length) : null;
   const capFor = policy.content.assignment;
   // Above-cap officers are read from current state: the trace records the projected load but not the cap, and capacity can change later.
-  const ov = rows.filter((r) => r.utilisation !== null && r.utilisation > r.maxUtil + 1e-9);
+  const ov = rows.filter((r) => r.utilisation > r.maxUtil + 1e-9);
   return {
     definition: {
       scope: SCOPE,
       window: 'The From/To dates narrow coverage (assignments made in the window), candidate and outcome counts (decisions recorded in the window), the rule-pack list and openPointsAssignedInWindow. They deliberately do NOT change officer utilisation, the spread or the above-cap list: those always describe the current open book, because utilisation against a capacity means nothing for one period\'s intake.',
       officers:
-        'Only users with the OFFICER role are listed (committee and bureau profiles are excluded). Per officer: capacityPoints (configured capacity), openPoints (sum of the weight of all their open, unreleased assignments, now) and utilisation = openPoints / capacityPoints, DERIVED from those two measured values. An officer with capacity 0 has no utilisation (blank), not 0. openPointsAssignedInWindow is the part of openPoints from assignments made in the From/To window.',
+        'Only users with the OFFICER role are listed (committee and bureau profiles are excluded). Per officer: capacityPoints (configured capacity), openPoints (sum of the weight of all their open, unreleased assignments, now) and utilisation = openPoints / capacityPoints, DERIVED from those two measured values. openPointsAssignedInWindow is the part of openPoints from assignments made in the From/To window.',
       spread:
-        `Standard deviation (population form) of current utilisation across users with the OFFICER role and capacityPoints > 0 (committee and bureau profiles are excluded, as are ${rows.length - u.length} officer(s) with no capacity). The denominator is officerCount, the number of officers counted. Not affected by the date window. Blank when fewer than 2 officers qualify. It describes how load is spread, not whether it is right: the assignment policy in rule pack ${policy.label} defines what a correct distribution is, and equal counts are not the goal.`,
+        `Standard deviation (population form) of current utilisation across users with the OFFICER role and capacityPoints > 0 (committee and bureau profiles are excluded). The denominator is officerCount, the number of officers counted. Not affected by the date window. Blank when fewer than 2 officers qualify. It describes how load is spread, not whether it is right: the assignment policy in rule pack ${policy.label} defines what a correct distribution is, and equal counts are not the goal.`,
       coverage:
         'tracedCount / assignmentTotal: assignments made in the window that have a recorded decision table (trace), over all assignments made in the window. Traces are written when the engine assigns automatically; a manual assignment or manual reassignment writes none, so coverage is partial and a case without a trace is not an error. blockedCount is decisions where no officer could be assigned (no assignment exists for them).',
       candidates: 'Over decisions recorded in the window: candidatesConsidered = officers evaluated across all decisions; eligible = those eligible; excluded counts the stated reason. A decision evaluates several officers, so these are candidate rows, not cases.',
@@ -204,7 +216,7 @@ export async function assignment(q: Q) {
           officer: o.name,
           utilisation: o.utilisation,
           normalCap: o.maxUtil,
-          text: `${o.name} is at ${o.utilisation!.toFixed(2)} of capacity against a normal cap of ${o.maxUtil.toFixed(2)}. This can follow the continuity allowance (up to ${capFor.continuityUtilCap}), the urgent-task allowance (up to ${capFor.urgentMaxUtil}) or capacity reduced after the work was assigned; it is not an error.`,
+          text: aboveCapText(o.name, o.utilisation, o.maxUtil, capFor.continuityUtilCap, capFor.urgentMaxUtil),
         })),
       },
       rulePackVersions: versions,
