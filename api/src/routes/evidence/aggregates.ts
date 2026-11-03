@@ -25,10 +25,10 @@ export const auditQuery = z
     entity: z.enum(['APPLICATION', 'RULE_PACK', 'SYSTEM']).optional(),
   })
   .refine(notBackwards, ordered);
-type Q = z.infer<typeof windowQuery>;
+export type Q = z.infer<typeof windowQuery>;
 
 /** Both bounds are whole UTC days; `to` is inclusive, so the SQL bound is the start of the next day. */
-function bounds(q: Q) {
+export function bounds(q: Q) {
   const from = q.from ? parseDateOnly(q.from) : null;
   const toIncl = q.to ? parseDateOnly(q.to) : null;
   const toExcl = toIncl ? addDays(toIncl, 1) : null;
@@ -42,7 +42,7 @@ function bounds(q: Q) {
   };
 }
 
-const SCOPE =
+export const SCOPE =
   'Every number is counted from the live rows in this system\'s database. In this demo those rows include records made by the seed script and by simulated-clock runs, so the figures describe this deployment, not AICTE\'s real caseload.';
 const median = (xs: number[]): number | null => {
   if (!xs.length) return null;
@@ -51,7 +51,7 @@ const median = (xs: number[]): number | null => {
   return s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2;
 };
 const share = (n: number, d: number): number | null => (d > 0 ? n / d : null);
-type Counted = { k: string; n: number };
+export type Counted = { k: string; n: number };
 
 const STAGES = [
   { stage: 'SUBMITTED', label: 'Submitted' },

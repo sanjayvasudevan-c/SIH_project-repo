@@ -6,6 +6,7 @@ import { h, parse } from '../lib/http.js';
 import { verifyChains } from '../lib/audit.js';
 import * as clock from '../lib/clock.js';
 import { requireRole } from '../policy/roles.js';
+import { alerts } from './evidence/alerts.js';
 import { auditAnalytics, auditQuery, assignment, compliance, windowQuery, workflow } from './evidence/aggregates.js';
 import { headCommit, readArtifacts, readTestResult, commitIsCurrent } from './evidence/artifacts.js';
 
@@ -129,6 +130,7 @@ export function evidenceRouter(): Router {
   r.get('/workflow', h(async (req, res) => res.json(await workflow(parse(windowQuery, req.query)))));
   r.get('/assignment', h(async (req, res) => res.json(await assignment(parse(windowQuery, req.query)))));
   r.get('/compliance', h(async (req, res) => res.json(await compliance(parse(windowQuery, req.query)))));
+  r.get('/alerts', h(async (req, res) => res.json(await alerts(parse(windowQuery, req.query)))));
   r.get('/audit-analytics', h(async (req, res) => res.json(await auditAnalytics(parse(auditQuery, req.query)))));
 
   return r;
