@@ -120,16 +120,20 @@ command. Every tab links to the generated Markdown for the detail.
 
 `.github/workflows/ci.yml`, with a Postgres 16 service container, on every push and pull request:
 
+Five independent jobs with no `needs:` between them, so they run in parallel and any one can fail alone:
+
 ```
-typecheck ─┐
-web build ─┼─▶ api tests (183) ─┬─▶ generate evidence artifacts ─▶ upload
-           └─  python tests (99)┘
+API typecheck             (tsc, after prisma generate)
+Web build                 (vite build)
+API tests                 (183, PostgreSQL 16 service container; uploads JUnit + commit.txt)
+Form-check tests and ML   (generate, train, 99 pytest; reproducibility check is non-fatal)
+Chart generator tests     (node --test scripts/*.test.mjs)
 ```
 
 A lint stage is not built: this repository has no linter configured, so none runs.
 
 Load tests do **not** run per pull request — the brief is right that it is the wrong gate. A separate
-`benchmark.yml`, manual and scheduled, runs `load:test` and commits the artifact with its commit hash.
+`benchmark.yml`, manual and scheduled, runs `load:test` and uploads the result as a workflow artifact with its commit hash; it never commits or pushes.
 
 The pipeline fails on any failing test. That is the point: the bug fixed in this audit would have been caught on
 3 November 2026 by a scheduled run, before a judge ever saw it.

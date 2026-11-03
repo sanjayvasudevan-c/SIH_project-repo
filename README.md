@@ -14,7 +14,7 @@ This repository is a prototype covering phases 0 to 4 plus yearly rule packs and
 
 [![CI](https://github.com/sanjayvasudevan-c/SIH_project-repo/actions/workflows/ci.yml/badge.svg)](https://github.com/sanjayvasudevan-c/SIH_project-repo/actions/workflows/ci.yml) ![Form-check tests](https://img.shields.io/badge/form--check%20tests-99%20passed-brightgreen)
 
-The CI badge shows the latest run of the workflow, which covers typecheck, the 183 API integration tests, the form-check tests and the web build. The form-check count is a static badge from a run on 3 November 2026.
+The CI badge shows the latest run of the workflow, which covers five jobs: API typecheck, the 183 API integration tests, the form-check tests, the chart-generator tests and the web build. The form-check count is a static badge from a run on 3 November 2026.
 
 | Document | What it shows |
 |---|---|
