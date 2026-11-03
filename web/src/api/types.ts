@@ -338,3 +338,78 @@ export interface EvidenceEnvelope<T> {
   provenance: Record<string, Provenance | null>;
   data: T;
 }
+
+// Shapes of the evidence endpoints used by the Overview and Workflow sections (read from the live responses).
+export type TestStatus = 'PASS' | 'FAIL' | 'STALE' | 'NOT_VERIFIED';
+export type EngineRunStatus = 'RUNNING' | 'OK' | 'FAILED';
+
+/** GET /evidence/summary. Unlike the aggregates it is flat (no `data` key). */
+export interface EvidenceSummary {
+  status: TestStatus;
+  commit: string | null;
+  headUnresolved: boolean;
+  artifactCommit: string | null;
+  detail: string | null;
+  checks: { passed: number | null; failed: number | null; notVerified: number | null };
+  lastRunAt: string | null;
+  scheduler: {
+    lastRunAt: string | null;
+    lastStatus: EngineRunStatus | null;
+    lastDurationMs: number | null;
+    stuckRuns: number;
+    heartbeat: { instanceId: string; isLeader: boolean; lastSeenAt: string; ageSeconds: number } | null;
+  };
+  definition: Record<string, string>;
+  provenance: Record<string, Provenance | null>;
+}
+
+export interface WorkflowFunnelStage {
+  stage: string;
+  label: string;
+  reached: number;
+  onRoute: number;
+  share: number | null;
+}
+export interface WorkflowStatusRow {
+  status: Status;
+  count: number;
+  share: number | null;
+}
+export interface WorkflowVolumePoint {
+  day: string;
+  submitted: number;
+  decided: number;
+  overdue: number;
+}
+/** GET /evidence/workflow `data`. */
+export interface WorkflowData {
+  window: { from: string | null; to: string | null };
+  submittedTotal: number;
+  funnel: WorkflowFunnelStage[];
+  statusDistribution: WorkflowStatusRow[];
+  processingTime: { decidedCount: number; inFlightCount: number; medianWorkingDays: number | null; unit: string };
+  volumeOverTime: WorkflowVolumePoint[];
+}
+
+/** GET /evidence/engine-runs (the fields the Overview reads). */
+export interface EngineRunRow {
+  id: string;
+  startedAt: string;
+  finishedAt: string | null;
+  durationMs: number | null;
+  simulatedToday: string;
+  status: EngineRunStatus;
+}
+export interface EngineRunsResponse {
+  total: number;
+  rows: EngineRunRow[];
+  totals: { runCount: number; failedCount: number; abandonedCount: number; alertsCreated: number | null; alertsSuppressed: number | null };
+  definition: Record<string, string>;
+  provenance: Record<string, Provenance | null>;
+}
+
+/** GET /evidence/audit-analytics `data` (integrity only; the breakdowns belong to the Audit section). */
+export interface AuditAnalyticsData {
+  total: number;
+  integrity: { ok: boolean; chainsChecked: number; rowsChecked: number; brokenChainCount: number; scope: string };
+}

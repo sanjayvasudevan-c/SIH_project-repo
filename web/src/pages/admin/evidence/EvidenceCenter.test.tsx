@@ -61,8 +61,8 @@ describe('EvidenceCenter shell', () => {
     expect(panel).toHaveAttribute('aria-labelledby', tab.id);
     expect(tab).toHaveAttribute('aria-controls', panel.id);
   });
-  it('an unbuilt section is marked as a placeholder (overview)', () => {
-    const { container } = renderWithApp(app(), { route: '/admin/evidence/overview' });
+  it('an unbuilt section is marked as a placeholder (assignment)', () => {
+    const { container } = renderWithApp(app(), { route: '/admin/evidence/assignment' });
     expect(container.querySelector('[data-placeholder]')).not.toBeNull();
   });
   it('arrow-key tab changes replace history rather than push', () => {

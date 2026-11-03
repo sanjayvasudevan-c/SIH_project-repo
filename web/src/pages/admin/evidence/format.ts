@@ -21,3 +21,21 @@ export const fmtMs = (v: number | null | undefined): string => {
 };
 
 export { UNAVAILABLE };
+
+/** "just now", "4 h ago", "3 days ago" for an age in seconds. */
+export function agoSeconds(s: number | null | undefined): string {
+  if (s === null || s === undefined || !Number.isFinite(s)) return UNAVAILABLE;
+  if (s < 0) return 'in the future';
+  if (s < 60) return 'just now';
+  if (s < 3600) return `${Math.floor(s / 60)} min ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)} h ago`;
+  const d = Math.floor(s / 86400);
+  return `${d} day${d === 1 ? '' : 's'} ago`;
+}
+
+/** The same, for an ISO timestamp relative to `now`. An unreadable time is "Unavailable", never a guess. */
+export function ago(iso: string | null | undefined, now: number = Date.now()): string {
+  if (!iso) return UNAVAILABLE;
+  const t = new Date(iso).getTime();
+  return Number.isFinite(t) ? agoSeconds(Math.round((now - t) / 1000)) : UNAVAILABLE;
+}

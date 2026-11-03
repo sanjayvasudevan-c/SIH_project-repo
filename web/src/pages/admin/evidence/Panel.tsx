@@ -39,7 +39,7 @@ function Header({ provenance, scope, definition }: { provenance: Provenance | nu
       {hasText(definition) ? (
         <details className="mt-2 text-sm">
           <summary className="hit cursor-pointer text-accent">How this is measured</summary>
-          <p className="mt-1 max-w-prose text-secondary">{definition}</p>
+          <p className="mt-1 max-w-prose whitespace-pre-line text-secondary">{definition}</p>
         </details>
       ) : null}
     </>
