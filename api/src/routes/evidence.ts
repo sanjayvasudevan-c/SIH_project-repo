@@ -6,6 +6,7 @@ import { h, parse } from '../lib/http.js';
 import { verifyChains } from '../lib/audit.js';
 import * as clock from '../lib/clock.js';
 import { requireRole } from '../policy/roles.js';
+import type { Provenance } from './evidence/artifacts.js';
 import { alerts } from './evidence/alerts.js';
 import { parseDateOnly } from '../lib/dates.js';
 import { auditAnalytics, auditQuery, assignment, compliance, windowQuery, workflow } from './evidence/aggregates.js';
@@ -47,7 +48,13 @@ export function evidenceRouter(): Router {
         checks: art && current ? { passed: art.passed, failed: art.failed, notVerified: art.notVerified ?? null } : { passed: null, failed: null, notVerified: null },
         lastRunAt: art && current ? art.runAt ?? null : null,
         scheduler: { lastRunAt: last?.startedAt.toISOString() ?? null, lastStatus: last?.status ?? null, lastDurationMs: last?.durationMs ?? null },
-        provenance: art && current ? 'MEASURED' : null,
+        definition: {
+          status:
+            'Read from the test-result file recorded by the last test run; this page never runs tests. PASS: a result was recorded against the code version currently checked out, with at least one check passed, none failed and none left unverified. FAIL: the recorded run for the current code version had failing checks. STALE: the recorded result belongs to a different code version than the one now checked out, so it says nothing about this version. NOT_VERIFIED: no readable result exists, or one exists but it is not a clean pass (nothing passed, or some checks were recorded as not verified). Only PASS means the checks were verified for this code version.',
+          scheduler:
+            'The most recent deadline-engine cycle that was RECORDED (its start time, outcome and duration). No heartbeat is recorded, so this does not show that a scheduler process is running now: a recent time suggests it ran, an old or missing time does not prove it stopped, and a missing time means no cycle has been recorded.',
+        },
+        provenance: { status: art && current ? 'MEASURED' : null, scheduler: 'MEASURED' } as { status: Provenance | null; scheduler: Provenance },
       });
     }),
   );
@@ -80,6 +87,16 @@ export function evidenceRouter(): Router {
         total,
         page: q.page,
         pageSize: q.pageSize,
+        definition: {
+          window:
+            'The From and To dates (YYYY-MM-DD, inclusive; all dates if none given) apply to the date the engine treated as today when each cycle ran. On a system running in real time that is the real date; in this demo\'s back-dated history it is the simulated date, the same clock the alerts and deadlines use. The start time shown on each row is the real wall-clock time and is not what the window selects. The status filter applies to rows and totals alike.',
+          rows: 'One row per recorded engine cycle in the window, newest first, paged. Each row shows what that cycle checked, created and suppressed, and how it ended. Provenance on a row says how it was produced: TEST_RUN (automated tests), BENCHMARK (load test), SIMULATED (run on a pinned or back-dated clock, as the seed does), LIVE_DEMO (run on the real clock).',
+          totals: 'Counted over every run in the window and status filter, in one query, not from the page shown: runCount = runs; failedCount = runs that ended FAILED. alertsCreated and alertsSuppressed are blank (not 0) when no run is recorded in the window, because then nothing was measured.',
+          abandoned: `A run still marked running after ${ABANDONED_AFTER_MS / 60_000} minutes of real time is counted as abandoned, not in progress, because a crash, hard kill or out-of-memory stop cannot update its own row. abandonedCount is judged on real elapsed time and counts abandoned runs across ALL dates, so the date window cannot hide one.`,
+          alertsCreated: 'Alerts newly logged by the runs in the window, summed from the run records. It equals the alert-log total for the same window only when every alert was raised by a recorded run; the two answer different questions (alerts logged vs. what runs reported).',
+          alertsSuppressed: 'Duplicate alerts the runs declined to create because the alert log\'s unique key (item, kind, level) already held them, summed over the runs in the window. These were prevented, not delivered twice; this build has no external delivery channel.',
+        },
+        provenance: { rows: 'MEASURED', totals: 'MEASURED' } as Record<string, Provenance>,
         totals: sums[0]!, // SUM over zero rows is NULL: "no runs" is not reported as 0 alerts
         rows: rows.map((e) => ({
           ...e,

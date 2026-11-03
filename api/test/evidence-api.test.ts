@@ -94,7 +94,7 @@ describe('/api/evidence', () => {
     const other = await request(app).get('/api/evidence/summary').set(...bearer(admin));
     expect(other.body.status).toBe('STALE');
     expect(other.body.lastRunAt).toBeNull();
-    expect(other.body.provenance).toBeNull();
+    expect(other.body.provenance.status).toBeNull();
     await writeArtifact({ commit: head.slice(0, 6) + 'zzzz', passed: 183, failed: 0 });
     expect((await request(app).get('/api/evidence/summary').set(...bearer(admin))).body.status).toBe('NOT_VERIFIED');
   });
@@ -154,5 +154,22 @@ describe('/api/evidence', () => {
     expect(by.get('benchmark-results/broken.json')).toMatchObject({ status: 'NOT_VERIFIED', data: null });
     expect(by.get('benchmark-results/plain.json')).toMatchObject({ status: 'READ', provenance: null }); // not guessed
     expect(by.get('formcheck/metrics.json')).toMatchObject({ status: 'NOT_VERIFIED', provenance: null });
+  });
+
+  it('ships a plain-language definition and provenance for summary and engine-runs', async () => {
+    await runEngineCycle({ source: 'test' });
+    const sum = (await request(app).get('/api/evidence/summary').set(...bearer(admin))).body;
+    const runs = (await request(app).get('/api/evidence/engine-runs').set(...bearer(admin))).body;
+    for (const d of [...Object.values(sum.definition), ...Object.values(runs.definition)]) expect(String(d).length).toBeGreaterThan(40);
+    expect(Object.keys(sum.definition)).toEqual(['status', 'scheduler']);
+    expect(Object.keys(runs.definition).sort()).toEqual(['abandoned', 'alertsCreated', 'alertsSuppressed', 'rows', 'totals', 'window']);
+    for (const w of ['PASS', 'FAIL', 'STALE', 'NOT_VERIFIED']) expect(sum.definition.status).toContain(w);
+    expect(sum.definition.status).toMatch(/never runs tests|does not run tests|never run/i);
+    expect(sum.definition.scheduler).toMatch(/no heartbeat is recorded/i);
+    expect(runs.definition.abandoned).toMatch(/15 minutes/);
+    expect(runs.definition.window).toMatch(/date the engine treated as today/i);
+    expect(sum.provenance.scheduler).toBe('MEASURED');
+    expect(runs.provenance).toEqual({ rows: 'MEASURED', totals: 'MEASURED' });
+    expect(JSON.stringify([sum, runs])).not.toMatch(/\bfair|tamper-proof|exactly-once|exactly once|production-ready/i);
   });
 });
