@@ -13,12 +13,18 @@ import { newestRules, rulesForApp } from '../../rules/service.js';
 import type { Provenance } from './artifacts.js';
 
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD').optional();
-export const windowQuery = z.object({ from: day, to: day });
-export const auditQuery = windowQuery.extend({
-  actor: z.string().regex(/^[A-Z_]{1,32}$/).optional(),
-  action: z.string().regex(/^[A-Z_]{1,48}$/).optional(),
-  entity: z.enum(['APPLICATION', 'RULE_PACK', 'SYSTEM']).optional(),
-});
+const ordered = { message: 'from must not be after to', path: ['from'] };
+const notBackwards = (v: { from?: string; to?: string }) => !v.from || !v.to || v.from <= v.to; // an inverted window is a mistake, not an empty answer
+export const windowQuery = z.object({ from: day, to: day }).refine(notBackwards, ordered);
+export const auditQuery = z
+  .object({
+    from: day,
+    to: day,
+    actor: z.string().regex(/^[A-Z_]{1,32}$/).optional(),
+    action: z.string().regex(/^[A-Z_]{1,48}$/).optional(),
+    entity: z.enum(['APPLICATION', 'RULE_PACK', 'SYSTEM']).optional(),
+  })
+  .refine(notBackwards, ordered);
 type Q = z.infer<typeof windowQuery>;
 
 /** Both bounds are whole UTC days; `to` is inclusive, so the SQL bound is the start of the next day. */
@@ -114,7 +120,7 @@ export async function workflow(q: Q) {
     processingTime:
       'Median working days from submission to decision (weekends and holidays excluded), over DECIDED applications only. Applications still in progress are not finished, so their processing time is not yet known (a censored sample): they are excluded from the median and reported separately as inFlightCount. decidedCount + inFlightCount = applications submitted in the window. No mean is given because averaging only the finished cases would understate the time cases take. Blank when no application in the window has been decided.',
     volumeOverTime:
-      'Per calendar day, for applications submitted in the window: how many were submitted that day, how many were decided that day, and how many deadline items of those applications fell overdue that day (the engine\'s overdue alerts, by the item\'s due date). Starts at the first recorded event; days with no event are left out rather than shown as zero, and nothing is back-filled or interpolated. Overdue counts only items the deadline engine has raised an alert for.',
+      'Per calendar day, for applications submitted in the window: how many were submitted that day, how many were decided that day, and how many deadline items of those applications fell overdue that day (the engine\'s overdue alerts, by the item\'s due date). Starts at the first recorded event; days with no event are left out rather than shown as zero, and nothing is back-filled or interpolated. Overdue counts only items the deadline engine has raised an alert for. The overdue points are placed on the item\'s due date, which can fall outside the From/To dates (those dates select the applications, not the plotted days), so do not label the day axis with the From/To range.',
   };
   return {
     definition,
@@ -134,13 +140,16 @@ export async function workflow(q: Q) {
 export async function assignment(q: Q) {
   const b = bounds(q);
   // Assignments made in the window (by assignedAt); traces by decidedAt. Open = not released.
-  const [officers, cover, blocked, outcomes, cand, excl, overrides, versions, policy] = await Promise.all([
-    prisma.$queryRaw<{ officerId: string; name: string; role: string; capacityPoints: number; openPoints: number; openTasks: number }[]>`
-      SELECT p."userId" AS "officerId", u.name, u.role::text AS role, p."capacityPoints"::float8 AS "capacityPoints",
-             COALESCE(SUM(a.weight), 0)::float8 AS "openPoints", count(a.id)::int AS "openTasks"
-      FROM "OfficerProfile" p JOIN "User" u ON u.id = p."userId"
-      LEFT JOIN "Assignment" a ON a."officerId" = p."userId" AND a."releasedAt" IS NULL ${b.sql(Prisma.sql`a."assignedAt"`)}
-      GROUP BY p."userId", u.name, u.role, p."capacityPoints" ORDER BY u.name`,
+  const [officers, cover, blocked, outcomes, cand, excl, versions, policy] = await Promise.all([
+    // Current open book (never windowed) and, separately, the part of it assigned in the window. Only role OFFICER: committee and
+    // bureau profiles do not hold assigned work the same way and would show as idle officers.
+    prisma.$queryRaw<{ officerId: string; name: string; role: string; capacityPoints: number; maxUtil: number; openPoints: number; openTasks: number; openPointsAssignedInWindow: number }[]>`
+      SELECT p."userId" AS "officerId", u.name, u.role::text AS role, p."capacityPoints"::float8 AS "capacityPoints", p."maxUtil"::float8 AS "maxUtil",
+             COALESCE(SUM(a.weight), 0)::float8 AS "openPoints", count(a.id)::int AS "openTasks",
+             COALESCE(SUM(a.weight) FILTER (WHERE TRUE ${b.sql(Prisma.sql`a."assignedAt"`)}), 0)::float8 AS "openPointsAssignedInWindow"
+      FROM "OfficerProfile" p JOIN "User" u ON u.id = p."userId" AND u.role = 'OFFICER'
+      LEFT JOIN "Assignment" a ON a."officerId" = p."userId" AND a."releasedAt" IS NULL
+      GROUP BY p."userId", u.name, u.role, p."capacityPoints", p."maxUtil" ORDER BY u.name`,
     prisma.$queryRaw<{ total: number; traced: number }[]>`
       SELECT count(*)::int AS total, (count(*) FILTER (WHERE EXISTS (SELECT 1 FROM "AssignmentTrace" t WHERE t."assignmentId" = a.id)))::int AS traced
       FROM "Assignment" a WHERE TRUE ${b.sql(Prisma.sql`a."assignedAt"`)}`,
@@ -152,13 +161,6 @@ export async function assignment(q: Q) {
     prisma.$queryRaw<Counted[]>`
       SELECT c->>'excludedBy' AS k, count(*)::int AS n FROM "AssignmentTrace" t CROSS JOIN LATERAL jsonb_array_elements(t.candidates) c
       WHERE c->>'excludedBy' IS NOT NULL ${b.sql(Prisma.sql`t."decidedAt"`)} GROUP BY 1`,
-    // A chosen officer whose projected utilisation is above their own normal cap (maxUtil) was admitted by a documented allowance.
-    prisma.$queryRaw<{ applicationNo: string; officer: string; projectedUtil: number; normalCap: number; total: number }[]>`
-      SELECT ap."applicationNo", c->>'name' AS officer, (c->>'projectedUtil')::float8 AS "projectedUtil", pr."maxUtil"::float8 AS "normalCap", (count(*) OVER ())::int AS total
-      FROM "AssignmentTrace" t CROSS JOIN LATERAL jsonb_array_elements(t.candidates) c
-      JOIN "OfficerProfile" pr ON pr."userId" = c->>'officerId' JOIN "Application" ap ON ap.id = t."applicationId"
-      WHERE (c->>'chosen')::boolean AND (c->>'projectedUtil')::float8 > pr."maxUtil"::float8 + 1e-9 ${b.sql(Prisma.sql`t."decidedAt"`)}
-      ORDER BY t.id DESC LIMIT 25`,
     prisma.$queryRaw<{ label: string; assignments: number }[]>`
       SELECT cy.code || ' v' || v.version AS label, count(*)::int AS assignments FROM "Assignment" a
       JOIN "RulePackVersion" v ON v.id = a."rulePackVersionId" JOIN "ApprovalCycle" cy ON cy.id = v."cycleId"
@@ -170,21 +172,22 @@ export async function assignment(q: Q) {
   const mean = u.length ? u.reduce((s, x) => s + x, 0) / u.length : null;
   const stdDev = u.length >= 2 && mean !== null ? Math.sqrt(u.reduce((s, x) => s + (x - mean) ** 2, 0) / u.length) : null;
   const capFor = policy.content.assignment;
-  const ov = overrides;
+  // Above-cap officers are read from current state: the trace records the projected load but not the cap, and capacity can change later.
+  const ov = rows.filter((r) => r.utilisation !== null && r.utilisation > r.maxUtil + 1e-9);
   return {
     definition: {
       scope: SCOPE,
-      window: 'The From/To dates apply to every measure here: officer load counts assignments made (assignedAt) in the window that are still open; coverage counts assignments made in the window; candidate and outcome counts come from decisions recorded in the window. With no dates, officer load is the current open load.',
+      window: 'The From/To dates narrow coverage (assignments made in the window), candidate and outcome counts (decisions recorded in the window), the rule-pack list and openPointsAssignedInWindow. They deliberately do NOT change officer utilisation, the spread or the above-cap list: those always describe the current open book, because utilisation against a capacity means nothing for one period\'s intake.',
       officers:
-        'Per officer: capacityPoints (the officer\'s configured capacity), openPoints (sum of the weight of their open, unreleased assignments in the window) and utilisation = openPoints / capacityPoints. Utilisation is DERIVED from those two measured values. An officer with capacity 0 has no utilisation (blank), not 0.',
+        'Only users with the OFFICER role are listed (committee and bureau profiles are excluded). Per officer: capacityPoints (configured capacity), openPoints (sum of the weight of all their open, unreleased assignments, now) and utilisation = openPoints / capacityPoints, DERIVED from those two measured values. An officer with capacity 0 has no utilisation (blank), not 0. openPointsAssignedInWindow is the part of openPoints from assignments made in the From/To window.',
       spread:
-        `Standard deviation (population form) of utilisation across officers with capacityPoints > 0. The denominator is officerCount, the number of officers with capacity > 0 (${rows.length - u.length} officer(s) with no capacity are excluded). Blank when fewer than 2 officers qualify. It describes how load is spread, not whether it is right: the assignment policy in rule pack ${policy.label} defines what a correct distribution is, and equal counts are not the goal.`,
+        `Standard deviation (population form) of current utilisation across users with the OFFICER role and capacityPoints > 0 (committee and bureau profiles are excluded, as are ${rows.length - u.length} officer(s) with no capacity). The denominator is officerCount, the number of officers counted. Not affected by the date window. Blank when fewer than 2 officers qualify. It describes how load is spread, not whether it is right: the assignment policy in rule pack ${policy.label} defines what a correct distribution is, and equal counts are not the goal.`,
       coverage:
         'tracedCount / assignmentTotal: assignments made in the window that have a recorded decision table (trace), over all assignments made in the window. Traces are written when the engine assigns automatically; a manual assignment or manual reassignment writes none, so coverage is partial and a case without a trace is not an error. blockedCount is decisions where no officer could be assigned (no assignment exists for them).',
       candidates: 'Over decisions recorded in the window: candidatesConsidered = officers evaluated across all decisions; eligible = those eligible; excluded counts the stated reason. A decision evaluates several officers, so these are candidate rows, not cases.',
-      continuityOverrides: `Decisions where the chosen officer's projected utilisation is above that officer's normal cap (maxUtil). The engine admits such officers for continuity (portfolio or returning officer, up to ${capFor.continuityUtilCap}) or for urgent tasks (up to ${capFor.urgentMaxUtil}); the trace does not record which, so both are named. Most recent 25 shown; count is the full total.`,
+      continuityOverrides: `Officers whose current utilisation is above their own normal cap (maxUtil). This is expected, not an error, when it comes from the continuity allowance (portfolio or returning officer, up to ${capFor.continuityUtilCap}), the urgent-task allowance (up to ${capFor.urgentMaxUtil}) or capacity reduced after the work was assigned. The decision table does not record which applied, so all three are named. Not affected by the date window.`,
     },
-    provenance: { officers: 'MEASURED', utilisation: 'DERIVED', spread: 'DERIVED', coverage: 'MEASURED', candidates: 'MEASURED', continuityOverrides: 'MEASURED' } as Record<string, Provenance>,
+    provenance: { officers: 'MEASURED', utilisation: 'DERIVED', spread: 'DERIVED', coverage: 'MEASURED', candidates: 'MEASURED', continuityOverrides: 'DERIVED' } as Record<string, Provenance>,
     data: {
       window: b.window,
       officers: rows,
@@ -193,15 +196,15 @@ export async function assignment(q: Q) {
       outcomes: outcomes.map((o) => ({ outcome: o.k, count: o.n })),
       candidates: { candidatesConsidered: cand[0]?.considered ?? 0, eligible: cand[0]?.eligible ?? 0, excluded: excl.map((e) => ({ reason: e.k, count: e.n })) },
       continuityOverrides: {
-        count: ov[0]?.total ?? 0,
+        count: ov.length,
         continuityUtilCap: capFor.continuityUtilCap,
         urgentMaxUtil: capFor.urgentMaxUtil,
         rows: ov.map((o) => ({
-          applicationNo: o.applicationNo,
-          officer: o.officer,
-          projectedUtil: o.projectedUtil,
-          normalCap: o.normalCap,
-          text: `Chosen above the officer's normal cap (${o.projectedUtil.toFixed(2)} against ${o.normalCap.toFixed(2)}) under the continuity or urgent-task allowance.`,
+          officerId: o.officerId,
+          officer: o.name,
+          utilisation: o.utilisation,
+          normalCap: o.maxUtil,
+          text: `${o.name} is at ${o.utilisation!.toFixed(2)} of capacity against a normal cap of ${o.maxUtil.toFixed(2)}. This can follow the continuity allowance (up to ${capFor.continuityUtilCap}), the urgent-task allowance (up to ${capFor.urgentMaxUtil}) or capacity reduced after the work was assigned; it is not an error.`,
         })),
       },
       rulePackVersions: versions,
@@ -258,7 +261,7 @@ export async function compliance(q: Q) {
       },
       escalations: `Escalation alerts raised in the window, by level. Level 1, 2 and 3 are raised when an item is ${rules.escalation.thresholds.join(" / ")} days overdue (working days for stage deadlines, calendar days for undertakings and document expiries). Each level is raised once per item.`,
       alerts:
-        'total = alerts logged in the window (by kind, and by late = a reminder raised after its reminder date had already passed by more than one day, because the engine had not run in time). suppressed = duplicate alerts the engine declined to create, summed from engine run records in the window. The log\'s unique key (item, kind, level) is why a repeated cycle creates no second alert; this build has no external delivery channel. Suppressed is blank when no engine run started in the window.',
+        'total = alerts logged in the window (by kind, and by late = a reminder raised after its reminder date had already passed by more than one day, because the engine had not run in time). suppressed = duplicate alerts the engine declined to create, summed from engine run records in the window. The log\'s unique key (item, kind, level) is why a repeated cycle creates no second alert; this build has no external delivery channel. Suppressed is blank when no engine run started in the window; with engineRunCount 0, the alert and escalation totals mean "none recorded", not "measured as zero".',
     },
     provenance: { deadlines: 'DERIVED', escalations: 'MEASURED', alerts: 'MEASURED', suppressed: 'MEASURED' } as Record<string, Provenance>,
     data: {

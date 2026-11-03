@@ -77,9 +77,9 @@ describe('/api/evidence aggregates', () => {
 
   it('computes utilisation spread only over officers with capacity, and names the denominator', async () => {
     const id = await fileOnly('college.abc@demo.in');
-    const withCapacity = await prisma.officerProfile.count({ where: { capacityPoints: { gt: 0 } } });
+    const withCapacity = await prisma.officerProfile.count({ where: { capacityPoints: { gt: 0 }, user: { role: 'OFFICER' } } }); // committee and bureau profiles excluded by definition
     // Independent expectation: population standard deviation from the raw rows.
-    const profiles = await prisma.officerProfile.findMany({ where: { capacityPoints: { gt: 0 } } });
+    const profiles = await prisma.officerProfile.findMany({ where: { capacityPoints: { gt: 0 }, user: { role: 'OFFICER' } } });
     const open = await prisma.assignment.findMany({ where: { releasedAt: null } });
     const util = profiles.map((p) => open.filter((a) => a.officerId === p.userId).reduce((n, a) => n + Number(a.weight), 0) / Number(p.capacityPoints));
     const mean = util.reduce((a, b) => a + b, 0) / util.length;
@@ -92,8 +92,14 @@ describe('/api/evidence aggregates', () => {
     expect(a.officers.length).toBe(withCapacity);
     expect(r.body.definition.spread).toMatch(/standard deviation/i);
     expect(typeof a.rulePackVersions[0].label).toBe('string');
-    expect(JSON.stringify(r.body)).not.toMatch(/\bfair/i);
-
+    expect(a.officers.every((o: Row) => o.role === 'OFFICER')).toBe(true);
+    expect(withCapacity).toBeLessThan(await prisma.officerProfile.count({ where: { capacityPoints: { gt: 0 } } }));
+    // A window must not turn load into a confident 0: utilisation and spread ignore it, only the windowed field narrows.
+    const win = (await get('/api/evidence/assignment?from=2099-01-01&to=2099-01-02')).body.data;
+    expect(win.spread).toEqual(a.spread);
+    expect(win.spread.stdDev).not.toBe(0);
+    expect(win.officers.map((o: Row) => o.utilisation)).toEqual(a.officers.map((o: Row) => o.utilisation));
+    expect(win.officers.every((o: Row) => o.openPointsAssignedInWindow === 0)).toBe(true);
     // Ruling E7: coverage is stated, and a manual assignment (no trace) lowers it.
     expect(a.coverage).toEqual({ tracedCount: open.length, assignmentTotal: open.length, blockedCount: 0 });
     await prisma.assignmentTrace.deleteMany({ where: { applicationId: id } });
@@ -101,6 +107,21 @@ describe('/api/evidence aggregates', () => {
     expect(after.assignmentTotal).toBe(open.length);
     expect(after.tracedCount).toBe(0);
     expect(r.body.definition.coverage).toMatch(/manual/i);
+
+    // Above-cap officers are listed from current state, with the possible causes in words.
+    expect(a.continuityOverrides.count).toBe(0);
+    const holder = open[0]!.officerId;
+    await prisma.officerProfile.update({ where: { userId: holder }, data: { maxUtil: 0.01 } });
+    const ov = (await get('/api/evidence/assignment')).body.data.continuityOverrides;
+    expect(ov.count).toBe(1);
+    expect(ov.rows[0].officerId).toBe(holder);
+    expect(ov.rows[0].text).toMatch(/continuity.*urgent.*reduced/);
+
+    // Fewer than two contributing officers: null, never 0. (The DB forbids capacity 0, so take the others out by role.)
+    await prisma.user.updateMany({ where: { role: 'OFFICER', id: { not: profiles[0]!.userId } }, data: { role: 'SENIOR' } });
+    const lone = (await get('/api/evidence/assignment')).body.data.spread;
+    expect(lone.officerCount).toBe(1);
+    expect(lone.stdDev).toBeNull();
   });
 
   it('the alerts total equals the AlertLog rows in the window, and suppressed comes from EngineRun', async () => {
@@ -182,7 +203,9 @@ describe('/api/evidence aggregates', () => {
     expect(c.alerts.suppressed).toBeNull(); // no engine run in the window: absent, not 0
     const as = (await get(`/api/evidence/assignment${q}`)).body.data;
     expect(as.coverage.assignmentTotal).toBe(0);
-    expect(as.officers.every((o: Row) => o.openPoints === 0)).toBe(true);
+    expect(as.officers.every((o: Row) => o.openPointsAssignedInWindow === 0)).toBe(true);
     expect((await get(`/api/evidence/audit-analytics${q}`)).body.data.total).toBe(0);
+    for (const path of ['workflow', 'assignment', 'compliance', 'audit-analytics']) expect(JSON.stringify((await get(`/api/evidence/${path}`)).body)).not.toMatch(/\bfair/i);
+    expect((await get('/api/evidence/workflow?from=2026-11-05&to=2026-11-01')).status).toBe(400); // inverted window is refused, not answered with empties
   });
 });
