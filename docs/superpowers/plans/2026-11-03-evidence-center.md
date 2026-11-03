@@ -705,6 +705,8 @@ git commit -m "Evidence API: aggregates that state their own KPI definitions"
 
 ### What the data does and does not support (measured on the dev database, 2026-11-03)
 
+*Figures are from one seed and vary slightly between reseeds (e.g. 191–192 applications, 810–812 notifications). The conclusions do not depend on the exact counts; the section tasks and the verification script always re-measure.*
+
 | Requested | What exists | Consequence |
 |---|---|---|
 | Alerts by **status**; acknowledgement and resolution time | `AlertLog` has **no status, acknowledgement or resolution field** — only `late`. `Notification` has one `read` boolean. | A status panel would be invention. The Alerts section shows an insufficient-data panel naming exactly what is not recorded. |
@@ -723,7 +725,7 @@ git commit -m "Evidence API: aggregates that state their own KPI definitions"
 
 ### Revised execution order
 
-`1 ✔, 2 ✔, 3 ✔, 6 (fix round committed, independent review running), 7, 4a, 4b, 4c, 4d, 5, 4e, 8, 9, 10.`
+`1 ✔, 2 ✔, 3 ✔, 6 ✔, 7 ✔ (independent review running), 7b, 4a, 4b, 4c, 4d, 5, 4e, 8, 9, 10.`
 Task 5 now precedes 4e so the Performance section has two comparable runs; 4e still tests the single-run case.
 
 ### The eight sections — what each shows, and what it deliberately does not
@@ -782,6 +784,42 @@ totals: { runCount: number; failedCount: number; abandonedCount: number;
 - [ ] **Step 4:** Re-run until green; then `npm test && npm --workspace api run typecheck`. Expected: previous count + new tests.
 - [ ] **Step 5:** Reseed the dev database (`SETUP_NO_DOCKER=1 npm --workspace api run setup:db`) and confirm the 25 seeded runs now read `SIMULATED`.
 - [ ] **Step 6:** Commit in two commits — provenance, then alerts + totals.
+
+### Task 7b: definitions and a day-inclusive window for `summary` and `engine-runs`
+
+*Added after Task 7's implementer reported that `engine-runs` returns no `definition` and its `to` bound looked wrong; confirmed by the independent review before dispatch.*
+
+**Why it is a task and not a footnote.** The contract is that every KPI's definition is rendered verbatim from the endpoint beside its number. Four endpoints already do that. `summary` and `engine-runs` do not, yet the Overview and Scheduler sections draw their headline tiles from them: the 15-minute abandoned-run rule and the real-clock window exist only in code comments, and nothing tells a reader what `NOT_VERIFIED` means. Separately, `engine-runs` applies `to` as `lte` on a bare date, which is midnight — so choosing `to = today` **silently excludes every run that started today**, i.e. the most recent data, from a filtered view.
+
+**Files:** Modify `api/src/routes/evidence.ts` (and `evidence/artifacts.ts` only if the summary text lives there). Test: `api/test/evidence-api.test.ts`, `api/test/evidence-alerts.test.ts`.
+**Interfaces — Produces** (additive; no existing key changes):
+
+```ts
+// GET /api/evidence/summary gains
+definition: { status: string; scheduler: string };
+provenance: { status: Provenance | null; scheduler: Provenance };
+// GET /api/evidence/engine-runs gains
+definition: { window: string; rows: string; totals: string; abandoned: string; alertsCreated: string; alertsSuppressed: string };
+provenance: { rows: Provenance; totals: Provenance };   // rows carry their own per-row provenance as well
+```
+
+Required wording (plain language, for a judge who has never seen the code):
+- `summary.definition.status`: reads the recorded test-result artifact and **never runs tests**; names each of `PASS`, `FAIL`, `STALE` and `NOT_VERIFIED`; says `PASS` needs at least one passed check, none failed and none unverified, recorded against the current commit.
+- `summary.definition.scheduler`: the most recent *recorded* cycle only; **no heartbeat is recorded**, so it does not show that a scheduler process is running.
+- `engine-runs.definition.window`: the dates apply to the run's **real** start time, which differs from the simulated clock the alerts and deadlines use; `to` includes the whole day.
+- `engine-runs.definition.abandoned`: a run still marked running after 15 minutes is counted abandoned, not in progress, because a crash cannot update its own row.
+- `alertsCreated` / `alertsSuppressed`: summed over the runs in the window; equal to the alert log total only when every alert was raised by a recorded run.
+
+- [ ] **Step 1: Write the failing tests**
+  1. `summary` has a non-empty `definition.status` that mentions each of the four statuses, and a non-empty `definition.scheduler` that says no heartbeat is recorded.
+  2. `engine-runs` has a non-empty string for every key listed above, and `definition.window` names the real clock.
+  3. **Day-inclusive `to`:** with a run started now, `engine-runs?from=<today>&to=<today>` returns it and `totals.runCount >= 1`; `to=<yesterday>` does not.
+  4. `rows`, `total` and `totals` agree under the same window — `total === totals.runCount` for every window tested.
+  5. No response string contains "fair", "tamper-proof", "exactly-once" or "production-ready".
+- [ ] **Step 2:** Run the two test files; expect FAIL.
+- [ ] **Step 3:** Implement. Compute the upper bound as the start of the day after `to`, using a strict `<`, in both the rows query and the totals query so they cannot drift.
+- [ ] **Step 4:** Re-run until green, then the full suite and the typecheck. Expect 225 plus the new tests.
+- [ ] **Step 5:** Commit.
 
 ### Task 4a: Foundation — test runner, primitives, shell, route
 
