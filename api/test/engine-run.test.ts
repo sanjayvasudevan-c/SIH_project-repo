@@ -90,3 +90,33 @@ describe('EngineRun history', () => {
     expect(rows.every((r) => r.instanceId.length > 0)).toBe(true);
   });
 });
+
+describe('EngineRun provenance', () => {
+  beforeEach(resetDb);
+
+  it('11. SIMULATED when the clock is overridden or offset; LIVE_DEMO on a real clock; TEST_RUN and BENCHMARK keep precedence', async () => {
+    const env = { VITEST: process.env.VITEST, NODE_ENV: process.env.NODE_ENV };
+    const prevOffset = clock.getOffsetDays();
+    const restore = (k: 'VITEST' | 'NODE_ENV') => (env[k] === undefined ? delete process.env[k] : (process.env[k] = env[k]));
+    const prov = async (meta: Record<string, string> = { source: 'test' }) =>
+      (await prisma.engineRun.findUniqueOrThrow({ where: { id: BigInt(((await runEngineCycle(meta)) as { engineRunId: string }).engineRunId) } })).provenance;
+    try {
+      expect(await prov()).toBe('TEST_RUN'); // still wins under vitest, clock overridden
+      delete process.env.VITEST;
+      delete process.env.NODE_ENV;
+      expect(clock.hasOverride()).toBe(true);
+      expect(await prov()).toBe('SIMULATED'); // overridden clock
+      clock.setOverride(null);
+      expect(await prov()).toBe('LIVE_DEMO'); // real clock, no offset
+      await clock.advance(3);
+      expect(await prov()).toBe('SIMULATED'); // offset clock
+      expect(await prov({ source: 'load-test' })).toBe('BENCHMARK'); // beats SIMULATED
+    } finally {
+      restore('VITEST');
+      restore('NODE_ENV');
+      await prisma.simClock.upsert({ where: { id: 1 }, create: { id: 1, offsetDays: prevOffset }, update: { offsetDays: prevOffset } });
+      await clock.refresh();
+      setToday();
+    }
+  });
+});
