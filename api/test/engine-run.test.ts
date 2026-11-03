@@ -32,7 +32,6 @@ describe('EngineRun history', () => {
     setToday(addDays(clock.today(), 30));
     const r = await runEngineCycle({ source: 'test' });
     const row = await prisma.engineRun.findUniqueOrThrow({ where: { id: BigInt(r.engineRunId as string) } });
-    console.log('startedAt', row.startedAt.toISOString(), 'finishedAt', row.finishedAt?.toISOString(), 'simulatedToday', isoDate(row.simulatedToday), 'real now', new Date().toISOString());
     expect(Math.abs(row.startedAt.getTime() - Date.now())).toBeLessThan(60_000);
     expect(Math.abs(row.finishedAt!.getTime() - Date.now())).toBeLessThan(60_000);
     expect(row.finishedAt!.getTime()).toBeGreaterThanOrEqual(row.startedAt.getTime());
