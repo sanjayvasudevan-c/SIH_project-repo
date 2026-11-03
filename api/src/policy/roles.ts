@@ -26,7 +26,7 @@ export function requireRole(...roles: Role[]) {
     const user = req.user;
     if (user && roles.includes(user.role)) return next();
     const reason = `This page is for ${roles.map((r) => r.toLowerCase().replace('_', ' ')).join(', ')} users.`;
-    const done = () => next(forbidden(reason));
+    const done = () => next(forbidden(reason, 'ACCESS_DENIED'));
     if (user) {
       logAccessDenied(user, { path: req.originalUrl, reason }).then(done, done);
     } else {

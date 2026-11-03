@@ -73,6 +73,32 @@ describe('/api/evidence', () => {
     }
   });
 
+  it('reads a vacuous PASS (nothing passed) as NOT_VERIFIED, and PASS with unverified checks as not clean', async () => {
+    const head = (await headCommit())!;
+    await fs.writeFile(path.join(dir, 'test-results.json'), JSON.stringify({ commit: head, status: 'PASS', passed: 0, failed: 0 }));
+    expect((await request(app).get('/api/evidence/summary').set(...bearer(admin))).body.status).toBe('NOT_VERIFIED');
+    await fs.writeFile(path.join(dir, 'test-results.json'), JSON.stringify({ commit: head, status: 'PASS', passed: 180, failed: 0, notVerified: 4 }));
+    const r = await request(app).get('/api/evidence/summary').set(...bearer(admin));
+    expect(r.body.status).toBe('NOT_VERIFIED');
+    expect(r.body.checks).toEqual({ passed: 180, failed: 0, notVerified: 4 });
+    expect(r.body.detail).toMatch(/not a clean pass/);
+  });
+
+  it('reads a commit longer than HEAD or not hex as NOT_VERIFIED, and a different sha as STALE', async () => {
+    const head = (await headCommit())!;
+    await writeArtifact({ commit: head + 'abc', passed: 183, failed: 0 });
+    const longer = await request(app).get('/api/evidence/summary').set(...bearer(admin));
+    expect(longer.body.status).toBe('NOT_VERIFIED'); // over 40 hex chars is not a sha: rejected, never current
+    expect(longer.body.status).not.toBe('PASS');
+    await writeArtifact({ commit: head.slice(0, 7).replace(/.$/, head[6] === '0' ? '1' : '0'), passed: 183, failed: 0 });
+    const other = await request(app).get('/api/evidence/summary').set(...bearer(admin));
+    expect(other.body.status).toBe('STALE');
+    expect(other.body.lastRunAt).toBeNull();
+    expect(other.body.provenance).toBeNull();
+    await writeArtifact({ commit: head.slice(0, 6) + 'zzzz', passed: 183, failed: 0 });
+    expect((await request(app).get('/api/evidence/summary').set(...bearer(admin))).body.status).toBe('NOT_VERIFIED');
+  });
+
   it('refuses every endpoint to a non-ADMIN role and leaks nothing [Review Focus 2]', async () => {
     for (const path of ['/summary', '/engine-runs', '/audit-integrity', '/artifacts', '/assignment-trace/anything']) {
       const r = await request(app).get(`/api/evidence${path}`).set(...bearer(officer));
@@ -108,23 +134,25 @@ describe('/api/evidence', () => {
     const id = (await submitApp(app, await userByEmail('college.abc@demo.in'))).body.application.id;
     const first = (await openAssignment(id))!;
     const before = await request(app).get(`/api/evidence/assignment-trace/${id}`).set(...bearer(admin));
-    expect(before.body.coverage).toEqual({ tracedCount: 1, assignmentTotal: 1 });
+    expect(before.body.coverage).toEqual({ tracedCount: 1, assignmentTotal: 1, blockedCount: 0 });
     expect(before.body.rows.length).toBeGreaterThan(0);
     const { reassignManual } = await import('../src/assignment/engine.js');
     await reassignManual(await userByEmail('kumar@demo.in'), first.id, (await userByEmail('meena@demo.in')).id, 'Balancing load');
     const after = await request(app).get(`/api/evidence/assignment-trace/${id}`).set(...bearer(admin));
-    expect(after.body.coverage).toEqual({ tracedCount: 1, assignmentTotal: 2 });
+    expect(after.body.coverage).toEqual({ tracedCount: 1, assignmentTotal: 2, blockedCount: 0 });
     expect(await prisma.assignment.count({ where: { applicationId: id } })).toBe(2);
   });
 
   it('lists stored artifacts with provenance, marking an unreadable one NOT_VERIFIED', async () => {
     await fs.mkdir(path.join(dir, 'benchmark-results'));
-    await fs.writeFile(path.join(dir, 'benchmark-results', 'a1b2c3d.json'), JSON.stringify({ commit: 'a1b2c3d', data: {} }));
+    await fs.writeFile(path.join(dir, 'benchmark-results', 'a1b2c3d.json'), JSON.stringify({ commit: 'a1b2c3d', provenance: 'MEASURED', data: {} }));
     await fs.writeFile(path.join(dir, 'benchmark-results', 'broken.json'), '{oops');
+    await fs.writeFile(path.join(dir, 'benchmark-results', 'plain.json'), JSON.stringify({ commit: 'a1b2c3d' }));
     const r = await request(app).get('/api/evidence/artifacts').set(...bearer(admin));
     const by = new Map(r.body.artifacts.map((a: { name: string }) => [a.name, a]));
     expect(by.get('benchmark-results/a1b2c3d.json')).toMatchObject({ status: 'READ', provenance: 'MEASURED', commit: 'a1b2c3d' });
     expect(by.get('benchmark-results/broken.json')).toMatchObject({ status: 'NOT_VERIFIED', data: null });
-    expect(by.get('formcheck/metrics.json')).toMatchObject({ status: 'NOT_VERIFIED', provenance: 'SYNTHETIC' });
+    expect(by.get('benchmark-results/plain.json')).toMatchObject({ status: 'READ', provenance: null }); // not guessed
+    expect(by.get('formcheck/metrics.json')).toMatchObject({ status: 'NOT_VERIFIED', provenance: null });
   });
 });

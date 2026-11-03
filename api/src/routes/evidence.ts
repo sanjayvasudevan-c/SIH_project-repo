@@ -4,9 +4,8 @@ import type { Prisma } from '@prisma/client';
 import { prisma } from '../lib/db.js';
 import { h, parse } from '../lib/http.js';
 import { verifyChains } from '../lib/audit.js';
-import { HttpError } from '../lib/errors.js';
 import { requireRole } from '../policy/roles.js';
-import { headCommit, readArtifacts, readTestResult, sameCommit } from './evidence/artifacts.js';
+import { headCommit, readArtifacts, readTestResult, commitIsCurrent } from './evidence/artifacts.js';
 
 const none = z.object({});
 const runsQuery = z.object({
@@ -20,14 +19,7 @@ const traceParams = z.object({ applicationId: z.string().min(1).max(64) });
 
 export function evidenceRouter(): Router {
   const r = Router();
-  const adminOnly = requireRole('ADMIN');
-  // A refusal carries the same code as the ACCESS_DENIED audit row, and no data.
-  r.use((req, res, next) =>
-    adminOnly(req, res, (e?: unknown) => {
-      if (e instanceof HttpError && e.status === 403) e.code = 'ACCESS_DENIED';
-      next(e);
-    }),
-  );
+  r.use(requireRole('ADMIN'));
 
   // Reads a stored verdict. PASS/FAIL only when a current artifact recorded it; absent -> NOT_VERIFIED; other commit -> STALE.
   r.get(
@@ -35,15 +27,20 @@ export function evidenceRouter(): Router {
     h(async (req, res) => {
       parse(none, req.query);
       const [head, art, last] = await Promise.all([headCommit(), readTestResult(), prisma.engineRun.findFirst({ orderBy: { id: 'desc' } })]);
-      const status = !art ? 'NOT_VERIFIED' : head && sameCommit(art.commit, head) ? art.status : 'STALE';
+      // A clean PASS needs a current artifact that recorded PASS with nothing left unverified.
+      const current = !!art && !!head && commitIsCurrent(art.commit, head);
+      const unverified = art && art.notVerified ? art.notVerified : 0;
+      const status = !art ? 'NOT_VERIFIED' : !current ? 'STALE' : art.status === 'PASS' && unverified > 0 ? 'NOT_VERIFIED' : art.status;
       res.json({
         status,
         commit: head,
+        headUnresolved: head === null,
         artifactCommit: art?.commit ?? null,
-        checks: art && status !== 'STALE' ? { passed: art.passed, failed: art.failed, notVerified: art.notVerified ?? null } : { passed: null, failed: null, notVerified: null },
-        lastRunAt: art?.runAt ?? null,
+        detail: status === 'NOT_VERIFIED' && art && current ? `${unverified} checks recorded as not verified; not a clean pass` : null,
+        checks: art && current ? { passed: art.passed, failed: art.failed, notVerified: art.notVerified ?? null } : { passed: null, failed: null, notVerified: null },
+        lastRunAt: art && current ? art.runAt ?? null : null,
         scheduler: { lastRunAt: last?.startedAt.toISOString() ?? null, lastStatus: last?.status ?? null, lastDurationMs: last?.durationMs ?? null },
-        provenance: art ? 'MEASURED' : null,
+        provenance: art && current ? 'MEASURED' : null,
       });
     }),
   );
@@ -86,7 +83,13 @@ export function evidenceRouter(): Router {
       const traced = new Set(traces.map((t) => t.assignmentId).filter((x): x is string => !!x));
       res.json({
         rows: traces.map((t) => ({ ...t, id: t.id.toString(), decidedAt: t.decidedAt.toISOString() })),
-        coverage: { tracedCount: assignments.filter((a) => traced.has(a.id)).length, assignmentTotal: assignments.length },
+        // tracedCount: assignments with at least one trace, over assignmentTotal. rows can outnumber it: BLOCKED traces
+        // have no assignment (blockedCount) and one assignment may have several. An unknown application is 200 with 0/0.
+        coverage: {
+          tracedCount: assignments.filter((a) => traced.has(a.id)).length,
+          assignmentTotal: assignments.length,
+          blockedCount: traces.filter((t) => !t.assignmentId).length,
+        },
       });
     }),
   );

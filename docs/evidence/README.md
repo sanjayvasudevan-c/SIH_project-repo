@@ -196,3 +196,10 @@ the matrix can be built against it, with official requirements separated from op
   An outbox belongs with the real gateways in phase 8.
 * **No real-AICTE accuracy claim.** Every ML figure stays labelled synthetic, with the unit-error weakness
   (0.315 recall) shown rather than buried.
+
+## Stored test-result artifact (`test-results.json`)
+
+The Evidence Center summary reads `EVIDENCE_DIR/test-results.json` (default `docs/evidence/`) and never computes a verdict.
+Shape: `{ "commit": "<full 40-char sha>", "status": "PASS" | "FAIL", "passed": n, "failed": n, "notVerified"?: n, "runAt"?: ISO date }`.
+It reads as `NOT_VERIFIED` when absent or malformed, when `PASS` is recorded with `failed > 0` or `passed: 0`, or with
+`notVerified > 0` (not a clean pass). A `commit` that is not a prefix of the current `HEAD` reads `STALE`.
