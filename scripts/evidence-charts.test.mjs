@@ -40,6 +40,8 @@ const benchFixture = () => ({
   ],
 });
 const metricsFixture = () => ({
+  generatedAt: '2026-11-03T13:35:09+00:00',
+  commit: '6f6e7cd',
   modes: { 'Rules only': { recall: 0.5 }, 'Hybrid (rules or model)': { recall: 0.863 } },
 });
 
@@ -54,6 +56,7 @@ test('buildCharts writes four clean SVGs with known values in the right chart', 
   assert.match(charts['dataset-scale.svg'], /1,234/);
   assert.match(charts['engine-cycle.svg'], /777 alerts/);
   assert.match(charts['formcheck-modes.svg'], /0\.863/);
+  assert.match(charts['formcheck-modes.svg'], /2026-11-03 @ 6f6e7cd/);
   assert.ok(!charts['read-latency.svg'].includes('0.863'));
 });
 
@@ -87,8 +90,9 @@ test('truncated bench JSON: missing data, engine, a renamed field and an empty r
 });
 
 test('malformed metrics JSON names the field and the evaluate command', () => {
-  assert.throws(() => buildCharts(benchFixture(), { modes: { Hybrid: {} } }), /modes\["Hybrid"\]\.recall.*training\.evaluate/s);
-  assert.throws(() => buildCharts(benchFixture(), {}), /modes.*training\.evaluate/s);
+  assert.throws(() => buildCharts(benchFixture(), { generatedAt: 'x', modes: { Hybrid: {} } }), /modes\["Hybrid"\]\.recall.*training\.evaluate/s);
+  assert.throws(() => buildCharts(benchFixture(), { generatedAt: 'x' }), /modes.*training\.evaluate/s);
+  assert.throws(() => buildCharts(benchFixture(), { modes: { H: { recall: 1 } } }), /generatedAt.*training\.evaluate/s);
 });
 
 test('barChart refuses an empty series or a point with no value instead of printing -Infinity or a bare TypeError', () => {

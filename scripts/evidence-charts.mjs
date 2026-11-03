@@ -59,6 +59,7 @@ export function validateMetrics(metrics) {
   const bad = (field, want) => {
     throw new Error(`Metrics JSON is missing ${field} (${want}). Produce it with: ${METRICS_HINT}`);
   };
+  if (!metrics || typeof metrics.generatedAt !== 'string' || !metrics.generatedAt) bad('generatedAt', 'an ISO timestamp; re-run the evaluation to stamp it');
   if (!metrics || typeof metrics.modes !== 'object' || metrics.modes === null || Object.keys(metrics.modes).length === 0) bad('modes', 'a non-empty object');
   for (const [name, m] of Object.entries(metrics.modes)) {
     if (!m || !isNum(m.recall)) bad(`modes["${name}"].recall`, 'a number');
@@ -128,7 +129,7 @@ export function buildCharts(bench, metrics) {
     'read-latency.svg': counts('Read latency, p95', reads, 'ms'),
     'engine-cycle.svg': counts('New alerts per cycle (alerts, not time)', engine, 'alerts'),
     'dataset-scale.svg': counts('Dataset scale', scale, ''),
-    'formcheck-modes.svg': barChart({ title: 'Form check recall by mode', caption: 'source: formcheck/metrics.json · synthetic data', series: modes, max: 1, unit: '' }),
+    'formcheck-modes.svg': barChart({ title: 'Form check recall by mode', caption: `formcheck/metrics.json · ${metrics.generatedAt.slice(0, 10)}${metrics.commit ? ' @ ' + metrics.commit : ''} · synthetic data`, series: modes, max: 1, unit: '' }),
   };
 }
 

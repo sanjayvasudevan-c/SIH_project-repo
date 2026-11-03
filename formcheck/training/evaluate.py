@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -30,6 +32,38 @@ def metrics(normal: list[dict], faulty: list[dict], key) -> dict:
     precision = tp / (tp + fp) if tp + fp else 0.0
     recall = tp / (tp + fn) if tp + fn else 0.0
     return {"precision": precision, "recall": recall, "false_alarm_rate": fp / len(normal), "tp": tp, "fp": fp, "fn": fn}
+
+
+def short_commit() -> str | None:
+    try:
+        out = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True, timeout=10)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return out.stdout.strip() or None if out.returncode == 0 else None
+
+
+def write_metrics(payload: dict) -> None:
+    """Stamp metrics.json with when (and at which commit) these figures were produced.
+
+    Re-running over identical figures keeps the existing stamp, so a reproducibility re-run does not
+    dirty the file; the stamp moves only when the figures themselves change.
+    """
+    path = ROOT / "metrics.json"
+    if path.exists():
+        try:
+            old = json.loads(path.read_text())
+        except ValueError:
+            old = {}
+        stamp = {k: old.pop(k) for k in ("generatedAt", "commit") if k in old}
+        if old == payload and "generatedAt" in stamp:
+            payload = {**payload, **stamp}
+            path.write_text(json.dumps(payload, indent=2) + "\n")
+            return
+    payload = {**payload, "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+    commit = short_commit()
+    if commit:
+        payload["commit"] = commit
+    path.write_text(json.dumps(payload, indent=2) + "\n")
 
 
 def main() -> None:
@@ -97,7 +131,7 @@ def main() -> None:
         },
         "perFault": {fault: {name: round(v, 3) for name, v in by_mode.items()} for fault, by_mode in per_fault.items()},
     }
-    (ROOT / "metrics.json").write_text(json.dumps(payload, indent=2) + "\n")
+    write_metrics(payload)
     (ROOT / "EVALUATION.md").write_text("\n".join(lines))
     print("\n".join(lines))
 
