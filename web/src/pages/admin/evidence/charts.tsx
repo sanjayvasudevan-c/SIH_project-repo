@@ -1,9 +1,9 @@
-import { Bar, BarChart, CartesianGrid, Legend, LabelList, Tooltip, XAxis, YAxis } from 'recharts';
-import type { WorkflowVolumePoint } from '../../../api/types';
+import { Bar, BarChart, CartesianGrid, Cell, Legend, LabelList, ReferenceLine, Tooltip, XAxis, YAxis } from 'recharts';
+import type { AssignmentOfficer, WorkflowVolumePoint } from '../../../api/types';
 import { formatDate } from '../../../lib/format';
 import tokens from '../../../lib/chartTokens';
 import { ChartFrame } from './ChartFrame';
-import { fmtInt } from './format';
+import { fmtInt, fmtPct } from './format';
 
 const AXIS = { fontSize: 12, fill: tokens.axis };
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -105,3 +105,70 @@ export function VolumeBars({ label, points, series }: { label: string; points: W
 
 /** "21 May 2026 to 3 Jun 2026" for the first and last plotted day. */
 export const daySpan = (points: WorkflowVolumePoint[]) => `${formatDate(points[0]?.day)} to ${formatDate(points[points.length - 1]?.day)}`;
+
+/** Points to at most two decimals ("3.2", "13", "4.25"); never rounded to a whole number. */
+export const fmtPts = (v: number | null | undefined): string => (v === null || v === undefined || !Number.isFinite(v) ? 'Unavailable' : String(Number(v.toFixed(2))));
+
+function OfficerTick({ x, y, payload }: { x?: number; y?: number; payload?: { value?: string } }) {
+  return (
+    <text x={x} y={(y ?? 0) + 6} transform={`rotate(-60 ${x ?? 0} ${(y ?? 0) + 6})`} textAnchor="end" fontSize={11} fill={tokens.axis}>
+      {payload?.value}
+    </text>
+  );
+}
+
+const PX_PER_OFFICER = 26;
+
+/**
+ * One vertical bar per officer, highest utilisation first, with the normal cap as a reference line. Wider than its card when
+ * there are many officers: it scrolls sideways inside the card, and the data table lists every officer.
+ */
+export function UtilisationBars({ label, officers }: { label: string; officers: AssignmentOfficer[] }) {
+  const caps = [...new Set(officers.map((o) => o.maxUtil))];
+  const cap = caps.length === 1 ? caps[0]! : null; // officers share one cap in practice; if they ever differ, no single line is honest
+  const top = Math.max(1, ...officers.map((o) => o.utilisation), ...officers.map((o) => o.maxUtil));
+  const ceil = Math.ceil(top * 4) / 4; // quarter steps: 0%, 25% ... never an uneven axis
+  const ticks = Array.from({ length: Math.round(ceil * 4) + 1 }, (_, i) => i / 4);
+  return (
+    <ChartFrame
+      label={label}
+      height={380}
+      minWidth={Math.max(520, officers.length * PX_PER_OFFICER + 60)}
+      columns={[
+        { key: 'name', header: 'Officer' },
+        { key: 'openPoints', header: 'Open points', format: (v) => fmtPts(v as number) },
+        { key: 'capacityPoints', header: 'Capacity', format: (v) => fmtPts(v as number) },
+        { key: 'utilisation', header: 'Utilisation', format: (v) => fmtPct(v as number) },
+        { key: 'maxUtil', header: 'Normal cap', format: (v) => fmtPct(v as number) },
+      ]}
+      rows={officers as unknown as BarRow[]}
+    >
+      <BarChart data={officers} margin={{ top: 8, right: 12, bottom: 4, left: 0 }} barCategoryGap="18%">
+        <CartesianGrid stroke={tokens.grid} vertical={false} />
+        <XAxis dataKey="name" interval={0} height={120} tick={<OfficerTick />} stroke={tokens.grid} />
+        <YAxis domain={[0, ceil]} ticks={ticks} tickFormatter={(v: number) => fmtPct(v)} width={48} tick={AXIS} stroke={tokens.grid} />
+        <Tooltip
+          cursor={{ fill: tokens.cursor }}
+          content={({ active, payload }) => {
+            const o = active ? (payload?.[0]?.payload as AssignmentOfficer | undefined) : undefined;
+            if (!o) return null;
+            return (
+              <div className="rounded border bg-surface p-2 text-sm shadow">
+                <p className="font-semibold">{o.name}</p>
+                <p>Open points: {fmtPts(o.openPoints)}</p>
+                <p>Capacity: {fmtPts(o.capacityPoints)}</p>
+                <p>Utilisation: {fmtPct(o.utilisation)}</p>
+              </div>
+            );
+          }}
+        />
+        {cap !== null ? <ReferenceLine y={cap} stroke={tokens.warning} strokeDasharray="6 4" strokeWidth={2} label={{ value: `Normal cap ${fmtPct(cap)}`, position: 'insideTopRight', fontSize: 12, fill: tokens.axis }} /> : null}
+        <Bar dataKey="utilisation" name="Utilisation" isAnimationActive={false}>
+          {officers.map((o) => (
+            <Cell key={o.officerId} fill={o.utilisation > o.maxUtil + 1e-9 ? tokens.danger : tokens.accent} />
+          ))}
+        </Bar>
+      </BarChart>
+    </ChartFrame>
+  );
+}

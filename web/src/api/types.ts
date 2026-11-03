@@ -413,3 +413,81 @@ export interface AuditAnalyticsData {
   total: number;
   integrity: { ok: boolean; chainsChecked: number; rowsChecked: number; brokenChainCount: number; scope: string };
 }
+
+// ── Evidence Center: assignment (read from the live responses) ───────────────
+export type AssignmentOutcome = 'ASSIGNED' | 'BUREAU_OVERFLOW' | 'BLOCKED';
+export type ExcludedBy = 'UNAVAILABLE' | 'BARRED' | 'RECUSED' | 'OVER_CAPACITY';
+export interface AssignmentOfficer {
+  officerId: string;
+  name: string;
+  role: string;
+  capacityPoints: number;
+  maxUtil: number;
+  openPoints: number;
+  openTasks: number;
+  openPointsAssignedInWindow: number;
+  utilisation: number;
+}
+export interface AssignmentCoverage {
+  tracedCount: number;
+  assignmentTotal: number;
+  blockedCount: number;
+}
+export interface AssignmentDecision {
+  traceId: string;
+  applicationId: string;
+  applicationNo: string | null;
+  taskType: string;
+  outcome: AssignmentOutcome;
+  chosenOfficer: string | null;
+  decidedAt: string;
+  considered: number;
+  eligible: number;
+}
+/** GET /evidence/assignment `data`. */
+export interface AssignmentData {
+  window: { from: string | null; to: string | null };
+  officers: AssignmentOfficer[];
+  spread: { officerCount: number; meanUtilisation: number | null; stdDev: number | null };
+  coverage: AssignmentCoverage;
+  outcomes: { outcome: AssignmentOutcome; count: number }[];
+  candidates: { candidatesConsidered: number; eligible: number; excluded: { reason: ExcludedBy; count: number }[] };
+  continuityOverrides: {
+    count: number;
+    continuityUtilCap: number;
+    urgentMaxUtil: number;
+    rows: { officerId: string; officer: string; utilisation: number; normalCap: number; text: string }[];
+  };
+  recentDecisions: AssignmentDecision[];
+  rulePackVersions: { label: string; assignments: number }[];
+  policy: { label: string };
+}
+export interface TraceCandidate {
+  officerId: string;
+  name: string;
+  tier: number;
+  eligible: boolean;
+  excludedBy: ExcludedBy | null;
+  chosen: boolean;
+  capacity: number;
+  openPoints: number;
+  projectedUtil: number;
+  score: number;
+}
+export interface AssignmentTraceRow {
+  id: string;
+  assignmentId: string | null;
+  applicationId: string;
+  taskType: string;
+  decidedAt: string;
+  chosenOfficerId: string | null;
+  outcome: AssignmentOutcome;
+  weight: number;
+  candidates: TraceCandidate[];
+  reasonText: string;
+}
+/** GET /evidence/assignment-trace/:applicationId. `rows` holds every decision recorded for that application. */
+export interface AssignmentTraceResponse {
+  rows: AssignmentTraceRow[];
+  coverage: AssignmentCoverage;
+}

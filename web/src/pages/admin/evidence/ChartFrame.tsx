@@ -12,14 +12,17 @@ export interface ChartColumn {
  * A chart with its accessible alternative. The "Data table" lists the very rows the chart is drawn from,
  * so what a screen reader (or a test) sees is what the chart shows. A null cell is "Unavailable", never 0.
  */
-export function ChartFrame({ label, height = 240, columns, rows, children }: { label: string; height?: number; columns: ChartColumn[]; rows: Record<string, unknown>[]; children: ReactElement }) {
+export function ChartFrame({ label, height = 240, minWidth, columns, rows, children }: { label: string; height?: number; minWidth?: number; columns: ChartColumn[]; rows: Record<string, unknown>[]; children: ReactElement }) {
   const cell = (c: ChartColumn, v: unknown) => (v === null || v === undefined || v === '' || (typeof v === 'number' && !Number.isFinite(v)) ? UNAVAILABLE : c.format ? c.format(v) : String(v));
   return (
     <div>
-      <div role="img" aria-label={label} style={{ height }} className="w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          {children}
-        </ResponsiveContainer>
+      {/* A chart with more categories than fit is wider than its card and scrolls inside it, never the page. */}
+      <div className="max-w-full overflow-x-auto" tabIndex={minWidth ? 0 : undefined} role={minWidth ? 'region' : undefined} aria-label={minWidth ? `${label} (scrolls sideways)` : undefined}>
+        <div role="img" aria-label={label} style={{ height, minWidth }} className="w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            {children}
+          </ResponsiveContainer>
+        </div>
       </div>
       <details className="mt-2 text-sm">
         <summary className="hit cursor-pointer text-accent">Data table</summary>
