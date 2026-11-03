@@ -9,13 +9,13 @@ import { requireRole } from '../policy/roles.js';
 import type { Provenance } from './evidence/artifacts.js';
 import { alerts } from './evidence/alerts.js';
 import { parseDateOnly } from '../lib/dates.js';
-import { auditAnalytics, auditQuery, assignment, compliance, windowQuery, workflow } from './evidence/aggregates.js';
+import { day, auditAnalytics, auditQuery, assignment, compliance, windowQuery, workflow } from './evidence/aggregates.js';
 import { headCommit, readArtifacts, readTestResult, commitIsCurrent } from './evidence/artifacts.js';
 
 const none = z.object({});
 const runsQuery0 = z.object({
-  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD').optional(),
-  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD').optional(),
+  from: day,
+  to: day,
   status: z.enum(['RUNNING', 'OK', 'FAILED']).optional(),
   page: z.coerce.number().int().min(1).max(10_000).default(1),
   pageSize: z.coerce.number().int().min(1).max(200).default(25),

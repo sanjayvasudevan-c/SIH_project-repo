@@ -12,7 +12,12 @@ import { COMPLIANCE, daysToDueOf } from '../../engine/cycle.js';
 import { newestRules, rulesForApp } from '../../rules/service.js';
 import type { Provenance } from './artifacts.js';
 
-const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD').optional();
+/** A real calendar day as YYYY-MM-DD: parsed, formatted back, and required to equal the input (so 2026-02-30 is rejected, not rolled over). */
+export const day = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD')
+  .refine((v) => isoDate(parseDateOnly(v)) === v, { message: 'Not a real calendar date' })
+  .optional();
 const ordered = { message: 'from must not be after to', path: ['from'] };
 const notBackwards = (v: { from?: string; to?: string }) => !v.from || !v.to || v.from <= v.to; // an inverted window is a mistake, not an empty answer
 export const windowQuery = z.object({ from: day, to: day }).refine(notBackwards, ordered);

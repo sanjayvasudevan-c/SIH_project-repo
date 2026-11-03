@@ -211,4 +211,15 @@ describe('/api/evidence/alerts and engine-run totals', () => {
     expect((await get('/api/evidence/engine-runs?from=2026-02-01&to=2026-01-01')).status).toBe(400);
     expect((await get('/api/evidence/engine-runs?from=yesterday')).status).toBe(400);
   });
+
+  it('15. every windowed evidence endpoint rejects a non-existent calendar date with 400 and accepts a leap day', async () => {
+    for (const ep of ['engine-runs', 'alerts', 'compliance', 'workflow', 'assignment', 'audit-analytics']) {
+      for (const bad of ['from=2026-13-45', 'from=2026-02-30', 'to=2026-11-31', 'to=2027-02-29']) {
+        const r = await get(`/api/evidence/${ep}?${bad}`);
+        expect(r.status, `${ep} ${bad}`).toBe(400);
+        expect(JSON.stringify(r.body)).toMatch(/real calendar date/i);
+      }
+      expect((await get(`/api/evidence/${ep}?from=2028-02-29&to=2028-02-29`)).status, `${ep} leap day`).toBe(200);
+    }
+  });
 });
