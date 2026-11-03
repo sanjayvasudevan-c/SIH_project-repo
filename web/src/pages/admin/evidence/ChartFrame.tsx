@@ -13,7 +13,7 @@ export interface ChartColumn {
  * so what a screen reader (or a test) sees is what the chart shows. A null cell is "Unavailable", never 0.
  */
 export function ChartFrame({ label, height = 240, columns, rows, children }: { label: string; height?: number; columns: ChartColumn[]; rows: Record<string, unknown>[]; children: ReactElement }) {
-  const cell = (c: ChartColumn, v: unknown) => (v === null || v === undefined ? UNAVAILABLE : c.format ? c.format(v) : String(v));
+  const cell = (c: ChartColumn, v: unknown) => (v === null || v === undefined || v === '' || (typeof v === 'number' && !Number.isFinite(v)) ? UNAVAILABLE : c.format ? c.format(v) : String(v));
   return (
     <div>
       <div role="img" aria-label={label} style={{ height }} className="w-full">

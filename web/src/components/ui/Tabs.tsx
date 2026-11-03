@@ -7,8 +7,9 @@ export interface TabDef<T extends string> {
   count?: number;
 }
 
-export function Tabs<T extends string>({ tabs, value, onChange, label, children }: { tabs: TabDef<T>[]; value: T; onChange: (v: T) => void; label: string; children?: ReactNode }) {
-  const base = useId();
+export function Tabs<T extends string>({ tabs, value, onChange, label, children, idPrefix }: { tabs: TabDef<T>[]; value: T; onChange: (v: T) => void; label: string; children?: ReactNode; idPrefix?: string }) {
+  const auto = useId();
+  const base = idPrefix ?? auto;
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   return (
     <div>
@@ -25,7 +26,7 @@ export function Tabs<T extends string>({ tabs, value, onChange, label, children 
               role="tab"
               type="button"
               aria-selected={selected}
-              aria-controls={children !== undefined ? `${base}-panel` : undefined}
+              aria-controls={children !== undefined || idPrefix ? `${base}-panel` : undefined}
               tabIndex={selected ? 0 : -1}
               onClick={() => onChange(t.id)}
               onKeyDown={(e) => {

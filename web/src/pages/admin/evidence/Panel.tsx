@@ -7,6 +7,19 @@ import { ProvenanceChip } from './Provenance';
 export type PanelState = 'ready' | 'loading' | 'error' | 'empty' | 'insufficient';
 
 export const NO_DEFINITION = 'This measure has no definition and is not shown';
+export const NO_SCOPE = 'This measure does not say what it covers and is not shown';
+
+/**
+ * The state for a query-backed panel: loading while pending, error on failure, then insufficient, then empty, else ready.
+ * Sections use this so a panel cannot be "ready" with no data.
+ */
+export function panelState(q: { isPending: boolean; isError: boolean }, isEmpty: boolean, isInsufficient = false): PanelState {
+  if (q.isPending) return 'loading';
+  if (q.isError) return 'error';
+  if (isInsufficient) return 'insufficient';
+  if (isEmpty) return 'empty';
+  return 'ready';
+}
 
 interface ErrorProp {
   message?: string;
@@ -34,12 +47,13 @@ function Header({ provenance, scope, definition }: { provenance: Provenance | nu
 }
 
 /** The state the body is in. Returns null only when the value/children may be shown. */
-function Gate({ state, definition, emptyMessage, insufficientMessage, error }: { state: PanelState; definition: string | undefined; emptyMessage?: string; insufficientMessage?: string; error?: ErrorProp }): ReactNode {
+function Gate({ state, definition, scope, emptyMessage, insufficientMessage, error }: { state: PanelState; definition: string | undefined; scope: string | undefined; emptyMessage?: string; insufficientMessage?: string; error?: ErrorProp }): ReactNode {
   if (state === 'loading') return <Skeleton lines={3} />;
   if (state === 'error') return <ErrorState message={error?.message} onRetry={error?.onRetry} />;
   if (state === 'empty') return <EmptyState message={emptyMessage ?? 'No records in this scope.'} />;
   if (state === 'insufficient') return <EmptyState message={insufficientMessage ?? 'There is not enough data to show this yet.'} />;
-  if (!hasText(definition)) return <ErrorState message={NO_DEFINITION} />;
+  if (!hasText(definition)) return <ErrorState title="Not shown" message={NO_DEFINITION} />;
+  if (!hasText(scope)) return <ErrorState title="Not shown" message={NO_SCOPE} />;
   return null;
 }
 

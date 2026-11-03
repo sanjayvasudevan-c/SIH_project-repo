@@ -16,7 +16,7 @@ export function EvidenceCenterPage() {
   if (!isSectionId(section)) return <Navigate to={`${BASE}/overview`} replace />;
 
   const current = SECTIONS.find((s) => s.id === section)!;
-  const go = (id: SectionId) => navigate({ pathname: `${BASE}/${id}`, search: '' });
+  const go = (id: SectionId, replace = false) => navigate({ pathname: `${BASE}/${id}`, search: '' }, { replace });
   const Body = current.Component;
 
   return (
@@ -28,7 +28,7 @@ export function EvidenceCenterPage() {
       />
       <div>
         <div className="hidden md:block">
-          <Tabs label="Evidence sections" tabs={SECTIONS.map((s) => ({ id: s.id, label: s.label }))} value={section} onChange={go} />
+          <Tabs label="Evidence sections" tabs={SECTIONS.map((s) => ({ id: s.id, label: s.label }))} value={section} onChange={(id) => go(id, true)} idPrefix="evidence" />
         </div>
         <div className="flex flex-col gap-1 md:hidden">
           <label htmlFor="evidence-section" className="text-base font-medium">
@@ -43,9 +43,9 @@ export function EvidenceCenterPage() {
           </Select>
         </div>
       </div>
-      <section aria-labelledby="evidence-section-title" className="flex flex-col gap-4">
+      <section role="tabpanel" id="evidence-panel" aria-labelledby={`evidence-tab-${section}`} className="flex flex-col gap-4">
         <div>
-          <h2 id="evidence-section-title" className="text-lg font-semibold">
+          <h2 className="text-lg font-semibold">
             {current.label}
           </h2>
           <p className="text-base text-secondary">{current.description}</p>

@@ -21,6 +21,11 @@ describe('ProvenanceChip', () => {
     expect(screen.getByText(label)).toBeInTheDocument();
     expect(container.querySelector('svg')).not.toBeNull();
   });
+  it.each([undefined, 'GARBAGE', '', 'toString'])('an undeclared key (%j) reads "Source not declared" and does not throw', (v) => {
+    const { container } = renderWithApp(<ProvenanceChip provenance={v as unknown as Provenance} />);
+    expect(screen.getByText('Source not declared')).toBeInTheDocument();
+    expect(container.querySelector('svg')).not.toBeNull();
+  });
   it('null is "Source not declared", never a guess', () => {
     const { container } = renderWithApp(<ProvenanceChip provenance={null} />);
     expect(screen.getByText('Source not declared')).toBeInTheDocument();

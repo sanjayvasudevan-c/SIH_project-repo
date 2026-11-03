@@ -56,4 +56,18 @@ describe('ChartFrame', () => {
       ['W3', 'Unavailable'],
     ]);
   });
+  it('non-finite numbers and empty strings read Unavailable', () => {
+    const odd = [
+      { week: 'A', count: NaN },
+      { week: 'B', count: Infinity },
+      { week: 'C', count: '' },
+    ];
+    const { container } = renderWithApp(
+      <ChartFrame label="x" columns={columns} rows={odd}>
+        {chart()}
+      </ChartFrame>,
+    );
+    const counts = Array.from(container.querySelectorAll('tbody tr')).map((r) => r.querySelectorAll('td')[1]!.textContent);
+    expect(counts).toEqual(['Unavailable', 'Unavailable', 'Unavailable']);
+  });
 });

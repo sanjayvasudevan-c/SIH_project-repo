@@ -18,7 +18,8 @@ const CHIPS: Record<Provenance, { label: string; tone: Tone; icon: ReactElement 
 
 /** Where a figure comes from: always an icon and words, never colour alone. `null` means undeclared. */
 export function ProvenanceChip({ provenance }: { provenance: Provenance | null }) {
-  if (provenance === null) return <Badge tone="neutral" icon={<HelpCircle {...ICON} />}>Source not declared</Badge>;
+  // null, undefined (a key the API omitted) and unknown strings are all "not declared": never a crash, never a guess.
+  if (provenance == null || !Object.prototype.hasOwnProperty.call(CHIPS, provenance)) return <Badge tone="neutral" icon={<HelpCircle {...ICON} />}>Source not declared</Badge>;
   const c = CHIPS[provenance];
   return (
     <Badge tone={c.tone} icon={c.icon}>

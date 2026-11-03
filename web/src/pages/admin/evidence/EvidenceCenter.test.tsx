@@ -48,11 +48,27 @@ describe('EvidenceCenter shell', () => {
     expect(screen.getByLabelText('Section').parentElement!.className).toMatch(/md:hidden/);
   });
   it('shows the current section and marks it selected in both', () => {
-    renderWithApp(app(), { route: '/admin/evidence/alerts' });
+    const { container } = renderWithApp(app(), { route: '/admin/evidence/alerts' });
     expect(screen.getByRole('tab', { name: 'Alerts' })).toHaveAttribute('aria-selected', 'true');
     expect((screen.getByLabelText('Section') as HTMLSelectElement).value).toBe('alerts');
     expect(screen.getByRole('heading', { level: 2, name: 'Alerts' })).toBeInTheDocument();
-    expect(screen.getByText('This section is not built yet.')).toBeInTheDocument();
+    expect(container.querySelectorAll('[role=tabpanel]')).toHaveLength(1);
+  });
+  it('the body is the tabpanel of the active tab', () => {
+    renderWithApp(app(), { route: '/admin/evidence/audit' });
+    const tab = screen.getByRole('tab', { name: 'Audit' });
+    const panel = screen.getByRole('tabpanel');
+    expect(panel).toHaveAttribute('aria-labelledby', tab.id);
+    expect(tab).toHaveAttribute('aria-controls', panel.id);
+  });
+  it('an unbuilt section is marked as a placeholder (overview)', () => {
+    const { container } = renderWithApp(app(), { route: '/admin/evidence/overview' });
+    expect(container.querySelector('[data-placeholder]')).not.toBeNull();
+  });
+  it('arrow-key tab changes replace history rather than push', () => {
+    renderWithApp(app(), { route: '/admin/evidence/overview' });
+    fireEvent.keyDown(screen.getByRole('tab', { name: 'Overview' }), { key: 'ArrowRight' });
+    expect(screen.getByTestId('where').textContent).toBe('/admin/evidence/workflow');
   });
   it('choosing from the select navigates and drops the date range', () => {
     renderWithApp(app(), { route: '/admin/evidence/overview?from=2026-09-01&to=2026-09-30' });

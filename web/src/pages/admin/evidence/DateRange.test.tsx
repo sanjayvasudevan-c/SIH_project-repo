@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 import { Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import { renderWithApp } from '../../../test/render';
-import { DateRange, useRange } from './DateRange';
+import { DateRange, isRealDate, useRange } from './DateRange';
 
 const CLOCK = "Dates apply to the system's own calendar";
 
@@ -47,6 +47,60 @@ function Probe() {
     </div>
   );
 }
+
+describe('DateRange accessibility and validation', () => {
+  it('is a labelled group and links the clock label to both inputs', () => {
+    renderWithApp(<DateRange onChange={() => {}} clockLabel={CLOCK} label="Audit dates" />);
+    expect(screen.getByRole('group', { name: 'Audit dates' })).toBeInTheDocument();
+    const clock = screen.getByText(CLOCK);
+    expect(screen.getByLabelText('From')).toHaveAttribute('aria-describedby', clock.id);
+    expect(screen.getByLabelText('To')).toHaveAttribute('aria-describedby', clock.id);
+  });
+  it('an invalid inherited range shows a visible alert', () => {
+    renderWithApp(<DateRange onChange={() => {}} clockLabel={CLOCK} invalid />);
+    expect(screen.getByRole('alert')).toHaveTextContent("The link's date range was not valid and has been ignored.");
+  });
+  it('an impossible date is reported, not silently dropped', () => {
+    const onChange = vi.fn();
+    renderWithApp(<DateRange onChange={onChange} clockLabel={CLOCK} />);
+    fireEvent.change(screen.getByLabelText('From'), { target: { value: '2026-02-30' } });
+    expect(onChange).not.toHaveBeenCalled();
+  });
+  it('isRealDate', () => {
+    expect(isRealDate('2026-02-28')).toBe(true);
+    expect(isRealDate('2024-02-29')).toBe(true);
+    for (const s of ['2026-02-30', '2026-13-01', 'garbage', '2026-1-1', '', '2026-12-01T00:00']) expect(isRealDate(s)).toBe(false);
+  });
+});
+
+function RangeProbe() {
+  const { range, invalid } = useRange();
+  return (
+    <span data-testid="r">{`${range.from ?? ''}|${range.to ?? ''}|${invalid}`}</span>
+  );
+}
+
+describe('useRange validates the URL', () => {
+  const at = (q: string) =>
+    renderWithApp(
+      <Routes>
+        <Route path="/admin/evidence/:section" element={<RangeProbe />} />
+      </Routes>,
+      { route: `/admin/evidence/overview${q}` },
+    );
+  it.each([
+    ['garbage', '?from=2026-12-01&to=garbage', '||true'],
+    ['impossible date', '?from=2026-02-30', '||true'],
+    ['inverted', '?from=2026-12-01&to=2026-01-01', '||true'],
+    ['valid', '?from=2026-01-01&to=2026-12-01', '2026-01-01|2026-12-01|false'],
+    ['from only', '?from=2026-01-01', '2026-01-01||false'],
+    ['to only', '?to=2026-01-01', '|2026-01-01|false'],
+    ['none', '', '||false'],
+  ])('%s', (_n, q, expected) => {
+    at(q);
+    expect(screen.getByTestId('r').textContent).toBe(expected);
+  });
+});
 
 describe('useRange', () => {
   const app = (

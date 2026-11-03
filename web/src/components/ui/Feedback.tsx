@@ -25,13 +25,13 @@ export function EmptyState({ message, action }: { message: string; action?: Reac
   );
 }
 
-export function ErrorState({ message, onRetry }: { message?: string; onRetry?: () => void }) {
+export function ErrorState({ message, onRetry, title }: { message?: string; onRetry?: () => void; title?: string }) {
   const en = useT();
   return (
     <div role="alert" className="flex flex-col items-start gap-3 px-4 py-6">
       <p className="flex items-center gap-2 text-base font-medium text-danger">
         <AlertCircle size={16} strokeWidth={1.75} aria-hidden />
-        {en.app.errorTitle}
+        {title ?? en.app.errorTitle}
       </p>
       {message ? <p className="text-base text-secondary">{message}</p> : null}
       {onRetry ? (
