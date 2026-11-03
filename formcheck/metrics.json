@@ -1,0 +1,54 @@
+{
+  "model": "application_form_v1",
+  "threshold": 0.5794,
+  "datasets": {
+    "train": 4000,
+    "testNormal": 1000,
+    "testFaulty": 1000,
+    "synthetic": true
+  },
+  "modes": {
+    "Rules only": {
+      "precision": 1.0,
+      "recall": 0.859,
+      "false_alarm_rate": 0.0
+    },
+    "Model only": {
+      "precision": 0.842,
+      "recall": 0.117,
+      "false_alarm_rate": 0.022
+    },
+    "Hybrid (rules or model)": {
+      "precision": 0.975,
+      "recall": 0.863,
+      "false_alarm_rate": 0.022
+    }
+  },
+  "perFault": {
+    "unit_error": {
+      "Rules only": 0.295,
+      "Model only": 0.07,
+      "Hybrid (rules or model)": 0.315
+    },
+    "builtup_over": {
+      "Rules only": 1.0,
+      "Model only": 0.28,
+      "Hybrid (rules or model)": 1.0
+    },
+    "faculty_short": {
+      "Rules only": 1.0,
+      "Model only": 0.09,
+      "Hybrid (rules or model)": 1.0
+    },
+    "expired_lease": {
+      "Rules only": 1.0,
+      "Model only": 0.06,
+      "Hybrid (rules or model)": 1.0
+    },
+    "bulk_missing": {
+      "Rules only": 1.0,
+      "Model only": 0.085,
+      "Hybrid (rules or model)": 1.0
+    }
+  }
+}
