@@ -6,7 +6,10 @@
 // 3. Start the API in-process and time the main read screens under concurrent requests.
 // 4. Print the results as JSON and reset the demo database again.
 import type { AddressInfo } from 'node:net';
+import { execSync } from 'node:child_process';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
+import path from 'node:path';
 import { createApp } from '../src/app.js';
 import { prisma } from '../src/lib/db.js';
 import { recreateFromTemplate, withAdminClient } from '../src/lib/demoReset.js';
@@ -110,9 +113,22 @@ async function readLoad(port: number) {
     await Promise.all(Array.from({ length: CONCURRENCY }, worker));
     const wall = ms(t0) / 1000;
     times.sort((a, b) => a - b);
-    out.push({ screen: s.name, requests: times.length, concurrency: CONCURRENCY, errors, p50ms: pct(times, 50), p95ms: pct(times, 95), maxMs: Math.round(times[times.length - 1]), perSecond: Math.round(times.length / wall) });
+    out.push({ screen: s.name, requests: times.length, concurrency: CONCURRENCY, errors, p50ms: pct(times, 50), p95ms: pct(times, 95), p99ms: pct(times, 99), maxMs: Math.round(times[times.length - 1]), perSecond: Math.round(times.length / wall) });
   }
   return out;
+}
+
+function gitCommit() {
+  try {
+    return execSync('git rev-parse --short HEAD', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+  } catch {
+    return 'unknown';
+  }
+}
+
+async function pgVersion() {
+  const rows = await prisma.$queryRaw<{ version: string }[]>`SELECT version()`;
+  return /PostgreSQL (\S+)/.exec(rows[0].version)?.[1] ?? rows[0].version;
 }
 
 async function main() {
@@ -127,13 +143,24 @@ async function main() {
   const reads = await readLoad((server.address() as AddressInfo).port);
   server.close();
   const report = {
+    commit: gitCommit(),
+    datasetSize: TARGET,
+    pgVersion: await pgVersion(),
     date: new Date().toISOString(),
     machine: { cpus: os.cpus().length, cpuModel: os.cpus()[0]?.model, memoryGb: Math.round(os.totalmem() / 2 ** 30), node: process.version },
     data: { ...data, bulkLoadMs: loadMs },
     engine: { firstCycle: first, secondCycle: second },
     reads,
   };
-  console.log(JSON.stringify(report, null, 2));
+  const json = JSON.stringify(report, null, 2);
+  console.log(json);
+  const outIdx = process.argv.indexOf('--out');
+  if (outIdx !== -1) {
+    const out = process.argv[outIdx + 1];
+    if (!out) throw new Error('--out needs a path');
+    mkdirSync(path.dirname(out), { recursive: true });
+    writeFileSync(out, json + '\n');
+  }
   await prisma.$disconnect();
   await recreateFromTemplate();
 }

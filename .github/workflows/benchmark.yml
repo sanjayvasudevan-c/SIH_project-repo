@@ -1,0 +1,73 @@
+# Load benchmark. Manual or weekly only, never on pull requests: a load test is the
+# wrong per-PR gate. It uploads results as an artifact and never commits or pushes;
+# a human decides whether to add them to the repository.
+#
+# WARNING: the load test resets the demo database at both ends. It must only ever run
+# against this throwaway service container, never a shared or hosted database.
+name: Benchmark
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 4 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    name: Load benchmark (PostgreSQL 16 service container)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    # Local dev credentials only, the same values as .env.example. No secrets.
+    env:
+      DATABASE_URL: postgresql://aicte_app:app_pw@localhost:5432/aicte
+      MIGRATOR_URL: postgresql://aicte_migrator:migrator_pw@localhost:5432/aicte
+      DEMO_ADMIN_URL: postgresql://postgres:postgres@localhost:5432/postgres
+      JWT_SECRET: ci-throwaway-not-a-secret
+      DEMO_MODE: 'true'
+      CLIENT_ORIGIN: http://localhost:5173
+      FORMCHECK_URL: http://localhost:8000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm --workspace api run prisma:generate
+      - name: Migrate and seed
+        run: npm --workspace api run setup:db
+      - name: Load test
+        run: |
+          SHA=$(git rev-parse --short HEAD)
+          echo "$SHA" > commit.txt
+          cd api
+          npm run load:test -- --out ../docs/evidence/benchmark-results/$SHA.json
+      - name: Generate charts
+        run: |
+          SHA=$(git rev-parse --short HEAD)
+          node scripts/evidence-charts.mjs --bench docs/evidence/benchmark-results/$SHA.json \
+            --metrics formcheck/metrics.json --out docs/evidence/charts
+      - name: Upload benchmark results and charts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            commit.txt
+            docs/evidence/benchmark-results/
+            docs/evidence/charts/
+          if-no-files-found: warn

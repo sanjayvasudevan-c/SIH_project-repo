@@ -1,0 +1,121 @@
+{
+  "commit": "565c210",
+  "datasetSize": 15000,
+  "pgVersion": "16.15",
+  "date": "2026-11-03T08:26:18.480Z",
+  "machine": {
+    "cpus": 4,
+    "cpuModel": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+    "memoryGb": 16,
+    "node": "v22.22.0"
+  },
+  "data": {
+    "seededApplications": 191,
+    "applications": 15000,
+    "deadlineItems": 27412,
+    "openDeadlineItems": 13982,
+    "assignments": 17279,
+    "bulkLoadMs": 1742
+  },
+  "engine": {
+    "firstCycle": {
+      "ms": 93751,
+      "newAlerts": 9321,
+      "result": {
+        "reminders": 1674,
+        "lateReminders": 1580,
+        "atRisk": 1742,
+        "overdue": 2648,
+        "escalations": 3257,
+        "released": 0,
+        "digests": 0,
+        "notifications": 9778,
+        "itemsChecked": 13982,
+        "rulesPublished": 0,
+        "flagsRaised": 9501,
+        "flagsUpdated": 81,
+        "flagsResolved": 0,
+        "flagsOpen": 9582,
+        "today": "2026-11-03"
+      }
+    },
+    "secondCycle": {
+      "ms": 47123,
+      "newAlerts": 0,
+      "result": {
+        "reminders": 0,
+        "lateReminders": 0,
+        "atRisk": 0,
+        "overdue": 0,
+        "escalations": 0,
+        "released": 0,
+        "digests": 0,
+        "notifications": 0,
+        "itemsChecked": 13982,
+        "rulesPublished": 0,
+        "flagsRaised": 0,
+        "flagsUpdated": 9582,
+        "flagsResolved": 0,
+        "flagsOpen": 9582,
+        "today": "2026-11-03"
+      }
+    }
+  },
+  "reads": [
+    {
+      "screen": "Action Center (officer)",
+      "requests": 400,
+      "concurrency": 20,
+      "errors": 0,
+      "p50ms": 276,
+      "p95ms": 461,
+      "p99ms": 572,
+      "maxMs": 574,
+      "perSecond": 70
+    },
+    {
+      "screen": "Action Center summary (senior)",
+      "requests": 400,
+      "concurrency": 20,
+      "errors": 0,
+      "p50ms": 146,
+      "p95ms": 199,
+      "p99ms": 234,
+      "maxMs": 255,
+      "perSecond": 133
+    },
+    {
+      "screen": "Applications list (officer)",
+      "requests": 400,
+      "concurrency": 20,
+      "errors": 0,
+      "p50ms": 756,
+      "p95ms": 815,
+      "p99ms": 849,
+      "maxMs": 933,
+      "perSecond": 26
+    },
+    {
+      "screen": "Team report (senior)",
+      "requests": 400,
+      "concurrency": 20,
+      "errors": 0,
+      "p50ms": 1648,
+      "p95ms": 1851,
+      "p99ms": 1946,
+      "maxMs": 2000,
+      "perSecond": 12
+    },
+    {
+      "screen": "Authority queue",
+      "requests": 400,
+      "concurrency": 20,
+      "errors": 0,
+      "p50ms": 298,
+      "p95ms": 348,
+      "p99ms": 398,
+      "maxMs": 399,
+      "perSecond": 66
+    }
+  ]
+}

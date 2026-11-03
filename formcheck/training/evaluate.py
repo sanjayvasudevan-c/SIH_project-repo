@@ -88,6 +88,16 @@ def main() -> None:
         "* The check is advisory: it never blocks filing and never affects routing, deadlines, assignment or Action Center order.",
         "",
     ]
+    payload = {
+        "model": scorer.version,
+        "threshold": round(float(scorer.threshold), 4),
+        "datasets": {"train": len(load("train")), "testNormal": len(normal), "testFaulty": len(faulty), "synthetic": True},
+        "modes": {
+            name: {k: round(r[k], 3) for k in ("precision", "recall", "false_alarm_rate")} for name, r in results.items()
+        },
+        "perFault": {fault: {name: round(v, 3) for name, v in by_mode.items()} for fault, by_mode in per_fault.items()},
+    }
+    (ROOT / "metrics.json").write_text(json.dumps(payload, indent=2) + "\n")
     (ROOT / "EVALUATION.md").write_text("\n".join(lines))
     print("\n".join(lines))
 
