@@ -408,7 +408,9 @@ git commit -m "Evidence API: ADMIN-only read-only router over the stored evidenc
 
 ---
 
-### Task 4: The Evidence Center page
+### Task 4: The Evidence Center page — **SUPERSEDED by Tasks 4a–4e below (Amendment 2)**
+
+*Retained for its panel rules, which still bind. It is no longer dispatched as one task.*
 
 **Files:**
 - Create: `web/src/pages/admin/evidence/EvidenceCenter.tsx` (the tab shell and route target)
@@ -694,3 +696,167 @@ Expected: all green, count = previous + 8.
 git add api/src/routes/evidence api/src/routes/evidence.ts api/test/evidence-aggregates.test.ts
 git commit -m "Evidence API: aggregates that state their own KPI definitions"
 ```
+
+---
+
+## Amendment 2 (2026-11-03): eight sections, a split Task 4, and what the data actually supports
+
+**Why.** The user specified the page structure: **Overview, Workflow, Assignment, Scheduler & compliance, Alerts, Audit, ML evaluation, Performance** — "keep each section focused … avoid putting every metric on one screen." Task 4 as first written (seven tabs in one task) could not be gated by one reviewer, so it is replaced by 4a–4e. Before writing these I inspected the dev database, and several things the request assumed do not exist in the data. They are recorded here because they bind the design; **a panel the data cannot support is shown as an explicit insufficient-data state, never faked**.
+
+### What the data does and does not support (measured on the dev database, 2026-11-03)
+
+| Requested | What exists | Consequence |
+|---|---|---|
+| Alerts by **status**; acknowledgement and resolution time | `AlertLog` has **no status, acknowledgement or resolution field** — only `late`. `Notification` has one `read` boolean. | A status panel would be invention. The Alerts section shows an insufficient-data panel naming exactly what is not recorded. |
+| Notification read state | 812 notifications, **0 read** — nobody has signed in to open them. | True and meaningless. Not charted; the response flags `informative: false` and the UI says why. |
+| Alert **trend** | 107 alerts over **7 distinct simulated days** (1, 1, 3, 16, 22, 43, 21). Gaps are days the engine did not run, not zero-alert days. | Bars per day, gaps omitted, never a line; x-axis labelled "simulated date". The definition says it records when the engine ran, not an operational trend. |
+| Benchmark **comparison across runs** | **One** run is committed (`565c210.json`). The 26 Oct run exists only as prose, from a different CPU. | Insufficient-data panel until Task 5 adds a second run on the same machine block. Runs are compared only when their `machine` blocks match. |
+| Confusion matrix | `metrics.json` stores rates and the test-set sizes (1,000 normal, 1,000 faulty). | **Derivable exactly**: TP 863, FN 137, FP 22, TN 978 (three decimals over 1,000 samples is lossless); recomputed precision 0.9751 matches stored 0.975; F1 0.9156. Shown as **DERIVED** with the formula. |
+| Feature-level ML explanations | Not in `metrics.json`; per-form explanations live on each case's Form checks panel. | Not aggregated here. A one-line pointer, stated as a deliberate omission. |
+| Resource utilisation during benchmarks | Not measured. | Stated as not measured. |
+| Engine **run timeline** by time | All 25 runs started on **one real day**; `simulatedToday` spans 2026-05-18 → 2026-11-03. | X-axis is run sequence, with the simulated date in the tooltip and table. A time axis would stack 25 dots on one tick. |
+| `LIVE_DEMO` provenance on engine runs | All 25 are tagged `LIVE_DEMO`, but they were produced by the seed on a back-dated clock. | **Defect in Task 1's labelling.** `SIMULATED` exists and is never emitted. Fixed in Task 7. |
+
+### The clock rule (Ruling E14)
+
+`EngineRun.startedAt` is **real** time; `AlertLog.createdAt` and `simulatedToday` are **simulated**. One date filter over both would mean two things at once. Therefore: **each filter sits inside the group it governs, with the clock named beside it; current-state groups take no filter and say "current state"; the range is per-section and cleared on section change.**
+
+### Revised execution order
+
+`1 ✔, 2 ✔, 3 ✔, 6 (fix round committed, independent review running), 7, 4a, 4b, 4c, 4d, 5, 4e, 8, 9, 10.`
+Task 5 now precedes 4e so the Performance section has two comparable runs; 4e still tests the single-run case.
+
+### The eight sections — what each shows, and what it deliberately does not
+
+Every section is built from `Panel` (Task 4a), so every panel has: a descriptive title naming the measure and its unit; a provenance chip; an **always-visible scope line** ("n = 192 applications · all dates"); the endpoint's `definition` in a `<details>` in the same card; the visual; and its loading / empty / error / insufficient-data states handled once. **At most four visuals per section.** Every chart has a "data table" disclosure rendering the **same rows** the chart is drawn from.
+
+| Section | Source (one response each) | Visuals |
+|---|---|---|
+| **Overview** | `summary`, `workflow`, `engine-runs`, `audit-integrity` | Four KPI tiles (validation status, applications in flight, last scheduler run, audit integrity) + one trend: applications submitted and decided per day. No filter; "all dates". |
+| **Workflow** | `workflow` | Lifecycle funnel (with `onRoute`); status distribution; processing-time median with decided / in-flight counts; volume over time incl. the overdue series. Filter governs all four. Current overdue is on the Scheduler section, linked. |
+| **Assignment** | `assignment` (+ `assignment-trace` on drill-down) | Utilisation per officer (current state, **no filter**); spread; the above-cap exceptions with their causes; recent decisions → candidate table. Coverage `traced / total` stated. A windowed group holds `openPointsAssignedInWindow` and decision counts. |
+| **Scheduler & compliance** | `compliance`, `engine-runs` | *Current state* (no filter): deadline risk — at-risk / overdue / due soon / met. *Execution history* (filter, real clock): run duration by run, created vs suppressed, reliability tiles (runs / failed / abandoned), recent-runs table. |
+| **Alerts** | `alerts` | Volume by kind; on-time vs late; alerts per simulated day; escalations by level; one insufficient-data panel for status. Filter governs all (simulated clock). |
+| **Audit** | `audit-analytics` | Events by action, by actor role, by entity (filters: date, actor, action, entity — options taken from values actually present); the integrity result with its **WHOLE_LOG** scope stated beside it and a note that filters do not change it. Counts only. |
+| **ML evaluation** | `artifacts` → `formcheck/metrics.json` | Headline metrics (stored vs **DERIVED** marked); derived confusion matrix; baseline comparison across the three modes; recall per fault type. "Synthetic data" in each panel body. Methodology and limitations. |
+| **Performance** | `artifacts` → `benchmark-results/*.json` | Test configuration; read latency p50 / p95 / p99 per screen; engine cycles first vs second; run comparison (insufficient-data until two same-machine runs exist). Repeat count stated; resource use stated as not measured. |
+
+### Task 7: alerts aggregate, run totals and honest run provenance
+
+**Files:** Create `api/src/routes/evidence/alerts.ts`. Modify `api/src/routes/evidence.ts` (mount `GET /alerts`; add `totals` to `GET /engine-runs`), `api/src/engine/cycle.ts` (`runProvenance`). Tests: `api/test/evidence-alerts.test.ts`, `api/test/engine-run.test.ts`.
+**Interfaces — Produces:**
+
+```ts
+// GET /api/evidence/alerts?from&to  → EvidenceEnvelope<AlertsData>
+interface AlertsData {
+  engineEverRan: boolean;                       // all-time, clock-independent; false ⇒ totals are null ("none recorded")
+  total: number | null;                         // AlertLog rows created in the window
+  byKind: { kind: string; count: number }[];
+  timing: { onTime: number; late: number } | null;      // from AlertLog.late; sums to total
+  perDay: { day: string; count: number }[];             // simulated clock; days with ≥1 alert only, NEVER zero-filled
+  escalationsByLevel: { level: number; count: number }[];
+  notifications: { total: number; read: number; unread: number; informative: boolean }; // informative = read > 0
+  notRecorded: ('acknowledgement' | 'resolution time')[];  // an explicit, tested absence
+}
+// GET /api/evidence/engine-runs gains:
+totals: { runCount: number; failedCount: number; abandonedCount: number;
+          alertsCreated: number | null; alertsSuppressed: number | null }   // null, not 0, when runCount is 0
+```
+
+`abandonedCount` is runs with `status = 'RUNNING'` and `startedAt` older than **15 minutes** (the longest measured cycle is ~140 s at 15,000 applications), per Ruling E4. `runProvenance` gains `SIMULATED` when the clock is overridden or offset; precedence is `TEST_RUN` > `BENCHMARK` > `SIMULATED` > `LIVE_DEMO`.
+
+- [ ] **Step 1: Write the failing tests**
+  1. `alerts.total` equals `prisma.alertLog.count()`; `byKind` sums to `total`; `timing.onTime + timing.late` equals `total`.
+  2. `perDay` omits days with no alerts, each day's count equals an independently grouped count, and the days sum to `total`.
+  3. A window containing no alerts, after the engine has run, gives `total: 0` and `perDay: []` — a **genuine zero**; with no `EngineRun` and no `AlertLog` rows ever, `total` is `null` and `engineEverRan` is `false`.
+  4. The window narrows `byKind`, `timing`, `perDay` and `escalationsByLevel` together, not some of them.
+  5. `escalationsByLevel` equals `AlertLog` rows of kind `ESCALATION` grouped by `offsetOrLevel`, and sums to `byKind`'s `ESCALATION`.
+  6. `notifications` reports seeded `read: 0` with `informative: false`; after one notification is marked read through the API, `informative` is `true`.
+  7. `notRecorded` contains both entries, and the response has **no** `acknowledged`, `resolved` or `status` key anywhere.
+  8. `engine-runs.totals.alertsCreated` equals `sum(EngineRun.alertsCreated)` and, on the freshly seeded database, equals the `AlertLog` row count (both 107 in dev); `alertsSuppressed` equals the independent sum.
+  9. `totals` over an empty window: `runCount: 0`, `alertsCreated: null`, `alertsSuppressed: null`.
+  10. `abandonedCount` counts a `RUNNING` row backdated one hour and does **not** count a `RUNNING` row started a minute ago.
+  11. Provenance: with `VITEST`/`NODE_ENV` unset and the clock overridden → `SIMULATED`; with a real, unoffset clock → `LIVE_DEMO`; `TEST_RUN` still wins under vitest; `BENCHMARK` still wins for `source: 'load-test'`. Restore all env and clock state in `finally`.
+- [ ] **Step 2:** Run `cd api && npx vitest run test/evidence-alerts.test.ts test/engine-run.test.ts`. Expected: FAIL.
+- [ ] **Step 3:** Implement. Reuse the window helpers and `{ definition, provenance, data }` envelope from `aggregates.ts`; do not grow that file — it is already ~310 lines.
+- [ ] **Step 4:** Re-run until green; then `npm test && npm --workspace api run typecheck`. Expected: previous count + new tests.
+- [ ] **Step 5:** Reseed the dev database (`SETUP_NO_DOCKER=1 npm --workspace api run setup:db`) and confirm the 25 seeded runs now read `SIMULATED`.
+- [ ] **Step 6:** Commit in two commits — provenance, then alerts + totals.
+
+### Task 4a: Foundation — test runner, primitives, shell, route
+
+**Files:**
+- Modify `web/package.json` (devDependencies `vitest`, `jsdom`, `@testing-library/react`, `@testing-library/jest-dom`; script `"test": "vitest run"`), root `package.json` (`"test:web"`), `.github/workflows/ci.yml` (a `npm --workspace web run test` step in the web job), `web/src/App.tsx` (routes `/admin/evidence` and `/admin/evidence/:section` inside `RequireRole roles={['ADMIN']}`), `web/src/pages/admin/Admin.tsx` (a link), `web/src/api/types.ts`, `web/src/strings/en.ts`, `hi.ts`.
+- Create `web/vitest.config.ts`, `web/src/test/setup.ts`, and under `web/src/pages/admin/evidence/`: `EvidenceCenter.tsx`, `sections.ts`, `Panel.tsx`, `Provenance.tsx`, `DateRange.tsx`, `ChartFrame.tsx`, `format.ts`, `useEvidence.ts`; tests beside them.
+
+**Reuse, do not rebuild.** The app already has `Card`, `StatTile`, `EmptyState`, `ErrorState`, `Skeleton`, `PageHeader`, `Badge`, `Button`, `Table`, `Tabs` (ARIA roles and arrow-key navigation) and `SegmentedControl` in `web/src/components/ui`, the `api` / `qs` client, and `formatNumber` / `formatDate` in `lib/format`. Chart colours come from `web/src/lib/chartTokens.ts`. **No new chart or UI library.**
+
+**Interfaces — Produces (exact):**
+
+```ts
+export type Provenance = 'MEASURED' | 'DERIVED' | 'SYNTHETIC' | 'TARGET' | 'LIVE_DEMO' | 'TEST_RUN' | 'BENCHMARK' | 'SIMULATED';
+export interface EvidenceEnvelope<T> { definition: Record<string, string>; provenance: Record<string, Provenance | null>; data: T }
+export type PanelState = 'ready' | 'loading' | 'error' | 'empty' | 'insufficient';
+
+export function Panel(p: {
+  title: string;                      // names the measure AND its unit
+  provenance: Provenance | null;
+  scope: string;                      // always visible: "n = 192 applications · all dates"
+  definition: string | undefined;     // the endpoint's text, rendered verbatim in a <details>
+  state: PanelState;
+  emptyMessage?: string; insufficientMessage?: string;
+  error?: { message?: string; onRetry?: () => void };
+  children: ReactNode;
+}): JSX.Element;
+
+export function ChartFrame(p: {
+  label: string;                      // aria-label summarising what the chart shows
+  height?: number;
+  columns: { key: string; header: string; format?: (v: unknown) => string }[];
+  rows: Record<string, unknown>[];    // the SAME rows the chart is drawn from
+  children: ReactElement;             // the recharts chart
+}): JSX.Element;
+
+export function DateRange(p: { from?: string; to?: string; onChange: (r: { from?: string; to?: string }) => void; clockLabel: string }): JSX.Element;
+export function useEvidence<T>(path: string, params?: Record<string, string | undefined>): UseQueryResult<T>;
+export const fmtInt: (v: number | null | undefined) => string;   // null/undefined → 'Unavailable'; 0 → '0'
+export const fmtPct: (v: number | null | undefined, dp?: number) => string;
+export const fmtMs: (v: number | null | undefined) => string;
+```
+
+**Behaviour that makes the page honest rather than decorative** (each is tested):
+- `Panel` in the `ready` state with an empty or missing `definition` renders an error state ("This measure has no definition and is not shown") and **not** its children — an unstated KPI never displays.
+- `insufficient` renders `insufficientMessage` and never the children; `empty` renders `emptyMessage` and never the children.
+- A provenance chip is always a **text label with an icon**, never colour alone; `TARGET` reads "Target — not a measurement".
+- `ChartFrame` renders a `role="img"` with the label and a "Data table" `<details>` with exactly `rows.length` body rows; a `null` cell reads "Unavailable", never "0".
+- `DateRange` rejects `from > to` with a visible message and does not call `onChange`; has labelled "From" and "To" inputs; "Clear" resets; the range is held in the URL (`?from=&to=`) and cleared on section change. It displays `clockLabel`.
+- The shell shows `Tabs` from `md` up and a labelled native `<select>` below it; both list the same eight sections. An unknown `:section` redirects to Overview.
+- Recharts renders nothing under jsdom (zero-width container), so **tests assert the data table, text and states, never SVG internals.**
+
+- [ ] **Step 1:** Write the failing tests for every behaviour above, in files beside the components.
+- [ ] **Step 2:** Add the runner; confirm the suite FAILS because the components do not exist.
+- [ ] **Step 3:** Implement; run `npm --workspace web run test`, `npm --workspace web run build`, and the root `npm test` (API suite must be unchanged).
+- [ ] **Step 4:** Add the web step to `ci.yml` and confirm both workflow files still parse as YAML.
+- [ ] **Step 5:** Screenshot `/admin/evidence` at 1280 px and 390 px (chromium is preinstalled; `require('playwright')` resolves from `/opt/node-tools`) and confirm the section nav does not overflow on mobile.
+- [ ] **Step 6:** Commit.
+
+### Tasks 4b–4e: the section tasks
+
+Each follows the same loop: read the **final** shape of the endpoint it draws (call it against the dev database as `admin@demo.in`; do not infer from this plan), add its types to `web/src/api/types.ts`, build its panels from `Panel` / `ChartFrame`, write failing tests first, then verify against the running app with screenshots at desktop and mobile widths. Each section's tests must cover: **the empty state; the insufficient-data state; that every panel receives a non-empty definition; that a chart's data table equals the API response for the same measure; and that the filter reaches every panel it governs** (assert the query key and URL params, since SVG is not testable).
+
+- **4b — Overview + Workflow.** The four Overview tiles must be built from the **same query keys** as the Workflow section so a tile and its detail cannot disagree. "Validation status" is `NOT_VERIFIED` today and must read that way: warning emphasis plus the words, never green. "Last scheduler run" states real start time, duration and status, and counts `abandoned` runs. Workflow's overdue series carries the note that its x-axis is due date, not the From/To range.
+- **4c — Assignment.** Utilisation is current state and takes no filter. Render the coverage as a stated figure ("221 of 221 assignments have an explanation") and the above-cap list with its three causes in words. Add `recentDecisions` (last 10 traces: application number, task, outcome, chosen officer, decided at) to the `assignment` aggregate if it is not there, so the drill-down is selectable without a UUID; the drill-down shows the candidate table from `assignment-trace/:applicationId`. The word "fair" appears nowhere.
+- **4d — Scheduler & compliance, and Alerts.** Two filter groups on the Scheduler section, each labelled with its clock. Created vs suppressed comes from `engine-runs.totals`, not from client-side summing of a paged list. The Alerts status panel is the explicit insufficient-data state naming `notRecorded`, and shows read state only when `informative`.
+- **4e — Audit, ML evaluation, Performance.** Audit filter options come from values present in the response. The integrity result sits beside its `WHOLE_LOG` definition and says filters do not change it. ML shows stored metrics and DERIVED ones distinctly, derives the confusion matrix with the formula visible, and carries "synthetic data" in every panel body; the evaluation date is `generatedAt`, defined as *when the figures last changed*, not when the evaluation last ran. Performance compares runs only when their `machine` blocks match; with one run it shows the insufficient-data panel; it states repeat count 1 and resource use as not measured.
+
+### Task 8: independent verification script
+
+**Create** `api/scripts/verify-evidence.ts` and an `evidence:verify` npm script. It authenticates as the administrator through `createApp()`, calls every aggregate, and compares each headline number to an independent raw-SQL ground truth — funnel stage counts, status distribution total, alerts total and by kind, escalations by level, suppressed total, trace coverage, officer count and utilisation spread, audit event total. It prints a table of `measure | endpoint | SQL | agrees` and **exits non-zero on any disagreement**. It must name the cluster and row counts it ran against. Test it by confirming it fails when a number is deliberately perturbed.
+
+### Task 9: screenshots and documentation
+
+Screenshots of all eight sections at 1280 px and 390 px into `docs/screens/evidence/`; update `docs/evidence/README.md` (the Evidence Center is now built — replace the design-intent wording), `docs/evidence/INITIAL_AUDIT.md` status rows, and the root README's link table.
+
+### Task 10: final verification and whole-branch review
+
+Run the complete API, web, pytest and node suites, both typechecks and both builds; run `evidence:verify`; run the final whole-branch review on the most capable model; fix every Critical and Important finding in one wave and re-review it once. Report actual output.
