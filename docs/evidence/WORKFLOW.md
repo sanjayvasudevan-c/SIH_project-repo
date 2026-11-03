@@ -4,7 +4,7 @@ Four diagrams, each drawn from the code it cites, not from how approval workflow
 
 ## 1. Case lifecycle
 
-**What it proves:** a case can only move along a fixed table of transitions, each limited to named roles, and at every point the system records exactly who holds it.
+**What it proves:** a case can only move along a fixed table of transitions, each limited to named roles, and the system records who holds it, or that nobody does when no officer is eligible (see diagram 2).
 
 ```mermaid
 flowchart TD
@@ -25,7 +25,11 @@ flowchart TD
   D -->|"DECIDE: AUTHORITY"| X
 ```
 
-Source: `api/src/workflow/transitions.ts` (the `TRANSITIONS` table: actions, permitted roles, and the stage and status each applies from). Who holds the case in each state comes from the `holderType` writes in `api/src/workflow/actions.ts`. Each action is also checked per case in `api/src/policy/can.ts`: scope, the open assignment, and for `DECIDE` a separation-of-duties rule that bars an authority who handled the case earlier. The stage order is the case's `route`, set from the rule pack by application type, so `COMPLETE_STAGE` goes to the next stage on that route (drawn here as EVC); a route need not include every stage.
+Source: `api/src/workflow/transitions.ts` (the `TRANSITIONS` table); holders from the `holderType` writes in `api/src/workflow/actions.ts`; per-case checks in `api/src/policy/can.ts`.
+
+Caveats:
+- Stage order is the case's `route`, set from the rule pack by application type, so `COMPLETE_STAGE` goes to the next stage on that route (drawn as EVC); a route need not include every stage.
+- A case with no eligible officer is `IN_STAGE` with holder `NONE` (diagram 2), not only after a decision.
 
 ## 2. Assignment decision
 
@@ -43,28 +47,37 @@ flowchart TD
   O -->|no| B["BLOCKED<br/>no assignment, flag to HoD,<br/>manual assign queue"]
 ```
 
-Source: `api/src/assignment/engine.ts`: `loadCandidates` and `filterCandidates` (filters), `selectOfficer` (continuity, then `score` and `byScore`, looping over tiers), `assign` (the blocked branch: `ExceptionFlag` with reason `BLOCKED`, an `ASSIGN_FAILED` audit row, and a notice to the region HoD). Every pick stores its reason text and the rule pack version in force. The tiers, caps and score weights come from the rule pack's assignment section, not from constants in the engine.
+Source: `api/src/assignment/engine.ts`: `loadCandidates` and `filterCandidates` (filters), `selectOfficer` (continuity, then `score`, looping over tiers), `assign` (the blocked branch).
+
+Caveats:
+- Continuity applies only to `RE_SCRUTINY` (the officer who returned the case) and `SCRUTINY` / `VERIFY` (the institution's portfolio officer); other tasks go straight to the score.
+- Tiers, caps and score weights come from the rule pack's assignment section. A blocked task records a `BLOCKED` flag, an `ASSIGN_FAILED` audit row and a notice to the region HoD.
 
 ## 3. Escalation ladder
 
-**What it proves:** overdue work climbs a fixed management chain on fixed day counts, each step fires once, and a case waiting on the college does not run the officer's clock.
+**What it proves:** overdue work climbs the reporting line on fixed day counts, each step fires once, and a case waiting on the college does not run the officer's clock.
 
 ```mermaid
 flowchart TD
   O["Deadline item OPEN<br/>clock running"] --> AR["AT_RISK<br/>80% of the SLA used"]
   AR --> OD["OVERDUE<br/>past the due date"]
-  OD --> L1["Level 1: overdue 3 days<br/>senior officer"]
-  L1 --> L2["Level 2: overdue 7 days<br/>super senior officer"]
-  L2 --> L3["Level 3: overdue 14 days<br/>head of department and authority"]
-  RT["RETURN: college holds the file<br/>item PAUSED, remaining days stored"] -.->|"engine skips it"| O
-  RP["REPLY: item resumes<br/>due = today + stored days"] -.-> O
+  OD --> L1["Level 1: overdue 3 days<br/>manager 1 level up the reporting line"]
+  L1 --> L2["Level 2: overdue 7 days<br/>manager 2 levels up"]
+  L2 --> L3["Level 3: overdue 14 days<br/>manager 3 levels up, plus region authority"]
+  O -->|"RETURN: college holds the file"| P["PAUSED<br/>remaining days stored"]
+  P -->|"REPLY: due = today + stored days"| O
 ```
 
-Source: `api/src/engine/cycle.ts`, `processItem` (the `AT_RISK`, `OVERDUE` and `ESCALATION` steps, and `escalationTarget` for the chain; the cycle selects only items with status `OPEN`). The pause and resume are `pauseStageItem` and `resumeStageItem` in `api/src/workflow/deadlines.ts`. The 80% and the 3 / 7 / 14 are rule pack values (`atRiskPct`, `escalation.thresholds`), shown here at their seeded values in `shared/seed/rules.json`; stage deadlines count them in working days. Each alert is guarded by `AlertLog`'s unique key, so the decision to alert is made once per item and level. Alerts are in-app notifications; this build has no external channel.
+Source: `api/src/engine/cycle.ts`, `processItem` (`AT_RISK`, `OVERDUE`, `ESCALATION`) and `escalationTarget`; the cycle selects only items with status `OPEN`. Pause and resume: `pauseStageItem` and `resumeStageItem` in `api/src/workflow/deadlines.ts`.
+
+Caveats:
+- Escalation walks up the responsible user's `reportsTo` chain and falls back to the region HoD when the chain ends. In the seeded hierarchy the three levels are senior, super senior and head of department.
+- The 80% and the 3 / 7 / 14 are rule pack values, shown at their seeded values (`shared/seed/rules.json`); stage deadlines count working days.
+- `AlertLog`'s unique key makes the decision to alert once per item and level. Alerts are in-app notifications; this build has no external channel.
 
 ## 4. Rule-pack publish
 
-**What it proves:** nobody can change the rules that govern cases alone: the author cannot approve their own change, published versions are never edited, and filed cases keep the rules they were filed under.
+**What it proves:** nobody can change the rules that govern cases alone: the author cannot approve their own change, published versions are never edited, and filed cases keep the substantive rules they were filed under, while operational rules (schedule, reminders, escalation, assignment) follow the cycle's current published version.
 
 ```mermaid
 flowchart TD
@@ -73,7 +86,11 @@ flowchart TD
   R -->|"reject with remarks"| X["REJECTED<br/>back to the maker"]
   X -->|"edit"| D
   A -->|"publish: RULE_APPROVER"| P["PUBLISHED<br/>previous becomes SUPERSEDED"]
-  P --> K["Cases filed under it keep its<br/>forms, documents and route"]
+  P --> K["Cases filed under it keep its<br/>forms, documents, fees and route"]
 ```
 
-Source: `api/src/rules/versions.ts` (`submitVersion`, `approveVersion`, `rejectVersion`, `publishVersion`; `approverConflict` refuses anyone who drafted or edited the version). The database trigger in `api/prisma/sql/002_rulepack_guard.sql` re-checks the same transition list and blocks content changes after the draft stage. The pinning is `rulesForApp` and `mergeSections` in `api/src/rules/service.ts` and `api/src/rules/resolved.ts`: a case keeps the version it was filed under for its substantive sections, but the schedule, reminders, escalation, assignment, committees and calendar sections are read from the cycle's currently published version. A version with a future effective date is scheduled rather than published immediately, and a published amendment can move open cases onto the new version only where its apply scope allows (`rebaseAfterPublish`).
+Source: `api/src/rules/versions.ts` (`submitVersion`, `approveVersion`, `rejectVersion`, `publishVersion`, `approverConflict`); the trigger in `api/prisma/sql/002_rulepack_guard.sql` re-checks the transitions and blocks content changes after the draft stage.
+
+Caveats:
+- Pinning is partial: `mergeSections` (`api/src/rules/resolved.ts`) takes schedule, reminders, escalation, assignment, committees and calendar from the cycle's currently published version; everything else stays on the case's own version.
+- A published amendment can move open cases onto the new version where its apply scope allows (`rebaseAfterPublish`).
