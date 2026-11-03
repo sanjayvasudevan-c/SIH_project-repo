@@ -14,6 +14,11 @@ export function now(): Date {
   return new Date(Date.now() + offsetDays * DAY_MS);
 }
 
+/** Wall-clock time with no simulated offset: for records of what actually happened (run history), never business logic. */
+export function realNow(): Date {
+  return new Date();
+}
+
 /** Today as a date-only value (00:00 UTC). */
 export function today(): Date {
   return toDateOnly(now());

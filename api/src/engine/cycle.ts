@@ -252,16 +252,18 @@ function runProvenance(meta: Record<string, string>): string {
 export async function runEngineCycle(meta: Record<string, string> = {}, opts: { flags?: boolean; digests?: boolean } = {}): Promise<CycleResult> {
   await clock.refresh().catch(() => undefined);
   const today = clock.today();
-  const startedAt = clock.now();
+  const startedAt = clock.realNow(); // real time: a record of what happened; simulatedToday carries the simulated date
   const t0 = performance.now();
+  // Fail loud by design: if the history table is unwritable the cycle does not run, rather than running unrecorded.
   // Written with prisma directly (never a caller's tx), so the FAILED update below survives a rolled-back cycle.
   const run = await prisma.engineRun.create({
     data: { startedAt, instanceId: process.env.ENGINE_INSTANCE_ID ?? `${os.hostname()}:${process.pid}`, simulatedToday: today, provenance: runProvenance(meta), status: 'RUNNING' },
   });
   const finish = (data: Record<string, unknown>) => {
     const durationMs = Math.round(performance.now() - t0);
-    return prisma.engineRun.update({ where: { id: run.id }, data: { ...data, durationMs, finishedAt: new Date(startedAt.getTime() + durationMs) } });
+    return prisma.engineRun.update({ where: { id: run.id }, data: { ...data, durationMs, finishedAt: clock.realNow() } });
   };
+  // Double fault: if the OK update itself throws, the catch marks FAILED although the body succeeded (rare, accepted).
   try {
     const result = await cycleBody(meta, opts, today);
     await finish({

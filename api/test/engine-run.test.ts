@@ -28,15 +28,27 @@ describe('EngineRun history', () => {
     expect(isoDate(row.simulatedToday)).toBe(r.today);
   });
 
+  it('stamps startedAt/finishedAt with real time while simulatedToday follows the simulated clock', async () => {
+    setToday(addDays(clock.today(), 30));
+    const r = await runEngineCycle({ source: 'test' });
+    const row = await prisma.engineRun.findUniqueOrThrow({ where: { id: BigInt(r.engineRunId as string) } });
+    console.log('startedAt', row.startedAt.toISOString(), 'finishedAt', row.finishedAt?.toISOString(), 'simulatedToday', isoDate(row.simulatedToday), 'real now', new Date().toISOString());
+    expect(Math.abs(row.startedAt.getTime() - Date.now())).toBeLessThan(60_000);
+    expect(Math.abs(row.finishedAt!.getTime() - Date.now())).toBeLessThan(60_000);
+    expect(row.finishedAt!.getTime()).toBeGreaterThanOrEqual(row.startedAt.getTime());
+    expect(isoDate(row.simulatedToday)).toBe(r.today);
+  });
+
   it('counts suppressed alerts on a repeated cycle and creates none', async () => {
     await submitApp(createApp(), await userByEmail('college.abc@demo.in'));
     setToday(addDays(clock.today(), 30)); // its stage deadline is now overdue, so the first cycle alerts
+    const n0 = await prisma.alertLog.count();
     const first = await runEngineCycle({ source: 'test' });
     expect(Number(first.alertsCreated)).toBeGreaterThan(0);
+    expect((await prisma.alertLog.count()) - n0).toBe(first.alertsCreated); // alertsCreated is ground truth
     const second = await runEngineCycle({ source: 'test' });
     expect(second.alertsCreated).toBe(0);
     expect(Number(second.alertsSuppressed)).toBeGreaterThan(0);
-    expect(Number(first.alertsSuppressed)).toBeLessThan(Number(second.alertsSuppressed) + 1);
     const row = await prisma.engineRun.findUniqueOrThrow({ where: { id: BigInt(second.engineRunId as string) } });
     expect(row.alertsCreated).toBe(0);
     expect(row.alertsSuppressed).toBe(Number(second.alertsSuppressed));
@@ -51,6 +63,21 @@ describe('EngineRun history', () => {
     expect(row.finishedAt).not.toBeNull();
     expect(row.durationMs).not.toBeNull();
     expect(await prisma.engineRun.count({ where: { status: 'RUNNING' } })).toBe(0);
+  });
+
+  it('records the replica that ran each cycle, so a leader handover is visible', async () => {
+    const prev = process.env.ENGINE_INSTANCE_ID;
+    try {
+      process.env.ENGINE_INSTANCE_ID = 'replica-a';
+      const a = await runCycleWithLock({ source: 'a' });
+      process.env.ENGINE_INSTANCE_ID = 'replica-b';
+      const b = await runCycleWithLock({ source: 'b' });
+      const rows = await prisma.engineRun.findMany({ where: { id: { in: [BigInt(a.engineRunId as string), BigInt(b.engineRunId as string)] } }, orderBy: { id: 'asc' } });
+      expect(rows.map((r) => r.instanceId)).toEqual(['replica-a', 'replica-b']);
+    } finally {
+      if (prev === undefined) delete process.env.ENGINE_INSTANCE_ID;
+      else process.env.ENGINE_INSTANCE_ID = prev;
+    }
   });
 
   it('records a row per leader run and leaves none RUNNING', async () => {
