@@ -7,12 +7,12 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ACCENT = '#1E7B45'; // theme-neutral green; text and axes use currentColor
-const W = 640; // viewBox width: scales down to phone width
-const LABEL_W = 190; // left column for bar labels
+const W = 480; // viewBox width: ~0.7x on a 360px phone, so 14px text renders ~10px
+const LABEL_W = 170; // left column for bar labels
 const BAR_X = LABEL_W + 12;
-const BAR_W = 340; // widest bar; the rest of the width holds the value text
+const BAR_W = 190; // widest bar; ~100px remain for value text
 const ROW_H = 34;
-const LABEL_CHARS = 24; // ~7px per char at 13px text fits inside LABEL_W
+const LABEL_CHARS = 22; // ~7.5px per char at 14px text fits inside LABEL_W
 
 export function truncate(label, maxChars) {
   const s = String(label);
@@ -41,17 +41,17 @@ export function barChart({ title, caption, series, max, unit }) {
     const w = num(BAR_W * Math.min(Math.max(s.value / scale, 0), 1));
     const text = s.text ?? `${s.value.toLocaleString('en-US')}${unit ? ' ' + unit : ''}`;
     return [
-      `<text x="${LABEL_W}" y="${y + 17}" text-anchor="end" font-size="13" fill="currentColor"><title>${esc(s.label)}</title>${esc(truncate(s.label, LABEL_CHARS))}</text>`,
+      `<text x="${LABEL_W}" y="${y + 17}" text-anchor="end" font-size="14" fill="currentColor"><title>${esc(s.label)}</title>${esc(truncate(s.label, LABEL_CHARS))}</text>`,
       `<rect x="${BAR_X}" y="${y + 4}" width="${w}" height="20" rx="2" fill="${ACCENT}"/>`,
-      `<text x="${num(BAR_X + w + 8)}" y="${y + 19}" font-size="13" fill="currentColor">${esc(text)}</text>`,
+      `<text x="${num(BAR_X + w + 8)}" y="${y + 19}" font-size="14" fill="currentColor">${esc(text)}</text>`,
     ].join('\n  ');
   });
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${height}" role="img" aria-label="${esc(title)}" font-family="system-ui, -apple-system, Segoe UI, sans-serif">
   <title>${esc(title)}</title>
-  <text x="16" y="28" font-size="17" font-weight="600" fill="currentColor">${esc(title)}</text>
+  <text x="16" y="28" font-size="18" font-weight="600" fill="currentColor">${esc(title)}</text>
   <line x1="${BAR_X}" y1="${top}" x2="${BAR_X}" y2="${top + series.length * ROW_H}" stroke="currentColor" stroke-opacity="0.5"/>
   ${rows.join('\n  ')}
-  <text x="16" y="${height - 14}" font-size="11" fill="currentColor" fill-opacity="0.7">${esc(caption)}</text>
+  <text x="16" y="${height - 14}" font-size="12" fill="currentColor" fill-opacity="0.7">${esc(caption)}</text>
 </svg>
 `;
 }
@@ -91,8 +91,8 @@ function main() {
     console.error('Usage: node scripts/evidence-charts.mjs --bench <path> --metrics <path> --out <dir>');
     process.exit(2);
   }
-  const bench = loadJson(args.bench, 'npm run load:test -- --out <path> (in api/)');
-  const metrics = loadJson(args.metrics, 'the formcheck evaluation (see formcheck/EVALUATION.md)');
+  const bench = loadJson(args.bench, 'npm run load:test -- --out <path> (run in api/)');
+  const metrics = loadJson(args.metrics, 'python3 -m training.evaluate (run in formcheck/)');
   mkdirSync(args.out, { recursive: true });
   for (const [name, svg] of Object.entries(buildCharts(bench, metrics))) {
     writeFileSync(join(args.out, name), svg);

@@ -1,4 +1,4 @@
-// scripts/evidence-charts.test.mjs — run with: node --test scripts/
+// scripts/evidence-charts.test.mjs — run with: node --test scripts/*.test.mjs
 import { test } from 'node:test';
 import assert from 'node:assert';
 import { barChart, truncate, loadJson } from './evidence-charts.mjs';
