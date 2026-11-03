@@ -47,6 +47,8 @@ export function bounds(q: Q) {
   };
 }
 
+/** One wording for what an alert total of 0 means, used by every endpoint that reports one. */
+export const ZERO_ALERTS = 'A total of 0 means no alert was logged in this window.';
 export const SCOPE =
   'Every number is counted from the live rows in this system\'s database. In this demo those rows include records made by the seed script and by simulated-clock runs, so the figures describe this deployment, not AICTE\'s real caseload.';
 const median = (xs: number[]): number | null => {
@@ -279,7 +281,7 @@ export async function compliance(q: Q) {
       },
       escalations: `Escalation alerts raised in the window, by level. Level 1, 2 and 3 are raised when an item is ${rules.escalation.thresholds.join(" / ")} days overdue (working days for stage deadlines, calendar days for undertakings and document expiries). Each level is raised once per item.`,
       alerts:
-        'total = alerts logged in the window (by kind). reminderTiming covers REMINDER alerts only: late = a reminder raised more than one day after its reminder date because the engine had not run in time, onTime = the other reminders, so onTime + late = reminders (not total); the other alert kinds have no timeliness measure in this system and are counted neither way. suppressed = duplicate alerts the engine declined to create, summed from engine run records in the window. The log\'s unique key (item, kind, level) is why a repeated cycle creates no second alert; this build has no external delivery channel. Suppressed is blank when no engine run started in the window; with engineRunCount 0, the alert and escalation totals mean "none recorded", not "measured as zero".',
+        'total = alerts logged in the window (by kind). reminderTiming covers REMINDER alerts only: late = a reminder raised more than one day after its reminder date because the engine had not run in time, onTime = the other reminders, so onTime + late = reminders (not total); the other alert kinds have no timeliness measure in this system and are counted neither way. suppressed = duplicate alerts the engine declined to create, summed from engine run records in the window. The log\'s unique key (item, kind, level) is why a repeated cycle creates no second alert; this build has no external delivery channel. ' + ZERO_ALERTS + ' Suppressed is blank (not 0) when no engine run is dated in the window (engineRunCount 0): then no run reported anything for the window, which is a different question from how many alerts were logged.',
     },
     provenance: { deadlines: 'DERIVED', escalations: 'MEASURED', alerts: 'MEASURED', suppressed: 'MEASURED' } as Record<string, Provenance>,
     data: {

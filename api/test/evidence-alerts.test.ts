@@ -230,4 +230,20 @@ describe('/api/evidence/alerts and engine-run totals', () => {
       expect((await get(`/api/evidence/${ep}?from=2028-02-29&to=2028-02-29`)).status, `${ep} leap day`).toBe(200);
     }
   });
+
+  it('16. the same empty window reads the same in alerts and compliance, with one wording for zero', async () => {
+    await raiseAlerts();
+    const q = '?from=2099-01-01&to=2099-01-02';
+    const a = (await get(`/api/evidence/alerts${q}`)).body;
+    const c = (await get(`/api/evidence/compliance${q}`)).body;
+    expect(a.data.total).toBe(0);
+    expect(c.data.alerts.total).toBe(0);
+    const zero = 'A total of 0 means no alert was logged in this window.';
+    expect(a.definition.total).toContain(zero);
+    expect(c.definition.alerts).toContain(zero);
+    expect(c.definition.alerts).not.toMatch(/measured as zero/i);
+    expect(c.definition.alerts).toMatch(/dated in the window/i);
+    expect(c.data.alerts.suppressed).toBeNull();
+    expect(JSON.stringify(a.definition)).not.toMatch(/\btiming\b(?!:)|, timing,/);
+  });
 });

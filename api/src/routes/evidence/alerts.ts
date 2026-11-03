@@ -2,7 +2,7 @@
 // raised and nothing about what happened next, so acknowledgement and resolution are reported as NOT RECORDED, not as zero.
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../lib/db.js';
-import { bounds, SCOPE, type Counted, type Q } from './aggregates.js';
+import { bounds, SCOPE, ZERO_ALERTS, type Counted, type Q } from './aggregates.js';
 import type { Provenance } from './artifacts.js';
 
 export async function alerts(q: Q) {
@@ -29,9 +29,9 @@ export async function alerts(q: Q) {
     definition: {
       scope: SCOPE,
       window:
-        'The From and To dates (inclusive; all dates if none given) apply to the date each alert was logged, on the system\'s SIMULATED clock (the date the demo is pretending it is), not the real calendar date. The same window applies to total, byKind, timing, perDay and escalationsByLevel. The notifications block is NOT windowed: it always describes every notification ever created.',
+        'The From and To dates (inclusive; all dates if none given) apply to the date each alert was logged, on the system\'s SIMULATED clock (the date the demo is pretending it is), not the real calendar date. The same window applies to total, byKind, reminderTiming, perDay and escalationsByLevel. The notifications block is NOT windowed: it always describes every notification ever created.',
       total:
-        'Number of alerts the deadline engine logged in the window: one row per deadline item, kind and level (daily digests are one row per user per day, not per item), so the same alert is never logged twice. Blank (null) when no engine run and no alert has ever been recorded (engineEverRan is true if either exists, even an alert with no run on file), meaning "none recorded"; 0 means the engine has run and logged no alert in the window. This counts the decision to alert. This build has no external delivery channel, so it says nothing about an alert reaching anyone outside the system.',
+        'Number of alerts the deadline engine logged in the window: one row per deadline item, kind and level (daily digests are one row per user per day, not per item), so the same alert is never logged twice. Blank (null) when no engine run and no alert has ever been recorded (engineEverRan is true if either exists, even an alert with no run on file), meaning "none recorded". Otherwise the engine has recorded activity at some time (not necessarily in this window). ' + ZERO_ALERTS + ' This counts the decision to alert. This build has no external delivery channel, so it says nothing about an alert reaching anyone outside the system.',
       byKind: 'Alerts in the window counted by kind (REMINDER, AT_RISK, OVERDUE, ESCALATION, DIGEST). The counts add up to total.',
       reminderTiming:
         'Timeliness of REMINDER alerts only. reminders = reminder alerts in the window; late = reminders raised more than one day after their reminder date because the engine had not run in time; onTime = reminders - late, so onTime + late = reminders (not total). The other alert kinds (at-risk, overdue, escalation, digest) have no timeliness measure in this system, so they are not counted as on time or late. Blank when total is blank.',
