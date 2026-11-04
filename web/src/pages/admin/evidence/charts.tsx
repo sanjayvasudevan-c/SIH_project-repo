@@ -1,9 +1,9 @@
 import { Bar, BarChart, CartesianGrid, Cell, Legend, LabelList, ReferenceLine, Tooltip, XAxis, YAxis } from 'recharts';
-import type { AssignmentOfficer, WorkflowVolumePoint } from '../../../api/types';
-import { formatDate } from '../../../lib/format';
+import type { AssignmentOfficer, EngineRunDetailRow, WorkflowVolumePoint } from '../../../api/types';
+import { formatDate, formatDateTime } from '../../../lib/format';
 import tokens from '../../../lib/chartTokens';
 import { ChartFrame } from './ChartFrame';
-import { fmtInt, fmtPct } from './format';
+import { fmtInt, fmtMs, fmtPct, RUN_STATUS_WORDS } from './format';
 
 const AXIS = { fontSize: 12, fill: tokens.axis };
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -168,6 +168,115 @@ export function UtilisationBars({ label, officers }: { label: string; officers: 
             <Cell key={o.officerId} fill={o.utilisation > o.maxUtil + 1e-9 ? tokens.danger : tokens.accent} />
           ))}
         </Bar>
+      </BarChart>
+    </ChartFrame>
+  );
+}
+
+export interface StateSegment {
+  key: string;
+  word: string;
+  count: number;
+  fill: string;
+}
+
+/** One bar split into states. The segments are drawn from `segments` (which must add up to `total`); the table lists the same four rows. */
+export function SegmentedBar({ label, total, segments }: { label: string; total: number; segments: StateSegment[] }) {
+  const datum = Object.fromEntries(segments.map((g) => [g.key, g.count]));
+  return (
+    <ChartFrame
+      label={label}
+      height={96}
+      columns={[
+        { key: 'word', header: 'State' },
+        { key: 'count', header: 'Items', format: (v) => fmtInt(v as number) },
+        { key: 'share', header: 'Share of open items', format: (v) => fmtPct(v as number) },
+      ]}
+      rows={segments.map((g) => ({ word: g.word, count: g.count, share: total > 0 ? g.count / total : null }))}
+    >
+      <BarChart data={[datum]} layout="vertical" margin={{ top: 8, right: 12, bottom: 4, left: 0 }}>
+        <XAxis type="number" domain={[0, total]} allowDecimals={false} tick={AXIS} stroke={tokens.grid} />
+        <YAxis type="category" hide />
+        <Tooltip cursor={false} />
+        {segments.map((g) => (
+          <Bar key={g.key} dataKey={g.key} name={g.word} stackId="open" fill={g.fill} stroke="#fff" isAnimationActive={false} />
+        ))}
+      </BarChart>
+    </ChartFrame>
+  );
+}
+
+/**
+ * One bar per engine run, in run order (oldest left, as the rows come newest first). Not a time axis: the runs of a demo share one real day.
+ * A failed run is red and is also named "Failed" in the tooltip, the data table and the caption under the chart.
+ */
+export function RunDurationBars({ label, rows }: { label: string; rows: EngineRunDetailRow[] }) {
+  const tableRows = rows.map((r) => ({ ...r, statusWord: RUN_STATUS_WORDS[r.status] ?? r.status }));
+  return (
+    <ChartFrame
+      label={label}
+      height={260}
+      columns={[
+        { key: 'id', header: 'Run' },
+        { key: 'startedAt', header: 'Started (real time)', format: (v) => formatDateTime(String(v)) },
+        { key: 'simulatedToday', header: 'Simulated date', format: (v) => formatDate(String(v)) },
+        { key: 'durationMs', header: 'Duration', format: (v) => fmtMs(v as number) },
+        { key: 'itemsChecked', header: 'Items checked', format: (v) => fmtInt(v as number) },
+        { key: 'statusWord', header: 'Status' },
+      ]}
+      rows={tableRows as unknown as BarRow[]}
+    >
+      <BarChart data={tableRows} margin={{ top: 4, right: 8, bottom: 20, left: 0 }}>
+        <CartesianGrid stroke={tokens.grid} vertical={false} />
+        {/* reversed: the rows are newest first, the chart reads oldest to newest left to right */}
+        <XAxis dataKey="id" reversed interval="preserveStartEnd" minTickGap={14} tick={AXIS} stroke={tokens.grid} label={{ value: 'Run number (oldest on the left)', position: 'insideBottom', offset: -12, fontSize: 12, fill: tokens.axis }} />
+        <YAxis orientation="left" tickFormatter={(v: number) => fmtMs(v)} width={64} tick={AXIS} stroke={tokens.grid} />
+        <Tooltip
+          cursor={{ fill: tokens.cursor }}
+          content={({ active, payload }) => {
+            const r = active ? (payload?.[0]?.payload as (typeof tableRows)[number] | undefined) : undefined;
+            if (!r) return null;
+            return (
+              <div className="rounded border bg-surface p-2 text-sm shadow">
+                <p className="font-semibold">
+                  Run {r.id} · {r.statusWord}
+                </p>
+                <p>Started {formatDateTime(r.startedAt)} (real time)</p>
+                <p>Simulated date {formatDate(r.simulatedToday)}</p>
+                <p>Took {fmtMs(r.durationMs)}</p>
+                <p>{fmtInt(r.itemsChecked)} items checked</p>
+              </div>
+            );
+          }}
+        />
+        <Bar dataKey="durationMs" name="Duration" isAnimationActive={false}>
+          {tableRows.map((r) => (
+            <Cell key={r.id} fill={r.status === 'FAILED' ? tokens.danger : r.status === 'RUNNING' ? tokens.neutral : tokens.accent} />
+          ))}
+        </Bar>
+      </BarChart>
+    </ChartFrame>
+  );
+}
+
+/** Alerts per day, only for the days the API returned (no zero-fill). */
+export function DayCountBars({ label, points, seriesName }: { label: string; points: { day: string; count: number }[]; seriesName: string }) {
+  return (
+    <ChartFrame
+      label={label}
+      height={260}
+      columns={[
+        { key: 'day', header: 'Day', format: (v) => formatDate(String(v)) },
+        { key: 'count', header: seriesName, format: (v) => fmtInt(v as number) },
+      ]}
+      rows={points as unknown as BarRow[]}
+    >
+      <BarChart data={points} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
+        <CartesianGrid stroke={tokens.grid} vertical={false} />
+        <XAxis dataKey="day" tickFormatter={shortDay} interval="preserveStartEnd" minTickGap={28} tick={AXIS} stroke={tokens.grid} />
+        <YAxis allowDecimals={false} width={32} tick={AXIS} stroke={tokens.grid} />
+        <Tooltip cursor={{ fill: tokens.cursor }} labelFormatter={(d) => formatDate(String(d))} />
+        <Bar dataKey="count" name={seriesName} fill={tokens.accent} isAnimationActive={false} />
       </BarChart>
     </ChartFrame>
   );

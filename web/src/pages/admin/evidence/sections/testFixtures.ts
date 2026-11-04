@@ -1,5 +1,5 @@
 // Test data shaped like the live /evidence responses (read from the dev API), trimmed.
-import type { AssignmentData, AssignmentTraceResponse, EngineRunsResponse, EvidenceEnvelope, EvidenceSummary, TraceCandidate, WorkflowData } from '../../../../api/types';
+import type { AlertsData, AssignmentData, AssignmentTraceResponse, ComplianceData, ComplianceEnvelope, EngineRunDetailRow, EngineRunsDetailResponse, EngineRunsResponse, EvidenceEnvelope, EvidenceSummary, TraceCandidate, WorkflowData } from '../../../../api/types';
 
 const STARTED = new Date(Date.now() - 4 * 3600_000).toISOString();
 
@@ -140,3 +140,93 @@ export const traceFor = (applicationId: string): AssignmentTraceResponse =>
         ],
         coverage: { tracedCount: 1, assignmentTotal: 1, blockedCount: 0 },
       };
+
+// ── Scheduler & compliance and alerts (live shapes, trimmed) ───────────────────
+export const COMPLIANCE_DEFS = {
+  asOf: 'ASOF DEF: evaluated on the system current date; the four states add up to openTotal.',
+  overdue: 'OVERDUE DEF: open item whose due date has passed.',
+  atRisk: 'ATRISK DEF: share of allowed days used is at least 80%.',
+  dueSoon: 'DUESOON DEF: within 30 calendar days of its due date.',
+  onTrack: 'ONTRACK DEF: open items that are none of the above.',
+  met: 'MET DEF: closed as met on time; not part of openTotal.',
+};
+export const complianceData = (over: Partial<ComplianceData['deadlines']> = {}): ComplianceData => ({
+  window: { from: null, to: null },
+  asOf: '2026-11-03',
+  deadlines: { openTotal: 178, overdue: 20, atRisk: 7, dueSoon: 4, onTrack: 147, met: 165, missed: 1, paused: 5, closed: 0, ...over },
+  escalations: [{ level: 1, count: 20 }],
+  alerts: { total: 107, byKind: [], reminderTiming: { reminders: 22, onTime: 1, late: 21 }, suppressed: 96, engineRunCount: 25 },
+});
+export const compliance = (over: Partial<ComplianceData['deadlines']> = {}): ComplianceEnvelope => ({
+  definition: { scope: 'SCOPE', deadlines: COMPLIANCE_DEFS },
+  provenance: { deadlines: 'DERIVED' },
+  data: complianceData(over),
+});
+
+export const RUN_DEFS = {
+  window: 'RUNWINDOW DEF: the dates select the day the engine treated as today.',
+  rows: 'RUNROWS DEF: one row per cycle, newest first.',
+  totals: 'RUNTOTALS DEF: counted over every run in the window.',
+  abandoned: 'ABANDONED DEF: still marked running after 15 minutes of real time.',
+  alertsCreated: 'CREATED DEF: alerts newly logged by the runs in the window.',
+  alertsSuppressed: 'SUPPRESSED DEF: the unique key makes the decision to alert once; no external delivery channel.',
+};
+export const runRow = (id: number, over: Partial<EngineRunDetailRow> = {}): EngineRunDetailRow => ({
+  id: String(id),
+  startedAt: `2026-11-03T19:17:${String(10 + id).padStart(2, '0')}.000Z`,
+  finishedAt: `2026-11-03T19:17:${String(11 + id).padStart(2, '0')}.000Z`,
+  durationMs: 100 * id,
+  instanceId: 'vm:14368',
+  simulatedToday: `2026-10-${String(10 + id).padStart(2, '0')}`,
+  provenance: 'SIMULATED',
+  itemsChecked: 100 + id,
+  alertsCreated: 10 + id,
+  alertsSuppressed: 5 + id,
+  notifications: 0,
+  flagsRaised: 0,
+  escalations: 0,
+  status: 'OK',
+  error: null,
+  ...over,
+});
+/** Newest first, like the API. Run 2 failed. */
+export const RUN_ROWS: EngineRunDetailRow[] = [runRow(3), runRow(2, { status: 'FAILED', error: 'ERROR TEXT: database connection lost', durationMs: 4200 }), runRow(1, { provenance: 'LIVE_DEMO' })];
+export const engineRunsDetail = (over: Partial<EngineRunsDetailResponse> = {}): EngineRunsDetailResponse => ({
+  total: RUN_ROWS.length,
+  page: 1,
+  pageSize: 25,
+  rows: RUN_ROWS,
+  totals: { runCount: 3, failedCount: 1, abandonedCount: 0, alertsCreated: 39, alertsSuppressed: 21 },
+  definition: RUN_DEFS,
+  provenance: { rows: 'MEASURED', totals: 'MEASURED' },
+  ...over,
+});
+export const noRuns = (): EngineRunsDetailResponse =>
+  engineRunsDetail({ total: 0, rows: [], totals: { runCount: 0, failedCount: 0, abandonedCount: 0, alertsCreated: null, alertsSuppressed: null } });
+
+export const ALERT_DEFS = {
+  total: 'ALERTTOTAL DEF: alerts the engine logged in the window; blank when no engine activity.',
+  byKind: 'BYKIND DEF: counts add up to total.',
+  reminderTiming: 'TIMING DEF: reminders only; onTime + late = reminders (not total).',
+  perDay: 'PERDAY DEF: only days with at least one alert; nothing is back-filled.',
+  escalationsByLevel: 'ESCLEVEL DEF: only levels with at least one alert are listed.',
+  notifications: 'NOTIF DEF: every notification ever created, not windowed.',
+  notRecorded: 'NOTRECORDED DEF: acknowledgement and resolution time are not recorded.',
+};
+export const alertsData = (over: Partial<AlertsData> = {}): AlertsData => ({
+  window: { from: null, to: null },
+  engineEverRan: true,
+  total: 107,
+  byKind: [{ kind: 'AT_RISK', count: 17 }, { kind: 'DIGEST', count: 16 }, { kind: 'ESCALATION', count: 31 }, { kind: 'OVERDUE', count: 21 }, { kind: 'REMINDER', count: 22 }],
+  reminderTiming: { reminders: 22, onTime: 1, late: 21 },
+  perDay: [{ day: '2026-09-14', count: 1 }, { day: '2026-10-05', count: 3 }, { day: '2026-10-19', count: 16 }, { day: '2026-11-02', count: 43 }],
+  escalationsByLevel: [{ level: 1, count: 20 }, { level: 2, count: 8 }, { level: 3, count: 3 }],
+  notifications: { total: 810, read: 0, unread: 810, informative: false },
+  notRecorded: ['acknowledgement', 'resolution time'],
+  ...over,
+});
+export const alerts = (over: Partial<AlertsData> = {}): EvidenceEnvelope<AlertsData> => ({
+  definition: ALERT_DEFS,
+  provenance: { total: 'MEASURED', byKind: 'MEASURED', reminderTiming: 'MEASURED', perDay: 'MEASURED', escalationsByLevel: 'MEASURED', notifications: 'MEASURED', notRecorded: null },
+  data: alertsData(over),
+});

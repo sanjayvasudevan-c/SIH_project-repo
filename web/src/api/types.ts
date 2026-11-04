@@ -491,3 +491,70 @@ export interface AssignmentTraceResponse {
   rows: AssignmentTraceRow[];
   coverage: AssignmentCoverage;
 }
+
+// ── Evidence Center: scheduler & compliance and alerts (read from the live responses) ───────────────
+export type AlertKind = 'REMINDER' | 'AT_RISK' | 'OVERDUE' | 'ESCALATION' | 'DIGEST';
+export type RunProvenance = 'TEST_RUN' | 'BENCHMARK' | 'SIMULATED' | 'LIVE_DEMO';
+
+/** GET /evidence/compliance `data.deadlines`: the four open states add up to openTotal; the last four are outside it. */
+export interface ComplianceDeadlines {
+  openTotal: number;
+  overdue: number;
+  atRisk: number;
+  dueSoon: number;
+  onTrack: number;
+  met: number;
+  missed: number;
+  paused: number;
+  closed: number;
+}
+export interface ComplianceData {
+  window: { from: string | null; to: string | null };
+  asOf: string;
+  deadlines: ComplianceDeadlines;
+  escalations: { level: number; count: number }[];
+  alerts: {
+    total: number | null;
+    byKind: { kind: AlertKind; count: number }[];
+    reminderTiming: { reminders: number; onTime: number; late: number } | null;
+    suppressed: number | null;
+    engineRunCount: number;
+  };
+}
+/** `definition.deadlines` is an object of per-state texts here, unlike the other endpoints. */
+export interface ComplianceEnvelope {
+  definition: { scope?: string; window?: string; escalations?: string; alerts?: string; deadlines?: Record<string, string> };
+  provenance: Record<string, Provenance | null>;
+  data: ComplianceData;
+}
+
+/** A row of GET /evidence/engine-runs with everything the Scheduler section shows. */
+export interface EngineRunDetailRow extends EngineRunRow {
+  instanceId: string;
+  provenance: RunProvenance;
+  itemsChecked: number;
+  alertsCreated: number;
+  alertsSuppressed: number;
+  notifications: number;
+  flagsRaised: number;
+  escalations: number;
+  error: string | null;
+}
+export interface EngineRunsDetailResponse extends Omit<EngineRunsResponse, 'rows'> {
+  page: number;
+  pageSize: number;
+  rows: EngineRunDetailRow[];
+}
+
+/** GET /evidence/alerts `data`. `total` and `reminderTiming` are null when the engine has never recorded activity. */
+export interface AlertsData {
+  window: { from: string | null; to: string | null };
+  engineEverRan: boolean;
+  total: number | null;
+  byKind: { kind: AlertKind; count: number }[];
+  reminderTiming: { reminders: number; onTime: number; late: number } | null;
+  perDay: { day: string; count: number }[];
+  escalationsByLevel: { level: number; count: number }[];
+  notifications: { total: number; read: number; unread: number; informative: boolean };
+  notRecorded: string[];
+}

@@ -39,3 +39,6 @@ export function ago(iso: string | null | undefined, now: number = Date.now()): s
   const t = new Date(iso).getTime();
   return Number.isFinite(t) ? agoSeconds(Math.round((now - t) / 1000)) : UNAVAILABLE;
 }
+
+/** How an engine cycle ended, in words. None of them claims anything about the scheduler process itself. */
+export const RUN_STATUS_WORDS: Record<string, string> = { OK: 'Finished', FAILED: 'Failed', RUNNING: 'Started, not finished' };
