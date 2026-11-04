@@ -36,6 +36,7 @@ export const hi: DeepPartial<Strings> = {
     team: 'टीम',
     workforce: 'कार्यबल',
     admin: 'प्रशासन',
+    evidence: 'साक्ष्य केंद्र',
     styleguide: 'शैली मार्गदर्शिका',
     rules: 'नियम केंद्र',
     notices: 'क्या बदला',

@@ -51,7 +51,7 @@ Sequential builds work with Docker installations that do not have the Buildx plu
 | `node --test scripts/*.test.mjs` | Run chart generator tests |
 | `npm run evidence:verify` | Compare Evidence Center aggregates against independent SQL; needs a seeded database |
 
-The Evidence Center UI is not exposed in the running app. Its source and verification command are retained for code review and evidence reproducibility.
+Sign in as the seeded ADMIN user and open **Evidence Center** in the application navigation. It reads the ADMIN-only API; database-backed sections need the configured PostgreSQL database, while model and benchmark sections read committed evaluation artifacts. Panels identify their scope, provenance and definition. `npm run evidence:verify` independently checks API aggregates against SQL.
 
 ## Development without Docker
 

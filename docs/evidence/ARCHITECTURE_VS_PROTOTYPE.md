@@ -22,7 +22,7 @@ The submission describes a nine-phase design (phases 0 to 8). This repository bu
 | 7 | Offline OCR cross-check of uploaded documents against form values | Not built |
 | 8 | Production hardening: PgBouncer, read replica, audit partitions, stateless replicas, backups with point-in-time recovery, monitoring, two-factor sign-in, AICTE single sign-on, encryption at rest, virus scanning, row-level security, SMS and e-mail gateways, full Hindi and regional languages, security and accessibility audits, DPDP Act review, AICTE portal adapter | Not built. Nothing here is production-ready. |
 
-Also absent, and stated so that nothing below is read as covering it: there is no lint configuration; GitHub Actions is defined in `.github/workflows/ci.yml`, but this document does not claim a successful hosted run. The Evidence Center UI, scheduler run history and assignment traces are implemented; the UI route is intentionally hidden from the current app, while its source, API and evidence remain in this repository. There is no external notification channel (e-mail or SMS), so external delivery is not implemented.
+Also absent, and stated so that nothing below is read as covering it: there is no lint configuration; GitHub Actions is defined in `.github/workflows/ci.yml`, but this document does not claim a successful hosted run. The Evidence Center UI, scheduler run history and assignment traces are implemented; ADMIN users can view the center in the app. There is no external notification channel (e-mail or SMS), so external delivery is not implemented.
 
 ### How to read the Status column
 
@@ -61,7 +61,7 @@ COLLEGE (`college.abc@demo.in`), OFFICER (`priya@`, `arjun@`, `meena@`, `ravi@` 
 | 7 | "Check my entries" form check | `/college/apply` | COLLEGE | — | Built-up > land | R1 HIGH warning; justification required; never blocks | Tested (`formcheck.test.ts`: built-up larger than plot, justification); screen recorded demo 1 |
 | 8 | Hard validation: missing critical document blocks submit | `/college/apply` | COLLEGE | — | Omit land lease | Submit disabled, message names the document | Tested (`workflow.test.ts`: blocks submission without critical documents); screen recorded demo 1 |
 | 9 | Purview / eligibility / schedule refusal | API on submit | COLLEGE | — | BBA at a non-technical college; file outside a window | Plain refusal naming the rule or the next window | Tested (`rules-consumers.test.ts`: purview and no-open-window refusals) |
-| 10 | Automatic assignment with reasons | case view | OFFICER | new case | Open the case | "Assigned to Priya Raman … portfolio officer …; utilisation …; Rules 2027-28 v1" | Tested (`assignment.test.ts`: lowest score, exclusions listed). Full candidate detail is persisted in `AssignmentTrace`; the former Evidence Center UI that displayed it is not exposed in the current app. |
+| 10 | Automatic assignment with reasons | case view | OFFICER | new case | Open the case | "Assigned to Priya Raman … portfolio officer …; utilisation …; Rules 2027-28 v1" | Tested (`assignment.test.ts`: lowest score, exclusions listed). Full candidate detail is persisted in `AssignmentTrace` and viewable by ADMIN in the Evidence Center. |
 | 11 | Scrutiny: complete, return with deficiencies, reply, re-scrutiny | `/cases/:id`, `/college/applications/:id` | OFFICER, COLLEGE | assigned case | Return with items; college replies | Clock pauses (amber), resumes with remaining days to the same officer | Tested (`workflow.test.ts`: RETURN then REPLY, remaining days) |
 | 12 | Action Center with reasons and fixed order | `/officer` | OFFICER, BUREAU | seeded flags | Open | Rows ordered by escalation, overdue, category, due, filing; each row says why and what next | Tested (`actionCenter.test.ts`) |
 | 13 | Deadline engine: reminders, at-risk, overdue, escalation (L1–L3), digests | background | scheduler | schedulers running | Admin advances time | Escalation to the manager once per level; each reminder offset fires once (the decision to alert is exactly-once; delivery is in-app only) | Tested (`engine.test.ts`: offsets once, escalation levels 1 to 3, digest once). Catch-up after downtime has a test for missed offsets only |
@@ -103,8 +103,8 @@ COLLEGE (`college.abc@demo.in`), OFFICER (`priya@`, `arjun@`, `meena@`, `ravi@` 
 | Phases 5 to 8 | Not built; see the phase table above. |
 | Docker compose stack | Defined, but never exercised: the audit ran the services natively (a PostgreSQL service, `tsx` API, Vite dev server, schedulers via npm scripts). |
 | Hosted mode (Vercel and Neon) | Implemented per earlier sessions; not tested in the 2026-11-03 audit, which made no network calls to the live site. |
-| CI, lint | CI added with this pack (`.github/workflows/ci.yml`: typecheck, API tests, form-check tests, web build, chart tests; first GitHub run not yet observed). Lint is absent: no ESLint, Prettier or Ruff configuration, so `tsc --noEmit` and `tsc -b` are the only static gates. |
-| Scheduler run history and assignment decision trace | Implemented in `EngineRun` and `AssignmentTrace`; shown in the retained Evidence Center source, whose UI route is not exposed in the current app. |
+| CI, lint | CI runs (`.github/workflows/ci.yml`: typecheck, API tests, form-check tests, web build, chart tests); the first observed run had unresolved failures/cancellations, and this revision adds the missing install step for chart tests. Lint is absent: no ESLint, Prettier or Ruff configuration, so `tsc --noEmit` and `tsc -b` are the only static gates. |
+| Scheduler run history and assignment decision trace | Implemented in `EngineRun` and `AssignmentTrace`; viewable by ADMIN in the Evidence Center. |
 
 ## Known issues
 

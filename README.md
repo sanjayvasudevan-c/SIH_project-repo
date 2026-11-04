@@ -65,7 +65,7 @@ The [evaluation guide](docs/evaluation/README.md) connects each major claim to i
 
 The [interactive benchmark explorer](docs/index.html) reads the committed JSON runs and lets evaluators switch between run records and benchmark questions. To view it locally, run `python3 -m http.server 8000 --directory docs` and open <http://localhost:8000>. A manual Pages workflow is prepared; Pages is not configured or deployed yet. See [publishing instructions](docs/README.md). The Markdown reports and raw data remain browsable here.
 
-The Evidence Center implementation remains in the repository as a technical evidence source: its code, read-only ADMIN API, database models, tests, documentation, and screenshots are preserved. Its UI is **not linked from the app and no longer renders at `/admin/evidence`**. See the [implementation record](docs/evidence/README.md).
+Administrators can open the in-app Evidence Center at `/admin/evidence/overview` for eight sections of workflow, assignment, scheduler, alert, audit, ML-evaluation and performance evidence. The read-only ADMIN API draws live figures from the demo database and committed evaluation artifacts; each panel shows scope, source and measurement definition. Synthetic benchmarks and ML results are labelled, and missing verification is shown as not verified. See the [implementation record](docs/evidence/README.md).
 
 ## Run the prototype
 
@@ -98,11 +98,11 @@ node --test scripts/*.test.mjs
 npm run evidence:verify
 ```
 
-The API suite and evidence verifier require the configured PostgreSQL database. The evidence verifier compares API aggregates with independent SQL; it does not expose the Evidence Center UI.
+The API suite and evidence verifier require the configured PostgreSQL database. The Evidence Center UI reads the ADMIN-only API; `npm run evidence:verify` compares API aggregates with independent SQL.
 
 ## Demo and team
 
-- [Hosted prototype](https://aicte-demo-website.vercel.app) — deployment status is not asserted by this repository review.
+- [Hosted prototype](https://aicte-demo-website.vercel.app) — the main-branch Vercel deployment was successful on 4 November 2026; the separate open Dependabot Vitest preview failed and is documented in the [Evidence Center record](docs/evidence/README.md).
 - [SIH presentation](docs/presentation/GeoLogics_SIH2026_Presentation.pptx)
 - [Demo video](https://drive.google.com/file/d/1MtdBjbsbe71ODzVC4wfgrNmJwZF5oWQB/view?usp=sharing)
 - [Team GeoLogics contributors](CONTRIBUTORS.md)

@@ -32,7 +32,7 @@ Planned: NIC or MeghRaj (per the submitted abstract). Not tested. The prototype 
 
 ## Security and production work that is absent
 
-Phase 8 is not built. Specifically missing: PgBouncer, a read replica, audit partitions, backups with point-in-time recovery, monitoring, two-factor sign-in, AICTE single sign-on, encryption at rest, virus scanning, row-level security, SMS and e-mail gateways, security and accessibility audits, a DPDP Act review, and an AICTE portal adapter. There is no lint configuration. CI exists (`.github/workflows/ci.yml`), though its first GitHub run has not been observed. Until these exist the system should not hold real applicant data.
+Phase 8 is not built. Specifically missing: PgBouncer, a read replica, audit partitions, backups with point-in-time recovery, monitoring, two-factor sign-in, AICTE single sign-on, encryption at rest, virus scanning, row-level security, SMS and e-mail gateways, security and accessibility audits, a DPDP Act review, and an AICTE portal adapter. There is no lint configuration. GitHub Actions has run: API typecheck and form-check jobs passed on `d898896`; web and API test jobs were cancelled, and the chart test job failed because dependencies were not installed in that job. This revision adds the missing install step; a fresh branch check is still needed. Until the production gaps and checks are addressed, the system should not hold real applicant data.
 
 Related limits already stated elsewhere: audit is not tamper-proof against a privileged database administrator, and there is no external notification channel, so no external delivery exists to be exactly-once. The decision to alert is exactly-once (`AlertLog` unique key).
 
