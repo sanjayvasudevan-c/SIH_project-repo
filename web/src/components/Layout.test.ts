@@ -8,5 +8,6 @@ const admin: Me = { id: 'admin', name: 'Admin', email: 'admin@example.test', rol
 describe('ADMIN navigation', () => {
   it('links the project reviewer journey from the existing app shell', () => {
     expect(navFor(admin, en).map((item) => item.to)).toContain('/admin/project-story');
+    expect(navFor(admin, en).map((item) => item.to)).not.toContain('/admin/evidence/overview');
   });
 });

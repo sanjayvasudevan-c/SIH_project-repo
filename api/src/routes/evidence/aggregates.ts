@@ -1,5 +1,5 @@
-// Evidence Center aggregates. Each function returns { definition, provenance, data } from ONE set of queries, so a card and
-// the chart under it cannot disagree. `definition` is shown to the reader verbatim: numerator, denominator, window, exclusions.
+// Operational evidence aggregates. Each function returns { definition, provenance, data } from ONE set of queries, so downstream
+// renderings use the same results. `definition` records the numerator, denominator, window, and exclusions.
 // Rules held here: absent is null (never 0); no back-fill; every window bound applies to every measure in the response.
 import { Prisma, Status } from '@prisma/client';
 import { z } from 'zod';

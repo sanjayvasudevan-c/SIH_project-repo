@@ -1,4 +1,4 @@
-// Independent verification of the Evidence Center aggregates.
+// Independent verification of the operational evidence API aggregates.
 //
 // The counts and rates the /api/evidence endpoints return (workflow funnel, statuses and median, assignment totals, outcomes,
 // candidates considered / eligible / excluded by reason, and per-officer utilisation with its mean and spread, deadline states, alerts,

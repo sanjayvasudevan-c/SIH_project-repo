@@ -144,7 +144,7 @@ function ArchitectureMap({ selectComponent }: { selectComponent: (id: string) =>
     { title: 'Interface', ids: ['web'] },
     { title: 'Application API', ids: ['api'] },
     { title: 'Domain processing', ids: ['assignment', 'workflow', 'formcheck'] },
-    { title: 'Persistence and reporting', ids: ['database', 'evidence'] },
+    { title: 'Persistence and verification', ids: ['database', 'verification'] },
   ];
   return <Panel className="lg:col-span-2"><div className="flex flex-wrap items-end justify-between gap-3"><div><PanelTitle>Implementation flow</PanelTitle><p className="mt-1 text-sm text-secondary">Select a node to inspect its interfaces, dependencies, related tests, and limitations.</p></div><span className="text-xs text-muted">Authenticated requests → policy-backed processing → persisted records</span></div><div role="group" aria-label="Interactive architecture diagram" className="mt-4 grid gap-3 md:grid-cols-[1fr_auto_1fr_auto_1.3fr_auto_1.2fr] md:items-stretch">
     {lanes.map((lane, index) => <div key={lane.title} className="contents">

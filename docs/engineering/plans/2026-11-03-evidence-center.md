@@ -1,5 +1,7 @@
 # Evidence Center Implementation Plan
 
+> Historical implementation plan. The Evidence Center UI built from this plan was removed in Stage 1; the verification API, tests, data, and artifacts remain. Do not use this document as current application navigation guidance.
+
 > Historical implementation plan. The implementation, API, tests, and evidence artifacts remain in the repository. The UI was later removed from the normal application routes and navigation; see [`docs/evidence/README.md`](../../evidence/README.md) for the retained implementation record and [`docs/evaluation/README.md`](../../evaluation/README.md) for the current evaluator guide.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

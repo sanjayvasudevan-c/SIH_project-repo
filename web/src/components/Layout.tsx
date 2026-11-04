@@ -18,7 +18,6 @@ import {
   Briefcase,
   BookOpen,
   Megaphone,
-  ClipboardList,
 } from 'lucide-react';
 import { api } from '../api/client';
 import type { ClockInfo, Me, NotificationItem } from '../api/types';
@@ -82,7 +81,6 @@ export function navFor(user: Me, en: Strings): NavItem[] {
     case 'ADMIN':
       return [
         { to: '/admin', label: en.nav.admin, icon: I(Settings) },
-        { to: '/admin/evidence/overview', label: en.nav.evidence, icon: I(ClipboardList) },
         { to: '/admin/project-story', label: en.nav.projectReview, icon: I(BookOpen) },
         { to: '/rules', label: en.nav.rules, icon: I(BookOpen) },
         { to: '/styleguide', label: en.nav.styleguide, icon: I(Palette) },
