@@ -83,6 +83,7 @@ export function navFor(user: Me, en: Strings): NavItem[] {
       return [
         { to: '/admin', label: en.nav.admin, icon: I(Settings) },
         { to: '/admin/evidence/overview', label: en.nav.evidence, icon: I(ClipboardList) },
+        { to: '/admin/project-story', label: en.nav.projectReview, icon: I(BookOpen) },
         { to: '/rules', label: en.nav.rules, icon: I(BookOpen) },
         { to: '/styleguide', label: en.nav.styleguide, icon: I(Palette) },
       ];

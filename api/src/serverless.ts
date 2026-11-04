@@ -46,6 +46,17 @@ async function tick(source: string): Promise<void> {
 }
 
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  const url = req.url ?? '';
+  const cronRequest = url.startsWith('/api/cron/tick');
+  if (cronRequest) {
+    const secret = process.env.CRON_SECRET;
+    if (!secret || req.headers.authorization !== `Bearer ${secret}`) {
+      res.statusCode = 401;
+      res.end();
+      return;
+    }
+  }
+
   try {
     await init();
   } catch (e) {
@@ -55,15 +66,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     res.end(JSON.stringify({ error: 'The demo database is waking up. Try again in a few seconds.' }));
     return;
   }
-  const url = req.url ?? '';
-  if (url.startsWith('/api/cron/tick')) {
-    // Vercel sends its cron requests with this bearer token when CRON_SECRET is set.
-    const secret = process.env.CRON_SECRET;
-    if (secret && req.headers.authorization !== `Bearer ${secret}`) {
-      res.statusCode = 401;
-      res.end();
-      return;
-    }
+  if (cronRequest) {
     await tick('cron');
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ ok: true }));
