@@ -23,7 +23,7 @@ Each section is a tab (a labelled select on a phone). "Date filter" means the se
 | Workflow | Stage funnel, current status of every submitted application, median working days to decision, applications over time | yes, by application submission date | Measured and derived from `Application`, deadline items and the audit log |
 | Assignment | Officer utilisation against capacity, officers above their cap, decisions by outcome, and a "Show candidates" table of every officer considered for a decision with the stored reason | the workload panels are current state; the decisions panels filter by decision date | Measured and derived from `AssignmentTrace`, written by the assignment engine when it decides. Traces exist for automatic assignment only; manual assignment writes none, and the section says so |
 | Scheduler & compliance | Overdue and at-risk deadline items now, engine run history (count, failures, abandoned runs, duration), duplicate alerts prevented | open-deadline panels are current state (as of the app's simulated today); run panels filter by the date the engine treated as today | `EngineRun` rows (one per engine cycle) and `AlertLog`; the simulated clock is labelled as such |
-| Alerts | Alerts raised by kind and level, escalations, reminders raised late, alerts per day | yes, by alert date (the system's simulated calendar); notification counts are never windowed | Measured from `AlertLog` and `Notification`. Acknowledgement and resolution time are not recorded by this system and are shown as "insufficient data", not zero |
+| Alerts | Alerts raised by kind and level, escalations, reminders raised late, alerts per day | yes, by alert date (the system's simulated calendar); notification counts are never windowed | Measured from `AlertLog` and `Notification`. Acknowledgement is not recorded (a notification has a read flag, no timestamp) and is shown as "insufficient data", not zero. Time from an alert to its deadline item closing is recorded per item (`DeadlineItem.closedAt`, linked by `AlertLog.itemId`) but this page does not compute or chart it; on the dev database on 4 November 2026, 0 of the 32 alerted items had a `closedAt` |
 | Audit | Events by action, actor role and entity (counts only, no case content) and a live integrity check | yes for the three breakdowns (real-clock event time), plus role/action/entity selects; the integrity check always covers the whole log | Measured from `AuditLog`; integrity is recomputed on request over the whole log |
 | ML evaluation | Precision, recall, false-alarm rate, F1, derived confusion matrix, rules-only vs model-only vs hybrid, recall per fault type | none (a stored evaluation) | `formcheck/metrics.json`, labelled **synthetic data** throughout |
 | Performance | Test machine, read latency per screen (p50 / p95 / p99), deadline engine cycle times, duplicate alert prevention, comparison of the two recorded runs | none; a select chooses which recorded run to show | `docs/evidence/benchmark-results/*.json`, labelled benchmark on a synthetic dataset, one shared machine |
@@ -50,7 +50,7 @@ dev database on 4 November 2026 it printed `250 checks, 250 agree, 0 disagree`.
 What it proves: the API's aggregates match an independent query of the same database, so a bug in the aggregate
 code (a wrong join, a double count) would show as a disagreement. What it does not prove: that the stored data is
 true; that the SQL is right (two queries by the same team can share a misunderstanding); the individual
-at-risk/due-soon/on-track split (only their sum is checked); recomputation of audit hashes (linkage and counts
+at-risk/due-soon/on-track split (only their sum is checked); the `volumeOverTime` series; the wording of definitions; recomputation of audit hashes (linkage and counts
 only; the integrity card itself recomputes hashes); or that it is safe against a concurrent writer between the
 two reads. Its database session is read-only and it writes no audit row.
 
@@ -116,17 +116,17 @@ not write `test-results.json`; the Overview test card changes only when `npm run
 * **No requirement coverage matrix.** It needs the official SIH26262 problem statement text, which is not in the
   repository. Paste it into `docs/evidence/PROBLEM_STATEMENT.md` and the matrix can be built against it. Writing it from a
   reading of the README would put a paraphrase in the "official requirement" column.
-* Acknowledgement and resolution of alerts are not recorded, and the benchmark has two single runs on one
+* Acknowledgement of alerts is not recorded, the time from an alert to its deadline item closing is recorded per item but not computed here, and the benchmark has two single runs on one
   shared machine, so no variance is claimed.
 
 ## The original plan, in value order
 
-Written before the build, kept for the record. Status today: items 2 and 3 are built and item 4 is partly built (commit hash, p99, throughput, error count and a JSON file per run exist; there is no CSV and only one dataset size and one concurrency level); item 1 is written but has never run on GitHub; item 6 (decision trace) is not built. Items 0, 5 and 7 were not re-checked for this update.
+Historical: written before the build, kept for the record, so its test counts and sizes are those of that time. Status today: items 2 and 3 are built and item 4 is partly built (commit hash, p99, throughput, error count and a JSON file per run exist; there is no CSV and only one dataset size and one concurrency level); item 1 is written but has never run on GitHub; item 6 (decision trace) is not built. Items 0, 5 and 7 were not re-checked for this update.
 
 | # | Work | Why it ranks here | Size |
 |---|---|---|---|
 | **0** | **Correct the ML recall claim** (0.89 → 0.863, 2.9% → 2.2%) in the description, abstract and deck | The only item that can actively *lose* marks. Costs minutes. | XS |
-| **1** | **CI pipeline** (typecheck, 183 + 99 tests; a lint stage is not built and would need a linter configured first) | Turns "the tests pass" into a verifiable badge, and stops the next date bomb. Nothing to build — the tests exist. | S |
+| **1** | **CI pipeline** (typecheck, API suite + 99 form-check tests; 183 API tests when this plan was written, 241 now; a lint stage is not built and would need a linter configured first) | Turns "the tests pass" into a verifiable badge, and stops the next date bomb. Nothing to build — the tests exist. | S |
 | **2** | **`EngineRun` + scheduler history** | Closes the one MISSING item in an otherwise fully tested subsystem, and `alertsSuppressed` measures duplicate prevention directly. | M |
 | **3** | **`AssignmentTrace` + Evidence Center tabs A–E** | The judge-facing core: workflow, assignment fairness, scheduler, audit integrity. Answers "is it explainable and fair" with live data. | L |
 | **4** | **Benchmark provenance** — commit hash, p99, throughput, error rate, JSON + CSV artifacts, more than one dataset size and concurrency level | Makes the strongest existing claim reproducible instead of a dated note. | M |

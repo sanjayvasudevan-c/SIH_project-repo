@@ -2,7 +2,7 @@
 
 Six design properties of this prototype, each tied to the file that implements it, and what a generic tool would have to add to match it. This page argues from the design only. It makes no claim about what any particular existing product does or does not do; where a kind of tool appears, it is a category ("a generic workflow or ticketing engine", "a hard-coded rules implementation"), and the reader can judge the gap against whatever they use. All data in the prototype is synthetic.
 
-Tests named below are in the 183-test API suite (Vitest, a real PostgreSQL 16.15), run on 3 November 2026; see [`ARCHITECTURE_VS_PROTOTYPE.md`](ARCHITECTURE_VS_PROTOTYPE.md) for the baseline and the per-feature status.
+Tests named below are in the API suite (Vitest, a real PostgreSQL 16.15): 183 tests when this page was written on 3 November 2026, 241 at the audited commit on 4 November; see [`ARCHITECTURE_VS_PROTOTYPE.md`](ARCHITECTURE_VS_PROTOTYPE.md) for the baseline and the per-feature status.
 
 ## 1. A filed case keeps its substantive rules when the handbook changes mid-cycle
 

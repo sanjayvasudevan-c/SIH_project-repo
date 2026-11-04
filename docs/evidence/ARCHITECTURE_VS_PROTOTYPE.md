@@ -26,7 +26,7 @@ Also absent, and stated so that nothing below is read as covering it: there is n
 
 ### How to read the Status column
 
-Measured baseline on this branch, run by the controller: 183 API tests pass (Vitest, against a real PostgreSQL 16.15), 99 form-check tests pass (pytest), `tsc --noEmit` is clean, `tsc -b && vite build` is clean, and `python3 -m training.evaluate` regenerates `formcheck/EVALUATION.md` byte-identically.
+Measured baseline at the audited commit (183 API tests when first measured on 3 November 2026; the suite has since grown to 241 and all pass), run by the controller: 183 API tests passed (Vitest, against a real PostgreSQL 16.15), 99 form-check tests pass (pytest), `tsc --noEmit` is clean, `tsc -b && vite build` is clean, and `python3 -m training.evaluate` regenerates `formcheck/EVALUATION.md` byte-identically.
 
 * **Tested** means a named test in those suites exercises the behaviour end to end and passes in that baseline.
 * **Recorded demo** means the Playwright demo script (`demo-production/automation/record.mjs`) and the screenshots in `docs/screens/` show it, but no automated assertion checks it and the script was not re-run for the baseline. [`INITIAL_AUDIT.md`](INITIAL_AUDIT.md) classes the screens as implemented but not verified: no automated UI test or accessibility assertion runs in this repository.
