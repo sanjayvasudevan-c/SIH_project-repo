@@ -14,5 +14,4 @@ export default {
   grid: pick(c.line),
   axis: pick(c.muted),
   cursor: pick(c.subtle),
-  surface: pick(c.surface),
 };
