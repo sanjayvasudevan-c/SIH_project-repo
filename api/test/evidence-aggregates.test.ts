@@ -263,6 +263,49 @@ describe('/api/evidence aggregates', () => {
     expect(only.body.data.total).toBe(await prisma.auditLog.count({ where: { action: 'SUBMIT' } }));
   });
 
+  it('transitions: counts stage moves from the audit trail, equal to an independent read of AuditLog, with definition and provenance', async () => {
+    await driveToDecided('college.abc@demo.in');
+    await fileOnly('college.002@demo.in');
+    const r = await get('/api/evidence/workflow');
+    const t = r.body.data.transitions;
+    type Mv = { action: string; from: { stage: string; status: string } | null; to: { stage: string; status: string }; count: number };
+    const moves = t.moves as Mv[];
+    // Independent: group the raw audit rows that carry a toState object.
+    const rows = await prisma.auditLog.findMany({ where: { applicationId: { not: null } }, select: { action: true, fromState: true, toState: true } });
+    const want = new Map<string, number>();
+    for (const l of rows) {
+      const to = l.toState as { stage?: string; status?: string } | null;
+      if (!to || typeof to !== 'object' || Array.isArray(to)) continue;
+      const from = l.fromState as { stage?: string; status?: string } | null;
+      const key = `${l.action}|${from ? `${from.stage}/${from.status}` : 'ENTRY'}|${to.stage}/${to.status}`;
+      want.set(key, (want.get(key) ?? 0) + 1);
+    }
+    const got = new Map(moves.map((m) => [`${m.action}|${m.from ? `${m.from.stage}/${m.from.status}` : 'ENTRY'}|${m.to.stage}/${m.to.status}`, m.count]));
+    expect(Object.fromEntries(got)).toEqual(Object.fromEntries(want));
+    expect(t.total).toBe([...want.values()].reduce((a, b) => a + b, 0));
+    expect(t.applications).toBe(2);
+    expect(moves.find((m) => m.action === 'SUBMIT')).toMatchObject({ from: null, count: 2 }); // entry has no from-state
+    expect(moves.some((m) => m.action === 'DECIDE' && m.to.status === 'APPROVED')).toBe(true);
+    expect(r.body.definition.transitions).toMatch(/audit/i);
+    expect(r.body.definition.transitions).toMatch(/not .*(recorded|counted)|only/i);
+    expect(r.body.provenance.transitions).toBe('MEASURED');
+    expect(JSON.stringify(r.body)).not.toMatch(/holderUserId/); // identities of holders are not part of the aggregate
+  });
+
+  it('transitions: same window as the rest of the workflow aggregate; empty is null/[] not zero-filled', async () => {
+    await driveToDecided('college.abc@demo.in');
+    const none = (await get('/api/evidence/workflow?from=2099-01-01&to=2099-01-02')).body.data.transitions;
+    expect(none.moves).toEqual([]);
+    expect(none.total).toBeNull(); // nothing was submitted in the window: nothing to count, not "0 transitions"
+    expect(none.applications).toBeNull();
+    const wide = (await get('/api/evidence/workflow')).body.data;
+    expect(wide.transitions.total).toBeGreaterThan(0);
+    // A window that selects the cohort by submission date selects its transitions with it (even those after the window).
+    const day = wide.volumeOverTime[0].day as string;
+    const one = (await get(`/api/evidence/workflow?from=${day}&to=${day}`)).body.data;
+    expect(one.transitions.total).toBe(wide.transitions.total);
+  });
+
   it('a date filter narrows every measure in the response, not some of them', async () => {
     await driveToDecided('college.abc@demo.in');
     shiftDays(30);

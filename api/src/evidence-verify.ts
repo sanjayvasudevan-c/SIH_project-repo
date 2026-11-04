@@ -1,6 +1,6 @@
 // Independent verification of the Evidence Center aggregates.
 //
-// The counts and rates the /api/evidence endpoints return (workflow funnel, statuses and median, assignment totals, outcomes,
+// The counts and rates the /api/evidence endpoints return (workflow funnel, statuses, stage transitions and median, assignment totals, outcomes,
 // candidates considered / eligible / excluded by reason, and per-officer utilisation with its mean and spread, deadline states, alerts,
 // engine runs, audit counts, integrity linkage) are recomputed here with FRESH raw SQL written directly against the
 // tables (nothing in src/routes/evidence/* is imported, so a bug in an aggregate query cannot be repeated by its own check) and the
@@ -229,6 +229,22 @@ export async function runVerification(io: VerifyIO, hooks: VerifyHooks = {}): Pr
           )
         )[0]?.m;
         add(L, 'processing: median working days (null when none decided)', '/workflow', d.processingTime.medianWorkingDays, med === undefined ? null : med);
+        // Transitions: a separate query over the audit rows (state before/after), grouped in the driver, not in SQL, so the grouping logic is independent too.
+        const tr = await io.sql(
+          `SELECT l.action, l."fromState"->>'stage' AS fs, l."fromState"->>'status' AS fst, l."toState"->>'stage' AS ts, l."toState"->>'status' AS tst, a.id AS app
+             FROM "Application" a JOIN "AuditLog" l ON l."applicationId" = a.id
+            WHERE l."toState" IS NOT NULL AND jsonb_typeof(l."toState") = 'object' AND ${inWin('a."submittedAt"')}`,
+          P,
+        );
+        const trMap: Record<string, number> = {};
+        for (const r of tr) {
+          const key = `${r.action}:${r.fs ? `${r.fs}/${r.fst}` : 'ENTRY'}>${r.ts}/${r.tst}`;
+          trMap[key] = (trMap[key] ?? 0) + 1;
+        }
+        const t = d.transitions;
+        add(L, 'transitions: total (null when nothing submitted)', '/workflow', t.total, total > 0 ? tr.length : null);
+        add(L, 'transitions: distinct applications (null when nothing submitted)', '/workflow', t.applications, total > 0 ? new Set(tr.map((r) => String(r.app))).size : null);
+        add(L, 'transitions: count per action and from/to state', '/workflow', mapStr(apiMap(t.moves as Json[], (m: Json) => `${m.action}:${m.from ? `${m.from.stage}/${m.from.status}` : 'ENTRY'}>${m.to.stage}/${m.to.status}`, (m: Json) => m.count)), mapStr(trMap));
       });
     }
 

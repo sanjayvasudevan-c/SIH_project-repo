@@ -75,7 +75,7 @@ export async function workflow(q: Q) {
   await loadHolidays(prisma); // working-day arithmetic uses the current holiday calendar
   // The cohort: applications SUBMITTED in the window. Every measure below is about this one set.
   const cohort = Prisma.sql`FROM "Application" a WHERE TRUE ${b.sql(Prisma.sql`a."submittedAt"`)}`;
-  const [statusRows, stageRows, routeRows, decisions, volume] = await Promise.all([
+  const [statusRows, stageRows, routeRows, decisions, volume, moveRows, moveApps] = await Promise.all([
     prisma.$queryRaw<Counted[]>`SELECT a.status::text AS k, count(*)::int AS n ${cohort} GROUP BY 1`,
     // A case "reached" a stage if any audited action left it in that stage (SUBMIT puts it in the first stage, COMPLETE_STAGE /
     // FORWARD_SAC_SHC / REVERT move it). DECIDE is the decision itself. Distinct cases, so a return-and-resubmit counts once.
@@ -102,6 +102,15 @@ export async function workflow(q: Q) {
         UNION ALL SELECT i."dueDate"::date::text, 'overdue' FROM "AlertLog" g JOIN "DeadlineItem" i ON i.id = g."itemId" JOIN "Application" a ON a.id = i."applicationId"
           WHERE g.kind = 'OVERDUE' ${b.sql(Prisma.sql`a."submittedAt"`)}
       ) e GROUP BY d, k`,
+    // Every audited state change of the cohort's applications: the audit row's fromState/toState (stage + status; the holder is not read).
+    // SUBMIT has no fromState (the application did not exist), so its from is NULL = entry. Events with no toState (logins, alerts, ASSIGN...) are not transitions.
+    prisma.$queryRaw<{ action: string; fromStage: string | null; fromStatus: string | null; toStage: string; toStatus: string; n: number; apps: number }[]>`
+      SELECT l.action, l."fromState"->>'stage' AS "fromStage", l."fromState"->>'status' AS "fromStatus", l."toState"->>'stage' AS "toStage", l."toState"->>'status' AS "toStatus",
+             count(*)::int AS n, count(DISTINCT a.id)::int AS apps
+      FROM "Application" a JOIN "AuditLog" l ON l."applicationId" = a.id
+      WHERE jsonb_typeof(l."toState") = 'object' ${b.sql(Prisma.sql`a."submittedAt"`)}
+      GROUP BY 1, 2, 3, 4, 5 ORDER BY n DESC, 1, 2, 3, 4, 5`,
+    prisma.$queryRaw<{ apps: number }[]>`SELECT count(DISTINCT a.id)::int AS apps FROM "Application" a JOIN "AuditLog" l ON l."applicationId" = a.id WHERE jsonb_typeof(l."toState") = 'object' ${b.sql(Prisma.sql`a."submittedAt"`)}`,
   ]);
   const n = (rows: Counted[], k: string) => rows.find((r) => r.k === k)?.n ?? 0;
   const submittedTotal = statusRows.reduce((s, r) => s + r.n, 0);
@@ -117,7 +126,7 @@ export async function workflow(q: Q) {
     (row as Record<string, number | string>)[v.k] = v.n;
     series.set(v.d, row);
   }
-  const provenance: Record<string, Provenance> = { funnel: 'MEASURED', funnelShare: 'DERIVED', statusDistribution: 'MEASURED', processingTime: 'DERIVED', volumeOverTime: 'MEASURED' };
+  const provenance: Record<string, Provenance> = { funnel: 'MEASURED', funnelShare: 'DERIVED', statusDistribution: 'MEASURED', processingTime: 'DERIVED', volumeOverTime: 'MEASURED', transitions: 'MEASURED' };
   const definition = {
     scope: SCOPE,
     cohort: 'Every figure on this tab is about one group: the applications submitted between the From and To dates (inclusive; all dates if none given). Nothing outside that group is counted anywhere in this response.',
@@ -128,6 +137,8 @@ export async function workflow(q: Q) {
       'Median working days from submission to decision (weekends and holidays excluded), over DECIDED applications only. Applications still in progress are not finished, so their processing time is not yet known (a censored sample): they are excluded from the median and reported separately as inFlightCount. decidedCount + inFlightCount = applications submitted in the window. No mean is given because averaging only the finished cases would understate the time cases take. Blank when no application in the window has been decided.',
     volumeOverTime:
       'Per calendar day, for applications submitted in the window: how many were submitted that day, how many were decided that day, and how many deadline items of those applications the engine raised an overdue alert for, plotted on the item\'s due date (not on the date the alert was raised or the date the item became overdue). Starts at the first recorded event; days with no event are left out rather than shown as zero, and nothing is back-filled or interpolated. The overdue points are placed on the item\'s due date, which can fall outside the From/To dates (those dates select the applications, not the plotted days), so do not label the day axis with the From/To range.',
+    transitions:
+      'Number of recorded state changes of the applications submitted in the window, grouped by the action that caused them and by the stage and status the application was in before and after, counted from the audit trail (each audit row stores the application\'s stage and status before and after the action). total = such events; applications = distinct applications with at least one. SUBMIT has no earlier state (the application did not exist), shown as from = null. A move from a stage to the same stage with a different holder (for example scheduling a visit) is a transition row but not a stage change. Only actions that changed the stored state are counted: events that are not state changes (assignments, alerts, sign-ins) carry no state and are not counted, and nothing is inferred for a stage move that was not audited. Counts are events, not applications: an application returned and resubmitted is counted each time. Same cohort as every other figure here (applications submitted in the window; the window does not cut the events themselves). Blank (null), with no moves, when no application was submitted in the window.',
   };
   return {
     definition,
@@ -139,6 +150,17 @@ export async function workflow(q: Q) {
       statusDistribution: Object.values(Status).map((s) => ({ status: s, count: n(statusRows, s), share: share(n(statusRows, s), submittedTotal) })),
       processingTime: { decidedCount: days.length, inFlightCount: submittedTotal - days.length, medianWorkingDays: median(days), unit: 'working days' },
       volumeOverTime: [...series.values()].sort((x, y) => x.day.localeCompare(y.day)),
+      transitions: {
+        total: submittedTotal > 0 ? moveRows.reduce((t, m) => t + m.n, 0) : null,
+        applications: submittedTotal > 0 ? (moveApps[0]?.apps ?? 0) : null,
+        moves: moveRows.map((m) => ({
+          action: m.action,
+          from: m.fromStage ? { stage: m.fromStage, status: m.fromStatus } : null,
+          to: { stage: m.toStage, status: m.toStatus },
+          count: m.n,
+          applications: m.apps,
+        })),
+      },
     },
   };
 }

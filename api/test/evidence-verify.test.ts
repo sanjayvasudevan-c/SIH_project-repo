@@ -133,6 +133,23 @@ describe('evidence:verify (independent SQL ground truth)', () => {
     expect(report.failures.map((f) => `${f.window}:${f.measure}`)).toEqual([expect.stringMatching(/^all:utilisation stdDev/)]);
   });
 
+  it('5b. stage transitions are checked: a perturbed transition count is the only disagreement', async () => {
+    await resetDb();
+    await populate();
+    const clean = await runVerification(await io());
+    await db?.end();
+    const tc = clean.checks.filter((c) => c.window === 'all' && /^transitions:/.test(c.measure));
+    expect(tc.length).toBe(3);
+    expect(Number(tc.find((c) => /total/.test(c.measure))?.sql)).toBeGreaterThan(5); // the data exercises the measure
+    const report = await runVerification(await io(), {
+      mutateApi: (w, endpoint, body) => {
+        if (w === 'all' && endpoint === '/workflow') body.data.transitions.moves[0].count += 1;
+      },
+    });
+    expect(report.ok).toBe(false);
+    expect(report.failures.map((f) => `${f.window}:${f.measure}`)).toEqual(['all:transitions: count per action and from/to state']);
+  });
+
   it('6. a perturbed ML precision is caught by the confusion-matrix recomputation', async () => {
     await resetDb();
     const report = await runVerification(await io(), {
