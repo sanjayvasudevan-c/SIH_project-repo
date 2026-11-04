@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 348" width="800" height="348" role="img" aria-labelledby="t-benchmarks-dataset-scale d-benchmarks-dataset-scale" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title id="t-benchmarks-dataset-scale">Benchmark dataset scale</title>
+<desc id="d-benchmarks-dataset-scale">Benchmark dataset scale. Rows present when run f78d82e was measured (191 were the seeded demo applications; the rest were bulk-loaded).</desc>
+<rect x="0.5" y="0.5" width="799" height="347" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="20" font-weight="600" fill="#1f2328">Benchmark dataset scale</text>
+<text x="24" y="54" font-size="14" fill="#57606a">Rows present when run f78d82e was measured (191 were the seeded demo applications; the rest</text>
+<text x="24" y="74" font-size="14" fill="#57606a">were bulk-loaded).</text>
+<line x1="224" y1="96" x2="224" y2="220" stroke="#57606a" stroke-width="1"/>
+<text x="224" y="238" font-size="13" text-anchor="middle" fill="#57606a">0</text>
+<line x1="387.09" y1="96" x2="387.09" y2="220" stroke="#d0d7de" stroke-width="1"/>
+<text x="387.09" y="238" font-size="13" text-anchor="middle" fill="#57606a">10,000</text>
+<line x1="550.19" y1="96" x2="550.19" y2="220" stroke="#d0d7de" stroke-width="1"/>
+<text x="550.19" y="238" font-size="13" text-anchor="middle" fill="#57606a">20,000</text>
+<line x1="713.28" y1="96" x2="713.28" y2="220" stroke="#d0d7de" stroke-width="1"/>
+<text x="713.28" y="238" font-size="13" text-anchor="middle" fill="#57606a">30,000</text>
+<text x="214" y="120" font-size="14" text-anchor="end" fill="#1f2328">Applications</text>
+<rect x="224" y="105" width="244.64" height="20" fill="#0072B2" stroke="none"/>
+<text x="476.64" y="120" font-size="14" fill="#1f2328">15,000</text>
+<text x="214" y="150" font-size="14" text-anchor="end" fill="#1f2328">Deadline items</text>
+<rect x="224" y="135" width="447.02" height="20" fill="#0072B2" stroke="none"/>
+<text x="679.02" y="150" font-size="14" fill="#1f2328">27,409</text>
+<text x="214" y="180" font-size="14" text-anchor="end" fill="#1f2328">Open deadline items</text>
+<rect x="224" y="165" width="227.91" height="20" fill="#0072B2" stroke="none"/>
+<text x="459.91" y="180" font-size="14" fill="#1f2328">13,974</text>
+<text x="214" y="210" font-size="14" text-anchor="end" fill="#1f2328">Assignments</text>
+<rect x="224" y="195" width="281.74" height="20" fill="#0072B2" stroke="none"/>
+<text x="513.74" y="210" font-size="14" fill="#1f2328">17,275</text>
+<text x="468.64" y="260" font-size="13" text-anchor="middle" fill="#57606a">rows in the database (count)</text>
+<line x1="24" y1="278" x2="776" y2="278" stroke="#d0d7de" stroke-width="1"/>
+<text x="24" y="296" font-size="13" font-weight="600" fill="#57606a">Provenance: MEASURED · SYNTHETIC dataset</text>
+<text x="24" y="314" font-size="13" fill="#57606a">Source: docs/evidence/benchmark-results/f78d82e.json</text>
+<text x="24" y="332" font-size="13" fill="#57606a">Benchmark run 2026-11-04 · commit f78d82e · synthetic dataset, one shared machine</text>
+</svg>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 324" width="800" height="324" role="img" aria-labelledby="t-benchmarks-engine-cycle-alerts d-benchmarks-engine-cycle-alerts" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title id="t-benchmarks-engine-cycle-alerts">Deadline engine: new alerts in the first and second cycle</title>
+<desc id="d-benchmarks-engine-cycle-alerts">Deadline engine: new alerts in the first and second cycle. The second cycle re-examines the same items; a correct engine creates no new alert for them.</desc>
+<defs><pattern id="h-benchmarks-engine-cycle-alerts-lg0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#0072B2"/><line x1="0" y1="0" x2="0" y2="6" stroke="#ffffff" stroke-width="2.5"/></pattern><pattern id="h-benchmarks-engine-cycle-alerts-0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#0072B2"/><line x1="0" y1="0" x2="0" y2="6" stroke="#ffffff" stroke-width="2.5"/></pattern></defs>
+<rect x="0.5" y="0.5" width="799" height="323" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="20" font-weight="600" fill="#1f2328">Deadline engine: new alerts in the first and second cycle</text>
+<text x="24" y="54" font-size="14" fill="#57606a">The second cycle re-examines the same items; a correct engine creates no new alert for them.</text>
+<rect x="24" y="65" width="14" height="14" fill="url(#h-benchmarks-engine-cycle-alerts-lg0)" stroke="#0072B2" stroke-width="1"/>
+<text x="44" y="76" font-size="13" fill="#1f2328">565c210</text>
+<rect x="120.78" y="65" width="14" height="14" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="140.78" y="76" font-size="13" fill="#1f2328">f78d82e</text>
+<line x1="184" y1="94" x2="184" y2="195" stroke="#57606a" stroke-width="1"/>
+<text x="184" y="216" font-size="13" text-anchor="middle" fill="#57606a">0</text>
+<line x1="267.93" y1="94" x2="267.93" y2="195" stroke="#d0d7de" stroke-width="1"/>
+<text x="267.93" y="216" font-size="13" text-anchor="middle" fill="#57606a">2,500</text>
+<line x1="351.86" y1="94" x2="351.86" y2="195" stroke="#d0d7de" stroke-width="1"/>
+<text x="351.86" y="216" font-size="13" text-anchor="middle" fill="#57606a">5,000</text>
+<line x1="435.8" y1="94" x2="435.8" y2="195" stroke="#d0d7de" stroke-width="1"/>
+<text x="435.8" y="216" font-size="13" text-anchor="middle" fill="#57606a">7,500</text>
+<line x1="519.73" y1="94" x2="519.73" y2="195" stroke="#d0d7de" stroke-width="1"/>
+<text x="519.73" y="216" font-size="13" text-anchor="middle" fill="#57606a">10,000</text>
+<line x1="603.66" y1="94" x2="603.66" y2="195" stroke="#d0d7de" stroke-width="1"/>
+<text x="603.66" y="216" font-size="13" text-anchor="middle" fill="#57606a">12,500</text>
+<text x="174" y="122" font-size="14" text-anchor="end" fill="#1f2328">First cycle</text>
+<rect x="184" y="100" width="312.93" height="16" fill="url(#h-benchmarks-engine-cycle-alerts-0)" stroke="#0072B2" stroke-width="1"/>
+<text x="502.93" y="113" font-size="13" fill="#1f2328">565c210 9,321 alerts</text>
+<rect x="184" y="119" width="345.2" height="16" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="535.2" y="132" font-size="13" fill="#1f2328">f78d82e 10,282 alerts</text>
+<text x="174" y="174" font-size="14" text-anchor="end" fill="#1f2328">Second cycle</text>
+<rect x="184" y="152" width="0" height="16" fill="url(#h-benchmarks-engine-cycle-alerts-0)" stroke="#0072B2" stroke-width="1"/>
+<text x="190" y="165" font-size="13" fill="#1f2328">565c210 0 alerts</text>
+<rect x="184" y="171" width="0" height="16" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="190" y="184" font-size="13" fill="#1f2328">f78d82e 0 alerts</text>
+<text x="393.83" y="236" font-size="13" text-anchor="middle" fill="#57606a">new alerts created in the cycle (count of alerts, not time)</text>
+<line x1="24" y1="254" x2="776" y2="254" stroke="#d0d7de" stroke-width="1"/>
+<text x="24" y="272" font-size="13" font-weight="600" fill="#57606a">Provenance: MEASURED · SYNTHETIC dataset</text>
+<text x="24" y="290" font-size="13" fill="#57606a">Source: docs/evidence/benchmark-results/565c210.json, docs/evidence/benchmark-results/f78d82e.json</text>
+<text x="24" y="308" font-size="13" fill="#57606a">Benchmark run 2026-11-04 · commit f78d82e · synthetic dataset, one shared machine</text>
+</svg>

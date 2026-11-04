@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 530" width="800" height="530" role="img" aria-labelledby="t-ml-confusion-matrix d-ml-confusion-matrix" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title id="t-ml-confusion-matrix">Confusion matrix (hybrid mode), derived from stored rates</title>
+<desc id="d-ml-confusion-matrix">Confusion matrix (hybrid mode), derived from stored rates. DERIVED, not stored: the evaluation stores rates, and these counts are rebuilt from them and the test-set sizes.</desc>
+<rect x="0.5" y="0.5" width="799" height="529" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="20" font-weight="600" fill="#1f2328">Confusion matrix (hybrid mode), derived from stored rates</text>
+<text x="24" y="54" font-size="14" fill="#57606a">DERIVED, not stored: the evaluation stores rates, and these counts are rebuilt from them and</text>
+<text x="24" y="74" font-size="14" fill="#57606a">the test-set sizes.</text>
+<text x="309" y="120" font-size="14" font-weight="600" text-anchor="middle" fill="#1f2328">Flagged by the check</text>
+<text x="549" y="120" font-size="14" font-weight="600" text-anchor="middle" fill="#1f2328">Not flagged</text>
+<text x="184" y="164" font-size="14" font-weight="600" text-anchor="end" fill="#1f2328">Actually faulty</text>
+<text x="184" y="184" font-size="13" text-anchor="end" fill="#57606a">1,000 forms</text>
+<rect x="194" y="132" width="230" height="74" rx="4" fill="#f6f8fa" stroke="#009E73" stroke-width="3"/>
+<text x="309" y="170" font-size="28" font-weight="600" text-anchor="middle" fill="#1f2328">863</text>
+<text x="309" y="194" font-size="14" text-anchor="middle" fill="#57606a">True positive</text>
+<rect x="434" y="132" width="230" height="74" rx="4" fill="#f6f8fa" stroke="#D55E00" stroke-width="3"/>
+<text x="549" y="170" font-size="28" font-weight="600" text-anchor="middle" fill="#1f2328">137</text>
+<text x="549" y="194" font-size="14" text-anchor="middle" fill="#57606a">False negative</text>
+<text x="184" y="248" font-size="14" font-weight="600" text-anchor="end" fill="#1f2328">Actually normal</text>
+<text x="184" y="268" font-size="13" text-anchor="end" fill="#57606a">1,000 forms</text>
+<rect x="194" y="216" width="230" height="74" rx="4" fill="#f6f8fa" stroke="#E69F00" stroke-width="3"/>
+<text x="309" y="254" font-size="28" font-weight="600" text-anchor="middle" fill="#1f2328">22</text>
+<text x="309" y="278" font-size="14" text-anchor="middle" fill="#57606a">False positive</text>
+<rect x="434" y="216" width="230" height="74" rx="4" fill="#f6f8fa" stroke="#0072B2" stroke-width="3"/>
+<text x="549" y="254" font-size="28" font-weight="600" text-anchor="middle" fill="#1f2328">978</text>
+<text x="549" y="278" font-size="14" text-anchor="middle" fill="#57606a">True negative</text>
+<rect x="24" y="316" width="752" height="128" rx="6" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1"/>
+<text x="40" y="345" font-size="13" fill="#1f2328">True positive = recall 0.863 × 1,000 faulty forms = 863. False negative = 1,000 − 863 = 137.</text>
+<text x="40" y="365" font-size="13" fill="#1f2328">False positive = false-alarm rate 0.022 × 1,000 normal forms = 22. True negative = 1,000 − 22 =</text>
+<text x="40" y="385" font-size="13" fill="#1f2328">978.</text>
+<text x="40" y="405" font-size="13" fill="#1f2328">Check: 863 ÷ (863 + 22) = 0.975, equal to the stored precision 0.975.</text>
+<text x="40" y="425" font-size="13" fill="#1f2328">The stored rates are rounded to 3 decimals, so each count is good to about ±1 form.</text>
+<line x1="24" y1="460" x2="776" y2="460" stroke="#d0d7de" stroke-width="1"/>
+<text x="24" y="478" font-size="13" font-weight="600" fill="#57606a">Provenance: DERIVED from stored rates · SYNTHETIC test data</text>
+<text x="24" y="496" font-size="13" fill="#57606a">Source: formcheck/metrics.json</text>
+<text x="24" y="514" font-size="13" fill="#57606a">formcheck/metrics.json · evaluation run 2026-11-03 @ 6f6e7cd · synthetic data</text>
+</svg>

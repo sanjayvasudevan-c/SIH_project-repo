@@ -1,0 +1,838 @@
+{
+  "definition": {
+    "scope": "Every number is counted from the live rows in this system's database. In this demo those rows include records made by the seed script and by simulated-clock runs, so the figures describe this deployment, not AICTE's real caseload.",
+    "cohort": "Every figure on this tab is about one group: the applications submitted between the From and To dates (inclusive; all dates if none given). Nothing outside that group is counted anywhere in this response.",
+    "funnel": "Number of distinct applications that have reached each stage, counted from the audit trail of stage moves (an application now decided still counts at every stage it passed through), not from its current status. \"Decided\" counts applications with a recorded decision. Share = applications reached / applications submitted in the window (the denominator, shown as submittedTotal); it is blank when nothing was submitted. A stage that is not on an application's route (onRoute shows how many are) cannot be reached by it, so shares below 100% are not drop-out.",
+    "statusDistribution": "Number of applications in each current status. Denominator: applications submitted in the window; the counts add up to it.",
+    "processingTime": "Median working days from submission to decision (weekends and holidays excluded), over DECIDED applications only. Applications still in progress are not finished, so their processing time is not yet known (a censored sample): they are excluded from the median and reported separately as inFlightCount. decidedCount + inFlightCount = applications submitted in the window. No mean is given because averaging only the finished cases would understate the time cases take. Blank when no application in the window has been decided.",
+    "volumeOverTime": "Per calendar day, for applications submitted in the window: how many were submitted that day, how many were decided that day, and how many deadline items of those applications the engine raised an overdue alert for, plotted on the item's due date (not on the date the alert was raised or the date the item became overdue). Starts at the first recorded event; days with no event are left out rather than shown as zero, and nothing is back-filled or interpolated. The overdue points are placed on the item's due date, which can fall outside the From/To dates (those dates select the applications, not the plotted days), so do not label the day axis with the From/To range.",
+    "transitions": "Number of recorded state changes of the applications submitted in the window, grouped by the action that caused them and by the stage and status the application was in before and after, counted from the audit trail (each audit row stores the application's stage and status before and after the action). total = such events; applications = distinct applications with at least one. SUBMIT has no earlier state (the application did not exist), shown as from = null. A move from a stage to the same stage with a different holder (for example scheduling a visit) is a transition row but not a stage change. Only actions that changed the stored state are counted: events that are not state changes (assignments, alerts, sign-ins) carry no state and are not counted, and nothing is inferred for a stage move that was not audited. Counts are events, not applications: an application returned and resubmitted is counted each time. Same cohort as every other figure here (applications submitted in the window; the window does not cut the events themselves). Blank (null), with no moves, when no application was submitted in the window."
+  },
+  "provenance": {
+    "funnel": "MEASURED",
+    "funnelShare": "DERIVED",
+    "statusDistribution": "MEASURED",
+    "processingTime": "DERIVED",
+    "volumeOverTime": "MEASURED",
+    "transitions": "MEASURED"
+  },
+  "data": {
+    "window": {
+      "from": null,
+      "to": null
+    },
+    "submittedTotal": 191,
+    "funnel": [
+      {
+        "stage": "SUBMITTED",
+        "label": "Submitted",
+        "reached": 191,
+        "onRoute": 191,
+        "share": 1
+      },
+      {
+        "stage": "SCRUTINY",
+        "label": "Scrutiny",
+        "reached": 162,
+        "onRoute": 162,
+        "share": 0.8481675392670157
+      },
+      {
+        "stage": "EVC",
+        "label": "Expert visit committee",
+        "reached": 52,
+        "onRoute": 124,
+        "share": 0.27225130890052357
+      },
+      {
+        "stage": "SAC_SHC",
+        "label": "SAC/SHC",
+        "reached": 2,
+        "onRoute": 2,
+        "share": 0.010471204188481676
+      },
+      {
+        "stage": "DECISION",
+        "label": "Awaiting decision",
+        "reached": 47,
+        "onRoute": 191,
+        "share": 0.24607329842931938
+      },
+      {
+        "stage": "DECIDED",
+        "label": "Decided",
+        "reached": 45,
+        "onRoute": 191,
+        "share": 0.2356020942408377
+      }
+    ],
+    "statusDistribution": [
+      {
+        "status": "IN_STAGE",
+        "count": 141,
+        "share": 0.7382198952879581
+      },
+      {
+        "status": "RETURNED",
+        "count": 5,
+        "share": 0.02617801047120419
+      },
+      {
+        "status": "APPROVED",
+        "count": 34,
+        "share": 0.17801047120418848
+      },
+      {
+        "status": "APPROVED_WITH_CONDITIONS",
+        "count": 6,
+        "share": 0.031413612565445025
+      },
+      {
+        "status": "REJECTED",
+        "count": 3,
+        "share": 0.015706806282722512
+      },
+      {
+        "status": "CLOSED",
+        "count": 2,
+        "share": 0.010471204188481676
+      }
+    ],
+    "processingTime": {
+      "decidedCount": 45,
+      "inFlightCount": 146,
+      "medianWorkingDays": 5,
+      "unit": "working days"
+    },
+    "volumeOverTime": [
+      {
+        "day": "2026-05-21",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-05-25",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-05-27",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-05-28",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-05-29",
+        "submitted": 2,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-01",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-02",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-03",
+        "submitted": 1,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-04",
+        "submitted": 1,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-05",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-08",
+        "submitted": 2,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-09",
+        "submitted": 0,
+        "decided": 2,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-10",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-11",
+        "submitted": 1,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-12",
+        "submitted": 1,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-15",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-16",
+        "submitted": 2,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-17",
+        "submitted": 0,
+        "decided": 2,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-18",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-19",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-22",
+        "submitted": 1,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-23",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-24",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-25",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-26",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-29",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-06-30",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-07-01",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-07-02",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-07-03",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-07-06",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-07-07",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-07-08",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-07-09",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-07-10",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-07-13",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-07-14",
+        "submitted": 2,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-07-15",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-07-16",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-07-17",
+        "submitted": 1,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-07-20",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-07-21",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-07-22",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-07-23",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-07-27",
+        "submitted": 1,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-07-30",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-08-04",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-08-05",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-08-07",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-08-11",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-08-12",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-08-17",
+        "submitted": 1,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-08-20",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-08-21",
+        "submitted": 0,
+        "decided": 2,
+        "overdue": 0
+      },
+      {
+        "day": "2026-08-25",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-08-27",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-08-28",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-09-02",
+        "submitted": 1,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-09-07",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-09-08",
+        "submitted": 1,
+        "decided": 2,
+        "overdue": 0
+      },
+      {
+        "day": "2026-09-10",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-09-14",
+        "submitted": 1,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-09-17",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-09-18",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-09-21",
+        "submitted": 1,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-09-22",
+        "submitted": 3,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-09-24",
+        "submitted": 1,
+        "decided": 2,
+        "overdue": 0
+      },
+      {
+        "day": "2026-09-28",
+        "submitted": 0,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-09-29",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-09-30",
+        "submitted": 1,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-10-02",
+        "submitted": 2,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-10-05",
+        "submitted": 2,
+        "decided": 1,
+        "overdue": 0
+      },
+      {
+        "day": "2026-10-06",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-10-07",
+        "submitted": 2,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-10-08",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-10-09",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-10-12",
+        "submitted": 0,
+        "decided": 0,
+        "overdue": 1
+      },
+      {
+        "day": "2026-10-13",
+        "submitted": 1,
+        "decided": 1,
+        "overdue": 1
+      },
+      {
+        "day": "2026-10-14",
+        "submitted": 3,
+        "decided": 0,
+        "overdue": 1
+      },
+      {
+        "day": "2026-10-15",
+        "submitted": 1,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-10-16",
+        "submitted": 2,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-10-19",
+        "submitted": 2,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-10-20",
+        "submitted": 9,
+        "decided": 0,
+        "overdue": 2
+      },
+      {
+        "day": "2026-10-21",
+        "submitted": 13,
+        "decided": 0,
+        "overdue": 0
+      },
+      {
+        "day": "2026-10-22",
+        "submitted": 9,
+        "decided": 0,
+        "overdue": 2
+      },
+      {
+        "day": "2026-10-23",
+        "submitted": 10,
+        "decided": 0,
+        "overdue": 1
+      },
+      {
+        "day": "2026-10-26",
+        "submitted": 11,
+        "decided": 0,
+        "overdue": 2
+      },
+      {
+        "day": "2026-10-27",
+        "submitted": 13,
+        "decided": 0,
+        "overdue": 2
+      },
+      {
+        "day": "2026-10-28",
+        "submitted": 13,
+        "decided": 0,
+        "overdue": 4
+      },
+      {
+        "day": "2026-10-29",
+        "submitted": 11,
+        "decided": 0,
+        "overdue": 3
+      },
+      {
+        "day": "2026-10-30",
+        "submitted": 32,
+        "decided": 0,
+        "overdue": 2
+      }
+    ],
+    "transitions": {
+      "total": 363,
+      "applications": 191,
+      "moves": [
+        {
+          "action": "SUBMIT",
+          "from": null,
+          "to": {
+            "stage": "SCRUTINY",
+            "status": "IN_STAGE"
+          },
+          "count": 162,
+          "applications": 162
+        },
+        {
+          "action": "SCHEDULE_EVC",
+          "from": {
+            "stage": "EVC",
+            "status": "IN_STAGE"
+          },
+          "to": {
+            "stage": "EVC",
+            "status": "IN_STAGE"
+          },
+          "count": 45,
+          "applications": 45
+        },
+        {
+          "action": "SUBMIT_EVC_REPORT",
+          "from": {
+            "stage": "EVC",
+            "status": "IN_STAGE"
+          },
+          "to": {
+            "stage": "DECISION",
+            "status": "IN_STAGE"
+          },
+          "count": 41,
+          "applications": 41
+        },
+        {
+          "action": "DECIDE",
+          "from": {
+            "stage": "DECISION",
+            "status": "IN_STAGE"
+          },
+          "to": {
+            "stage": "DECISION",
+            "status": "APPROVED"
+          },
+          "count": 34,
+          "applications": 34
+        },
+        {
+          "action": "SUBMIT",
+          "from": null,
+          "to": {
+            "stage": "EVC",
+            "status": "IN_STAGE"
+          },
+          "count": 29,
+          "applications": 29
+        },
+        {
+          "action": "COMPLETE_STAGE",
+          "from": {
+            "stage": "SCRUTINY",
+            "status": "IN_STAGE"
+          },
+          "to": {
+            "stage": "EVC",
+            "status": "IN_STAGE"
+          },
+          "count": 23,
+          "applications": 23
+        },
+        {
+          "action": "DECIDE",
+          "from": {
+            "stage": "DECISION",
+            "status": "IN_STAGE"
+          },
+          "to": {
+            "stage": "DECISION",
+            "status": "APPROVED_WITH_CONDITIONS"
+          },
+          "count": 8,
+          "applications": 8
+        },
+        {
+          "action": "COMPLETE_STAGE",
+          "from": {
+            "stage": "SCRUTINY",
+            "status": "IN_STAGE"
+          },
+          "to": {
+            "stage": "DECISION",
+            "status": "IN_STAGE"
+          },
+          "count": 6,
+          "applications": 6
+        },
+        {
+          "action": "RETURN",
+          "from": {
+            "stage": "SCRUTINY",
+            "status": "IN_STAGE"
+          },
+          "to": {
+            "stage": "SCRUTINY",
+            "status": "RETURNED"
+          },
+          "count": 6,
+          "applications": 6
+        },
+        {
+          "action": "DECIDE",
+          "from": {
+            "stage": "DECISION",
+            "status": "IN_STAGE"
+          },
+          "to": {
+            "stage": "DECISION",
+            "status": "REJECTED"
+          },
+          "count": 3,
+          "applications": 3
+        },
+        {
+          "action": "CLOSED",
+          "from": {
+            "stage": "DECISION",
+            "status": "APPROVED_WITH_CONDITIONS"
+          },
+          "to": {
+            "stage": "DECISION",
+            "status": "CLOSED"
+          },
+          "count": 2,
+          "applications": 2
+        },
+        {
+          "action": "SUBMIT_EVC_REPORT",
+          "from": {
+            "stage": "EVC",
+            "status": "IN_STAGE"
+          },
+          "to": {
+            "stage": "SAC_SHC",
+            "status": "IN_STAGE"
+          },
+          "count": 2,
+          "applications": 2
+        },
+        {
+          "action": "FORWARD_SAC_SHC",
+          "from": {
+            "stage": "SAC_SHC",
+            "status": "IN_STAGE"
+          },
+          "to": {
+            "stage": "SAC_SHC",
+            "status": "IN_STAGE"
+          },
+          "count": 1,
+          "applications": 1
+        },
+        {
+          "action": "REPLY",
+          "from": {
+            "stage": "SCRUTINY",
+            "status": "RETURNED"
+          },
+          "to": {
+            "stage": "SCRUTINY",
+            "status": "IN_STAGE"
+          },
+          "count": 1,
+          "applications": 1
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 344" width="800" height="344" role="img" aria-labelledby="t-benchmarks-duplicate-prevention d-benchmarks-duplicate-prevention" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title id="t-benchmarks-duplicate-prevention">Duplicate alert prevention: created vs suppressed</title>
+<desc id="d-benchmarks-duplicate-prevention">Duplicate alert prevention: created vs suppressed. Suppressed = an attempt to log an alert that already existed (the unique key refused it). Only runs that measured it are drawn.</desc>
+<defs><pattern id="h-benchmarks-duplicate-prevention-lg1" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#E69F00"/><line x1="0" y1="0" x2="0" y2="6" stroke="#ffffff" stroke-width="2.5"/></pattern><pattern id="h-benchmarks-duplicate-prevention-1" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#E69F00"/><line x1="0" y1="0" x2="0" y2="6" stroke="#ffffff" stroke-width="2.5"/></pattern></defs>
+<rect x="0.5" y="0.5" width="799" height="343" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="20" font-weight="600" fill="#1f2328">Duplicate alert prevention: created vs suppressed</text>
+<text x="24" y="54" font-size="14" fill="#57606a">Suppressed = an attempt to log an alert that already existed (the unique key refused it).</text>
+<text x="24" y="74" font-size="14" fill="#57606a">Only runs that measured it are drawn.</text>
+<rect x="24" y="85" width="14" height="14" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="44" y="96" font-size="13" fill="#1f2328">created</text>
+<rect x="120.78" y="85" width="14" height="14" fill="url(#h-benchmarks-duplicate-prevention-lg1)" stroke="#E69F00" stroke-width="1"/>
+<text x="140.78" y="96" font-size="13" fill="#1f2328">suppressed</text>
+<line x1="224" y1="114" x2="224" y2="215" stroke="#57606a" stroke-width="1"/>
+<text x="224" y="236" font-size="13" text-anchor="middle" fill="#57606a">0</text>
+<line x1="296.92" y1="114" x2="296.92" y2="215" stroke="#d0d7de" stroke-width="1"/>
+<text x="296.92" y="236" font-size="13" text-anchor="middle" fill="#57606a">2,500</text>
+<line x1="369.83" y1="114" x2="369.83" y2="215" stroke="#d0d7de" stroke-width="1"/>
+<text x="369.83" y="236" font-size="13" text-anchor="middle" fill="#57606a">5,000</text>
+<line x1="442.75" y1="114" x2="442.75" y2="215" stroke="#d0d7de" stroke-width="1"/>
+<text x="442.75" y="236" font-size="13" text-anchor="middle" fill="#57606a">7,500</text>
+<line x1="515.66" y1="114" x2="515.66" y2="215" stroke="#d0d7de" stroke-width="1"/>
+<text x="515.66" y="236" font-size="13" text-anchor="middle" fill="#57606a">10,000</text>
+<line x1="588.58" y1="114" x2="588.58" y2="215" stroke="#d0d7de" stroke-width="1"/>
+<text x="588.58" y="236" font-size="13" text-anchor="middle" fill="#57606a">12,500</text>
+<text x="214" y="142" font-size="14" text-anchor="end" fill="#1f2328">f78d82e: cycle 1</text>
+<rect x="224" y="120" width="299.89" height="16" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="529.89" y="133" font-size="13" fill="#1f2328">created 10,282 alerts</text>
+<rect x="224" y="139" width="1.37" height="16" fill="url(#h-benchmarks-duplicate-prevention-1)" stroke="#E69F00" stroke-width="1"/>
+<text x="231.37" y="152" font-size="13" fill="#1f2328">suppressed 47 alerts</text>
+<text x="214" y="194" font-size="14" text-anchor="end" fill="#1f2328">f78d82e: cycle 2</text>
+<rect x="224" y="172" width="0" height="16" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="230" y="185" font-size="13" fill="#1f2328">created 0 alerts</text>
+<rect x="224" y="191" width="189.29" height="16" fill="url(#h-benchmarks-duplicate-prevention-1)" stroke="#E69F00" stroke-width="1"/>
+<text x="419.29" y="204" font-size="13" fill="#1f2328">suppressed 6,490 alerts</text>
+<text x="406.29" y="256" font-size="13" text-anchor="middle" fill="#57606a">alerts in the cycle (count)</text>
+<line x1="24" y1="274" x2="776" y2="274" stroke="#d0d7de" stroke-width="1"/>
+<text x="24" y="292" font-size="13" font-weight="600" fill="#57606a">Provenance: MEASURED · SYNTHETIC dataset</text>
+<text x="24" y="310" font-size="13" fill="#57606a">Source: docs/evidence/benchmark-results/f78d82e.json</text>
+<text x="24" y="328" font-size="13" fill="#57606a">Benchmark run 2026-11-04 · commit f78d82e · synthetic dataset, one shared machine</text>
+</svg>

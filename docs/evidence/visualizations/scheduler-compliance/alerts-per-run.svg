@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" width="800" height="520" role="img" aria-labelledby="t-scheduler-compliance-alerts-per-run d-scheduler-compliance-alerts-per-run" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title id="t-scheduler-compliance-alerts-per-run">Alerts created vs suppressed, per engine run</title>
+<desc id="d-scheduler-compliance-alerts-per-run">Alerts created vs suppressed, per engine run. Created = a new alert was logged. Suppressed = the unique key refused a repeat of an alert that already existed.</desc>
+<defs><pattern id="h-scheduler-compliance-alerts-per-run-lg1" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#E69F00"/><line x1="0" y1="0" x2="0" y2="6" stroke="#ffffff" stroke-width="2.5"/></pattern><pattern id="h-scheduler-compliance-alerts-per-run-1" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#E69F00"/><line x1="0" y1="0" x2="0" y2="6" stroke="#ffffff" stroke-width="2.5"/></pattern></defs>
+<rect x="0.5" y="0.5" width="799" height="519" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="20" font-weight="600" fill="#1f2328">Alerts created vs suppressed, per engine run</text>
+<text x="24" y="54" font-size="14" fill="#57606a">Created = a new alert was logged. Suppressed = the unique key refused a repeat of an alert</text>
+<text x="24" y="74" font-size="14" fill="#57606a">that already existed.</text>
+<rect x="24" y="85" width="14" height="14" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="44" y="96" font-size="13" fill="#1f2328">created</text>
+<rect x="120.78" y="85" width="14" height="14" fill="url(#h-scheduler-compliance-alerts-per-run-lg1)" stroke="#E69F00" stroke-width="1"/>
+<text x="140.78" y="96" font-size="13" fill="#1f2328">suppressed</text>
+<text x="24" y="132" font-size="13" fill="#57606a">alerts in the run (count)</text>
+<line x1="70" y1="390" x2="768" y2="390" stroke="#57606a" stroke-width="1"/>
+<text x="64" y="395" font-size="13" text-anchor="end" fill="#57606a">0</text>
+<line x1="70" y1="344" x2="768" y2="344" stroke="#d0d7de" stroke-width="1"/>
+<text x="64" y="349" font-size="13" text-anchor="end" fill="#57606a">10</text>
+<line x1="70" y1="298" x2="768" y2="298" stroke="#d0d7de" stroke-width="1"/>
+<text x="64" y="303" font-size="13" text-anchor="end" fill="#57606a">20</text>
+<line x1="70" y1="252" x2="768" y2="252" stroke="#d0d7de" stroke-width="1"/>
+<text x="64" y="257" font-size="13" text-anchor="end" fill="#57606a">30</text>
+<line x1="70" y1="206" x2="768" y2="206" stroke="#d0d7de" stroke-width="1"/>
+<text x="64" y="211" font-size="13" text-anchor="end" fill="#57606a">40</text>
+<line x1="70" y1="160" x2="768" y2="160" stroke="#d0d7de" stroke-width="1"/>
+<text x="64" y="165" font-size="13" text-anchor="end" fill="#57606a">50</text>
+<text x="83.96" y="408" font-size="13" text-anchor="middle" fill="#57606a">1</text>
+<text x="111.88" y="408" font-size="13" text-anchor="middle" fill="#57606a">2</text>
+<text x="139.8" y="408" font-size="13" text-anchor="middle" fill="#57606a">3</text>
+<text x="167.72" y="408" font-size="13" text-anchor="middle" fill="#57606a">4</text>
+<text x="195.64" y="408" font-size="13" text-anchor="middle" fill="#57606a">5</text>
+<text x="223.56" y="408" font-size="13" text-anchor="middle" fill="#57606a">6</text>
+<text x="251.48" y="408" font-size="13" text-anchor="middle" fill="#57606a">7</text>
+<text x="279.4" y="408" font-size="13" text-anchor="middle" fill="#57606a">8</text>
+<text x="307.32" y="408" font-size="13" text-anchor="middle" fill="#57606a">9</text>
+<text x="335.24" y="408" font-size="13" text-anchor="middle" fill="#57606a">10</text>
+<text x="363.16" y="408" font-size="13" text-anchor="middle" fill="#57606a">11</text>
+<text x="391.08" y="408" font-size="13" text-anchor="middle" fill="#57606a">12</text>
+<text x="419" y="408" font-size="13" text-anchor="middle" fill="#57606a">13</text>
+<text x="446.92" y="408" font-size="13" text-anchor="middle" fill="#57606a">14</text>
+<text x="474.84" y="408" font-size="13" text-anchor="middle" fill="#57606a">15</text>
+<text x="502.76" y="408" font-size="13" text-anchor="middle" fill="#57606a">16</text>
+<text x="530.68" y="408" font-size="13" text-anchor="middle" fill="#57606a">17</text>
+<rect x="546.64" y="385.4" width="10.96" height="4.6" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="557.6" y="379.4" font-size="13" text-anchor="end" fill="#1f2328">1</text>
+<text x="558.6" y="408" font-size="13" text-anchor="middle" fill="#57606a">18</text>
+<rect x="586.52" y="385.4" width="10.96" height="4.6" fill="url(#h-scheduler-compliance-alerts-per-run-1)" stroke="#E69F00" stroke-width="1"/>
+<text x="586.52" y="362.4" font-size="13" fill="#1f2328">1</text>
+<text x="586.52" y="408" font-size="13" text-anchor="middle" fill="#57606a">19</text>
+<rect x="602.48" y="385.4" width="10.96" height="4.6" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="613.44" y="379.4" font-size="13" text-anchor="end" fill="#1f2328">1</text>
+<rect x="614.44" y="385.4" width="10.96" height="4.6" fill="url(#h-scheduler-compliance-alerts-per-run-1)" stroke="#E69F00" stroke-width="1"/>
+<text x="614.44" y="362.4" font-size="13" fill="#1f2328">1</text>
+<text x="614.44" y="408" font-size="13" text-anchor="middle" fill="#57606a">20</text>
+<rect x="630.4" y="376.2" width="10.96" height="13.8" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="641.36" y="370.2" font-size="13" text-anchor="end" fill="#1f2328">3</text>
+<rect x="642.36" y="380.8" width="10.96" height="9.2" fill="url(#h-scheduler-compliance-alerts-per-run-1)" stroke="#E69F00" stroke-width="1"/>
+<text x="642.36" y="357.8" font-size="13" fill="#1f2328">2</text>
+<text x="642.36" y="408" font-size="13" text-anchor="middle" fill="#57606a">21</text>
+<rect x="658.32" y="316.4" width="10.96" height="73.6" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="669.28" y="310.4" font-size="13" text-anchor="end" fill="#1f2328">16</text>
+<rect x="670.28" y="367" width="10.96" height="23" fill="url(#h-scheduler-compliance-alerts-per-run-1)" stroke="#E69F00" stroke-width="1"/>
+<text x="670.28" y="344" font-size="13" fill="#1f2328">5</text>
+<text x="670.28" y="408" font-size="13" text-anchor="middle" fill="#57606a">22</text>
+<rect x="686.24" y="288.8" width="10.96" height="101.2" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="697.2" y="282.8" font-size="13" text-anchor="end" fill="#1f2328">22</text>
+<rect x="698.2" y="316.4" width="10.96" height="73.6" fill="url(#h-scheduler-compliance-alerts-per-run-1)" stroke="#E69F00" stroke-width="1"/>
+<text x="698.2" y="293.4" font-size="13" fill="#1f2328">16</text>
+<text x="698.2" y="408" font-size="13" text-anchor="middle" fill="#57606a">23</text>
+<rect x="714.16" y="192.2" width="10.96" height="197.8" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="725.12" y="186.2" font-size="13" text-anchor="end" fill="#1f2328">43</text>
+<rect x="726.12" y="279.6" width="10.96" height="110.4" fill="url(#h-scheduler-compliance-alerts-per-run-1)" stroke="#E69F00" stroke-width="1"/>
+<text x="726.12" y="256.6" font-size="13" fill="#1f2328">24</text>
+<text x="726.12" y="408" font-size="13" text-anchor="middle" fill="#57606a">24</text>
+<rect x="742.08" y="293.4" width="10.96" height="96.6" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="753.04" y="287.4" font-size="13" text-anchor="end" fill="#1f2328">21</text>
+<rect x="754.04" y="173.8" width="10.96" height="216.2" fill="url(#h-scheduler-compliance-alerts-per-run-1)" stroke="#E69F00" stroke-width="1"/>
+<text x="754.04" y="150.8" font-size="13" fill="#1f2328">47</text>
+<text x="754.04" y="408" font-size="13" text-anchor="middle" fill="#57606a">25</text>
+<text x="419" y="430" font-size="13" text-anchor="middle" fill="#57606a">engine run number (1 = oldest); zero values are not labelled</text>
+<line x1="24" y1="450" x2="776" y2="450" stroke="#d0d7de" stroke-width="1"/>
+<text x="24" y="468" font-size="13" font-weight="600" fill="#57606a">Provenance: MEASURED · SYNTHETIC demo data (runs on a simulated clock)</text>
+<text x="24" y="486" font-size="13" fill="#57606a">Source: docs/evidence/visualizations/data/engine-runs.json</text>
+<text x="24" y="504" font-size="13" fill="#57606a">Snapshot 2026-11-04 · commit 590a088 · synthetic demo dataset</text>
+</svg>

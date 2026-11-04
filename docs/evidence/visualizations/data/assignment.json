@@ -1,0 +1,818 @@
+{
+  "definition": {
+    "scope": "Every number is counted from the live rows in this system's database. In this demo those rows include records made by the seed script and by simulated-clock runs, so the figures describe this deployment, not AICTE's real caseload.",
+    "window": "The From/To dates narrow coverage (assignments made in the window), candidate and outcome counts (decisions recorded in the window), the rule-pack list and openPointsAssignedInWindow. They deliberately do NOT change officer utilisation, the spread or the above-cap list: those always describe the current open book, because utilisation against a capacity means nothing for one period's intake.",
+    "officers": "Only users with the OFFICER role are listed (committee and bureau profiles are excluded). Per officer: capacityPoints (configured capacity), openPoints (sum of the weight of all their open, unreleased assignments, now) and utilisation = openPoints / capacityPoints, DERIVED from those two measured values. openPointsAssignedInWindow is the part of openPoints from assignments made in the From/To window.",
+    "spread": "Standard deviation (population form) of current utilisation across users with the OFFICER role and capacityPoints > 0 (committee and bureau profiles are excluded). The denominator is officerCount, the number of officers counted. Not affected by the date window. Blank when fewer than 2 officers qualify. It describes how load is spread, not whether it is right: the assignment policy in rule pack 2027-28 v1 defines what a correct distribution is, and equal counts are not the goal.",
+    "coverage": "tracedCount / assignmentTotal: assignments made in the window that have a recorded decision table (trace), over all assignments made in the window. Traces are written when the engine assigns automatically; a manual assignment or manual reassignment writes none, so coverage is partial and a case without a trace is not an error. blockedCount is decisions where no officer could be assigned (no assignment exists for them).",
+    "candidates": "Over decisions recorded in the window: candidatesConsidered = officers evaluated across all decisions; eligible = those eligible; excluded counts the stated reason. A decision evaluates several officers, so these are candidate rows, not cases.",
+    "recentDecisions": "The ten most recent automatic assignment decisions recorded in the From/To window, newest first (all dates if none given). chosenOfficer is blank for a decision where no officer could be assigned (outcome BLOCKED). considered = officers evaluated for that decision; eligible = those eligible. Manual assignments and reassignments write no decision table and so never appear here.",
+    "continuityOverrides": "Officers whose current utilisation is above their own normal cap (maxUtil). This is expected, not an error, when it comes from the continuity allowance (portfolio or returning officer, up to 1.1), the urgent-task allowance (up to 1.25) or capacity reduced after the work was assigned. The decision table does not record which applied, so all three are named. Not affected by the date window."
+  },
+  "provenance": {
+    "officers": "MEASURED",
+    "utilisation": "DERIVED",
+    "spread": "DERIVED",
+    "coverage": "MEASURED",
+    "candidates": "MEASURED",
+    "recentDecisions": "MEASURED",
+    "continuityOverrides": "DERIVED"
+  },
+  "data": {
+    "window": {
+      "from": null,
+      "to": null
+    },
+    "officers": [
+      {
+        "officerId": "edeb1c5b-f528-40b1-b9f6-500ae2b43c0d",
+        "name": "Aishwarya Kamath",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3.2,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 3.2,
+        "utilisation": 0.32
+      },
+      {
+        "officerId": "5d152a1f-6b0d-42ac-b9f0-2629b82f33cf",
+        "name": "Ajay Kulkarni",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "cbb3d27c-b8a8-4916-bef9-00ffb2b399a6",
+        "name": "Amit Shinde",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 2.5,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 2.5,
+        "utilisation": 0.25
+      },
+      {
+        "officerId": "27d1cfd4-de4c-4f98-b140-40e8fa0d570b",
+        "name": "Anand Mathew",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "bce81baa-4d34-4631-ae34-fc33d5b005bc",
+        "name": "Anitha Shetty",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 1.5,
+        "openTasks": 1,
+        "openPointsAssignedInWindow": 1.5,
+        "utilisation": 0.15
+      },
+      {
+        "officerId": "8dfc0fd5-5002-4e8d-8314-7e345a5cb25a",
+        "name": "Archana Hegde",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "8389ad29-86de-45a8-8c77-65b953f6dd9a",
+        "name": "Arjun Rao",
+        "role": "OFFICER",
+        "capacityPoints": 6,
+        "maxUtil": 1,
+        "openPoints": 7.8,
+        "openTasks": 7,
+        "openPointsAssignedInWindow": 7.8,
+        "utilisation": 1.3
+      },
+      {
+        "officerId": "8f07de0e-faab-4cb0-8bab-a400d5eea343",
+        "name": "Arvind Naidu",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "256e6bb9-8957-407b-95ef-8494c5faf754",
+        "name": "Ashok Murthy",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3.7,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 3.7,
+        "utilisation": 0.37
+      },
+      {
+        "officerId": "503e6f68-982f-44f7-b234-483ac70fd489",
+        "name": "Balaji Swamy",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3.2,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 3.2,
+        "utilisation": 0.32
+      },
+      {
+        "officerId": "26eacf8a-fe48-40c0-b2a5-5ba3abe85e5b",
+        "name": "Bhavana Pawar",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3.2,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 3.2,
+        "utilisation": 0.32
+      },
+      {
+        "officerId": "7a174e1e-82f4-44df-92ca-27251e85bed6",
+        "name": "Chitra Pillai",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "5a80cb0b-a35a-48cd-b2a9-eb9a33d6500f",
+        "name": "Deepa Shinde",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "7ce36f53-51c3-4d90-874a-4db0ab9b48b3",
+        "name": "Dinesh Reddy",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "da2f9b58-889e-4cb8-8af3-2524028332be",
+        "name": "Divya Varma",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "736bbfe4-5521-40fb-9226-e0889ef01428",
+        "name": "Gayathri Rao",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "7f171b33-595b-4da0-8aaf-fcf9217c43b7",
+        "name": "Gopal Shinde",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 1.5,
+        "openTasks": 1,
+        "openPointsAssignedInWindow": 1.5,
+        "utilisation": 0.15
+      },
+      {
+        "officerId": "732a4537-8b25-4717-8886-71a82aad69f6",
+        "name": "Harish Chandran",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3.2,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 3.2,
+        "utilisation": 0.32
+      },
+      {
+        "officerId": "255e3d85-b0af-4269-a0ed-f35a9c5cdf02",
+        "name": "Hema Mathew",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 1.5,
+        "openTasks": 1,
+        "openPointsAssignedInWindow": 1.5,
+        "utilisation": 0.15
+      },
+      {
+        "officerId": "efa88639-3658-49d8-a47d-19c532a7bc56",
+        "name": "Janani Joshi",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3.2,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 3.2,
+        "utilisation": 0.32
+      },
+      {
+        "officerId": "9fb20f17-3da0-47a8-bb2f-a89b222f6878",
+        "name": "Karthik Shetty",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "252f3e8e-c128-4df9-a380-00188af3fb50",
+        "name": "Kavya Desai",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "1f575009-1262-4efa-a420-d9411bca7db4",
+        "name": "Keerthi Gowda",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3.8,
+        "openTasks": 4,
+        "openPointsAssignedInWindow": 3.8,
+        "utilisation": 0.38
+      },
+      {
+        "officerId": "ffbb16e0-8693-4ab0-bc70-ea5a7fab442b",
+        "name": "Kiran Iyengar",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "7b45f370-2c3c-4f9c-87b2-04da676c708a",
+        "name": "Lavanya Subramaniam",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "76ee4a97-652e-4a3c-a21d-e41fe284caf1",
+        "name": "Malini Ramachandran",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "07faa040-88f9-4132-bfa5-1cc5c6f4ba1c",
+        "name": "Manoj Prasad",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "4c4dc7b7-c8d5-4489-919d-0aa166fb5763",
+        "name": "Meena Pillai",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 0,
+        "openTasks": 0,
+        "openPointsAssignedInWindow": 0,
+        "utilisation": 0
+      },
+      {
+        "officerId": "fc504ff8-63f1-41e9-b140-0abe7c46c62a",
+        "name": "Mohan Iyengar",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3.2,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 3.2,
+        "utilisation": 0.32
+      },
+      {
+        "officerId": "fd1a155c-374a-4afa-891a-0368d2f7b7f2",
+        "name": "Nandini Ramachandran",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3.2,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 3.2,
+        "utilisation": 0.32
+      },
+      {
+        "officerId": "d66ebf08-8feb-40d6-8104-4bff989555da",
+        "name": "Naveen Thomas",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3.7,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 3.7,
+        "utilisation": 0.37
+      },
+      {
+        "officerId": "6c9a1215-0273-4c53-85b5-08fe5a1fb9d2",
+        "name": "Neha Joshi",
+        "role": "OFFICER",
+        "capacityPoints": 20,
+        "maxUtil": 1,
+        "openPoints": 11.4,
+        "openTasks": 6,
+        "openPointsAssignedInWindow": 11.4,
+        "utilisation": 0.5700000000000001
+      },
+      {
+        "officerId": "57ad14c2-5837-41e0-9aac-e4a756eee363",
+        "name": "Pallavi Pawar",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 4,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 4,
+        "utilisation": 0.4
+      },
+      {
+        "officerId": "e68b84a5-c5fc-4767-9beb-ee01e0df4b7f",
+        "name": "Pooja Pillai",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3.2,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 3.2,
+        "utilisation": 0.32
+      },
+      {
+        "officerId": "9226202c-d2dc-46c6-92e8-8529cabac0d9",
+        "name": "Prakash Kulkarni",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3.2,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 3.2,
+        "utilisation": 0.32
+      },
+      {
+        "officerId": "5e9822f1-9c10-4323-8a2f-fbaab9e7407d",
+        "name": "Preethi Menon",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 1.5,
+        "openTasks": 1,
+        "openPointsAssignedInWindow": 1.5,
+        "utilisation": 0.15
+      },
+      {
+        "officerId": "98f57071-885a-43c0-87da-eddec1ddc2ac",
+        "name": "Priya Raman",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3.2,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 3.2,
+        "utilisation": 0.32
+      },
+      {
+        "officerId": "3498698c-f5bd-4fae-9ef7-bec8d96b6f99",
+        "name": "Radha Natarajan",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 4.5,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 4.5,
+        "utilisation": 0.45
+      },
+      {
+        "officerId": "c5913b8a-9092-4f45-956f-766682f2e080",
+        "name": "Rahul Patil",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "810e3c37-8348-4253-ab26-5f3dcdcc262a",
+        "name": "Rajiv Naidu",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3.2,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 3.2,
+        "utilisation": 0.32
+      },
+      {
+        "officerId": "e9b6218c-75f4-44a9-a4b5-454def65a13d",
+        "name": "Ramesh Varma",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 1.5,
+        "openTasks": 1,
+        "openPointsAssignedInWindow": 1.5,
+        "utilisation": 0.15
+      },
+      {
+        "officerId": "84f6b179-0fb2-4811-8552-070d50015e80",
+        "name": "Ravi Kumar",
+        "role": "OFFICER",
+        "capacityPoints": 20,
+        "maxUtil": 1,
+        "openPoints": 5.1,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 5.1,
+        "utilisation": 0.255
+      },
+      {
+        "officerId": "92322a06-33a7-45c4-99d2-c32633274f70",
+        "name": "Rekha Pawar",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "a3efb8e7-4501-4489-9688-99e61a85aeb0",
+        "name": "Sachin More",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 2.5,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 2.5,
+        "utilisation": 0.25
+      },
+      {
+        "officerId": "125ee31a-5b77-4837-979c-da77553c9cb3",
+        "name": "Sanjay Krishnan",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "73bf74c0-4945-46c0-b6ba-0112c8b9d83d",
+        "name": "Shalini Hegde",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3.2,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 3.2,
+        "utilisation": 0.32
+      },
+      {
+        "officerId": "67dca2d2-196b-4a8f-91c7-1d00d3709f8b",
+        "name": "Siddharth Patil",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 1.5,
+        "openTasks": 1,
+        "openPointsAssignedInWindow": 1.5,
+        "utilisation": 0.15
+      },
+      {
+        "officerId": "0c8e4adc-6776-43b4-bce8-a835109a0b22",
+        "name": "Sneha Nair",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3.4,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 3.4,
+        "utilisation": 0.33999999999999997
+      },
+      {
+        "officerId": "4179c055-6860-4ada-897f-9031b3b0d25b",
+        "name": "Sowmya Natarajan",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3.7,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 3.7,
+        "utilisation": 0.37
+      },
+      {
+        "officerId": "f1cce47a-528c-458d-a816-4edf9520f433",
+        "name": "Srinivas Nair",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3.2,
+        "openTasks": 3,
+        "openPointsAssignedInWindow": 3.2,
+        "utilisation": 0.32
+      },
+      {
+        "officerId": "5887f6e3-4750-41e1-ba63-c633c7068567",
+        "name": "Sudha Kamath",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "a5dd0d2d-cf27-47e3-8350-65fe24971ce7",
+        "name": "Sunil Nair",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "b60c9dfb-fd0d-4c75-954d-09e04eb8014f",
+        "name": "Swathi Desai",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "cdfbad45-1736-4b15-a367-f6d0da38ca26",
+        "name": "Uma Joseph",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      },
+      {
+        "officerId": "e726f681-831d-46db-89a6-61284782adf5",
+        "name": "Vinod Bhat",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 2.55,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 2.55,
+        "utilisation": 0.255
+      },
+      {
+        "officerId": "7daf3a24-b6a0-4bd1-9864-8d3db584f46b",
+        "name": "Vivek Chandran",
+        "role": "OFFICER",
+        "capacityPoints": 10,
+        "maxUtil": 1,
+        "openPoints": 3,
+        "openTasks": 2,
+        "openPointsAssignedInWindow": 3,
+        "utilisation": 0.3
+      }
+    ],
+    "spread": {
+      "officerCount": 56,
+      "meanUtilisation": 0.312857142857143,
+      "stdDev": 0.15572943897434832
+    },
+    "coverage": {
+      "tracedCount": 220,
+      "assignmentTotal": 220,
+      "blockedCount": 1
+    },
+    "outcomes": [
+      {
+        "outcome": "BLOCKED",
+        "count": 1
+      },
+      {
+        "outcome": "BUREAU_OVERFLOW",
+        "count": 1
+      },
+      {
+        "outcome": "ASSIGNED",
+        "count": 219
+      }
+    ],
+    "candidates": {
+      "candidatesConsidered": 7534,
+      "eligible": 7374,
+      "excluded": [
+        {
+          "reason": "UNAVAILABLE",
+          "count": 160
+        }
+      ]
+    },
+    "continuityOverrides": {
+      "count": 1,
+      "continuityUtilCap": 1.1,
+      "urgentMaxUtil": 1.25,
+      "rows": [
+        {
+          "officerId": "8389ad29-86de-45a8-8c77-65b953f6dd9a",
+          "officer": "Arjun Rao",
+          "utilisation": 1.3,
+          "normalCap": 1,
+          "text": "Arjun Rao is at 1.30 of capacity against a normal cap of 1.00. 1.30 is above the continuity ceiling 1.1 and the urgent-task ceiling 1.25, so neither allowance explains it. This figure is consistent with: capacity reduced after the work was assigned. The decision table does not record which applied."
+        }
+      ]
+    },
+    "recentDecisions": [
+      {
+        "traceId": "221",
+        "applicationId": "c2a19e32-bf5e-4829-905c-89d1b1112a78",
+        "applicationNo": "W-2026-0025",
+        "taskType": "EVC_DESK",
+        "outcome": "ASSIGNED",
+        "chosenOfficer": "Neha Joshi",
+        "decidedAt": "2026-11-02T09:03:00.000Z",
+        "considered": 1,
+        "eligible": 1
+      },
+      {
+        "traceId": "220",
+        "applicationId": "c2a19e32-bf5e-4829-905c-89d1b1112a78",
+        "applicationNo": "W-2026-0025",
+        "taskType": "SCRUTINY",
+        "outcome": "ASSIGNED",
+        "chosenOfficer": "Kavya Desai",
+        "decidedAt": "2026-10-30T10:36:00.000Z",
+        "considered": 6,
+        "eligible": 6
+      },
+      {
+        "traceId": "219",
+        "applicationId": "dc8f423a-d45d-4a27-95bf-4f650f320cbc",
+        "applicationNo": "S-2026-0166",
+        "taskType": "SCRUTINY",
+        "outcome": "ASSIGNED",
+        "chosenOfficer": "Balaji Swamy",
+        "decidedAt": "2026-10-30T10:33:00.000Z",
+        "considered": 50,
+        "eligible": 49
+      },
+      {
+        "traceId": "218",
+        "applicationId": "ab8cab50-9646-4838-98e2-8a1bb11f429c",
+        "applicationNo": "S-2026-0165",
+        "taskType": "SCRUTINY",
+        "outcome": "ASSIGNED",
+        "chosenOfficer": "Ashok Murthy",
+        "decidedAt": "2026-10-30T10:30:00.000Z",
+        "considered": 50,
+        "eligible": 49
+      },
+      {
+        "traceId": "217",
+        "applicationId": "6b10e3e0-a793-41fb-965d-38307b808f0c",
+        "applicationNo": "S-2026-0164",
+        "taskType": "SCRUTINY",
+        "outcome": "ASSIGNED",
+        "chosenOfficer": "Janani Joshi",
+        "decidedAt": "2026-10-30T10:27:00.000Z",
+        "considered": 50,
+        "eligible": 49
+      },
+      {
+        "traceId": "216",
+        "applicationId": "6f77a77e-0ce0-4312-8468-62ed25a95730",
+        "applicationNo": "S-2026-0163",
+        "taskType": "SCRUTINY",
+        "outcome": "ASSIGNED",
+        "chosenOfficer": "Naveen Thomas",
+        "decidedAt": "2026-10-30T10:24:00.000Z",
+        "considered": 50,
+        "eligible": 49
+      },
+      {
+        "traceId": "215",
+        "applicationId": "2775453c-c59f-4381-b1fd-a7f69c22a3fe",
+        "applicationNo": "S-2026-0162",
+        "taskType": "SCRUTINY",
+        "outcome": "ASSIGNED",
+        "chosenOfficer": "Pooja Pillai",
+        "decidedAt": "2026-10-30T10:21:00.000Z",
+        "considered": 50,
+        "eligible": 49
+      },
+      {
+        "traceId": "214",
+        "applicationId": "2d2fe796-6810-463a-9394-49f452a2a047",
+        "applicationNo": "S-2026-0161",
+        "taskType": "SCRUTINY",
+        "outcome": "ASSIGNED",
+        "chosenOfficer": "Srinivas Nair",
+        "decidedAt": "2026-10-30T10:18:00.000Z",
+        "considered": 50,
+        "eligible": 49
+      },
+      {
+        "traceId": "213",
+        "applicationId": "5cc94881-a0fd-4cf6-bda0-9a3c77e532b4",
+        "applicationNo": "S-2026-0160",
+        "taskType": "SCRUTINY",
+        "outcome": "ASSIGNED",
+        "chosenOfficer": "Bhavana Pawar",
+        "decidedAt": "2026-10-30T10:15:00.000Z",
+        "considered": 50,
+        "eligible": 49
+      },
+      {
+        "traceId": "212",
+        "applicationId": "d4fed734-0b30-4a4a-b80b-95afa86cbbf9",
+        "applicationNo": "S-2026-0159",
+        "taskType": "SCRUTINY",
+        "outcome": "ASSIGNED",
+        "chosenOfficer": "Rajiv Naidu",
+        "decidedAt": "2026-10-30T10:12:00.000Z",
+        "considered": 50,
+        "eligible": 49
+      }
+    ],
+    "rulePackVersions": [
+      {
+        "label": "2026-27 v3",
+        "assignments": 163
+      },
+      {
+        "label": "2027-28 v1",
+        "assignments": 57
+      }
+    ],
+    "policy": {
+      "label": "2027-28 v1"
+    }
+  }
+}

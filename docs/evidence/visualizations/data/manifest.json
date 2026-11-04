@@ -1,0 +1,57 @@
+{
+  "generatedAt": "2026-11-04T02:11:58.655Z",
+  "commit": {
+    "short": "590a088",
+    "full": "590a088fe3030588508703088fa1a56904e4b4bb",
+    "note": "the commit checked out when the snapshot was taken (the code that produced these figures)"
+  },
+  "workingTreeClean": true,
+  "database": {
+    "cluster": "PostgreSQL 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1), system id 7699544921149286931",
+    "host": "localhost",
+    "port": "5432",
+    "name": "aicte"
+  },
+  "rowCounts": {
+    "User": 207,
+    "OfficerProfile": 65,
+    "Application": 191,
+    "Assignment": 220,
+    "AssignmentTrace": 221,
+    "DeadlineItem": 349,
+    "AlertLog": 107,
+    "EngineRun": 25,
+    "AuditLog": 772,
+    "Notification": 810
+  },
+  "files": [
+    "alerts.json",
+    "assignment-trace-assigned.json",
+    "assignment-trace-blocked.json",
+    "assignment.json",
+    "audit-analytics.json",
+    "compliance.json",
+    "engine-runs.json",
+    "summary.json",
+    "workflow.json"
+  ],
+  "traceApplications": {
+    "assigned": "assignment-trace-assigned.json",
+    "blocked": "assignment-trace-blocked.json"
+  },
+  "command": "npm run demo:reset && npm run evidence:snapshot && npm run evidence:visualize && npm run evidence:verify",
+  "provenance": "synthetic demo dataset (seed + simulated clock)",
+  "verification": {
+    "command": "npm run evidence:verify (the same logic, imported from api/src/evidence-verify.ts)",
+    "checks": 270,
+    "agree": 270,
+    "disagree": 0,
+    "summary": "270 checks, 270 agree",
+    "windows": [
+      "all",
+      "last30d",
+      "1day",
+      "empty"
+    ]
+  }
+}

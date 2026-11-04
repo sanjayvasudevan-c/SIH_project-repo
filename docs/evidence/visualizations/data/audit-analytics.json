@@ -1,0 +1,188 @@
+{
+  "definition": {
+    "scope": "Every number is counted from the live rows in this system's database. In this demo those rows include records made by the seed script and by simulated-clock runs, so the figures describe this deployment, not AICTE's real caseload.",
+    "events": "Number of audit-log events matching the filters (From/To on the event time, inclusive; actor = the role that acted; action; entity). Each event is counted once in each of byActorRole, byAction and byEntity, so each breakdown adds up to total. Entity: APPLICATION = an event on a case, RULE_PACK = a rule-pack change, SYSTEM = anything else (sign-ins, clock changes, demo resets). Only counts are returned; no case content is exposed here.",
+    "integrity": "Recomputed now over the WHOLE audit log, not just the filtered events: each chain's hashes are re-derived and compared with the stored links, so an edited event or a broken link in a chain is reported. ok = no chain failed. It reports damage after the fact; it does not prevent anyone with database access from changing rows."
+  },
+  "provenance": {
+    "events": "MEASURED",
+    "integrity": "LIVE_DEMO"
+  },
+  "data": {
+    "window": {
+      "from": null,
+      "to": null
+    },
+    "filters": {
+      "actor": null,
+      "action": null,
+      "entity": null
+    },
+    "total": 772,
+    "byActorRole": [
+      {
+        "actorRole": "COLLEGE",
+        "count": 428
+      },
+      {
+        "actorRole": "OFFICER",
+        "count": 189
+      },
+      {
+        "actorRole": "AUTHORITY",
+        "count": 45
+      },
+      {
+        "actorRole": "COMMITTEE",
+        "count": 45
+      },
+      {
+        "actorRole": "SYSTEM",
+        "count": 40
+      },
+      {
+        "actorRole": "RULE_EDITOR",
+        "count": 12
+      },
+      {
+        "actorRole": "RULE_APPROVER",
+        "count": 8
+      },
+      {
+        "actorRole": "ADMIN",
+        "count": 3
+      },
+      {
+        "actorRole": "BUREAU",
+        "count": 2
+      }
+    ],
+    "byAction": [
+      {
+        "action": "ASSIGN",
+        "count": 220
+      },
+      {
+        "action": "SUBMIT",
+        "count": 191
+      },
+      {
+        "action": "RELEASE",
+        "count": 83
+      },
+      {
+        "action": "DECIDE",
+        "count": 45
+      },
+      {
+        "action": "SCHEDULE_EVC",
+        "count": 45
+      },
+      {
+        "action": "SUBMIT_EVC_REPORT",
+        "count": 43
+      },
+      {
+        "action": "ESCALATED",
+        "count": 31
+      },
+      {
+        "action": "COMPLETE_STAGE",
+        "count": 29
+      },
+      {
+        "action": "FORM_CHECK_JUSTIFIED",
+        "count": 18
+      },
+      {
+        "action": "FORM_CHECK_WARNING",
+        "count": 18
+      },
+      {
+        "action": "ALERTS_SENT",
+        "count": 7
+      },
+      {
+        "action": "RETURN",
+        "count": 6
+      },
+      {
+        "action": "RULES_APPROVED",
+        "count": 4
+      },
+      {
+        "action": "RULES_DRAFTED",
+        "count": 4
+      },
+      {
+        "action": "RULES_PUBLISHED",
+        "count": 4
+      },
+      {
+        "action": "RULES_SUBMITTED",
+        "count": 4
+      },
+      {
+        "action": "UPLOAD_EVIDENCE",
+        "count": 4
+      },
+      {
+        "action": "LOGIN",
+        "count": 3
+      },
+      {
+        "action": "RULES_EDITED",
+        "count": 3
+      },
+      {
+        "action": "CLOSED",
+        "count": 2
+      },
+      {
+        "action": "FORM_CHECK_LABEL",
+        "count": 2
+      },
+      {
+        "action": "VERIFY_EVIDENCE",
+        "count": 2
+      },
+      {
+        "action": "ASSIGN_FAILED",
+        "count": 1
+      },
+      {
+        "action": "FORWARD_SAC_SHC",
+        "count": 1
+      },
+      {
+        "action": "REPLY",
+        "count": 1
+      },
+      {
+        "action": "RULES_CYCLE_CREATED",
+        "count": 1
+      }
+    ],
+    "byEntity": [
+      {
+        "entity": "APPLICATION",
+        "count": 724
+      },
+      {
+        "entity": "SYSTEM",
+        "count": 28
+      },
+      {
+        "entity": "RULE_PACK",
+        "count": 20
+      }
+    ],
+    "integrity": {
+      "ok": true,
+      "chainsChecked": 193,
+      "rowsChecked": 772,
+      "brokenChainCount": 0,
+      "scope": "WHOLE_LOG"
+    }
+  }
+}

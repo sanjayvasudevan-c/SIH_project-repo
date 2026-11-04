@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 561" width="800" height="561" role="img" aria-labelledby="t-alerts-audit-audit-integrity d-alerts-audit-audit-integrity" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title id="t-alerts-audit-audit-integrity">Audit integrity check: what it detects and what it does not</title>
+<desc id="d-alerts-audit-audit-integrity">Audit integrity check: what it detects and what it does not. Recomputed over the whole audit log when the snapshot was taken.</desc>
+<rect x="0.5" y="0.5" width="799" height="560" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="20" font-weight="600" fill="#1f2328">Audit integrity check: what it detects and what it does not</text>
+<text x="24" y="54" font-size="14" fill="#57606a">Recomputed over the whole audit log when the snapshot was taken.</text>
+<rect x="24" y="80" width="752" height="97" rx="6" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1"/>
+<text x="44" y="132" font-size="40" font-weight="600" fill="#009E73">OK</text>
+<text x="107.65" y="130" font-size="16" font-weight="600" fill="#1f2328">193 chains, 772 rows checked, 0 broken</text>
+<text x="44" y="162" font-size="14" fill="#57606a">Scope: the whole audit log, not just the events counted in the other audit charts.</text>
+<rect x="24" y="193" width="752" height="154" rx="6" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1"/>
+<text x="40" y="223" font-size="14" font-weight="600" fill="#1f2328">It detects</text>
+<text x="40" y="244" font-size="14" fill="#1f2328">Any edit to an audit row that does not also recompute the whole forward hash chain after</text>
+<text x="40" y="265" font-size="14" fill="#1f2328">it, and any broken link in a chain.</text>
+<text x="40" y="286" font-size="14" font-weight="600" fill="#1f2328">The application cannot hide it</text>
+<text x="40" y="307" font-size="14" fill="#1f2328">The application role has no UPDATE or DELETE permission on audit rows (a database guard</text>
+<text x="40" y="328" font-size="14" fill="#1f2328">refuses them).</text>
+<rect x="24" y="363" width="752" height="112" rx="6" fill="#f6f8fa" stroke="#D55E00" stroke-width="1"/>
+<text x="40" y="393" font-size="14" font-weight="600" fill="#D55E00">It is NOT tamper-proof</text>
+<text x="40" y="414" font-size="14" fill="#1f2328">The database owner can disable the guard and rewrite a whole chain consistently; that</text>
+<text x="40" y="435" font-size="14" fill="#1f2328">would pass this check. It reports damage after the fact; it does not prevent anyone with</text>
+<text x="40" y="456" font-size="14" fill="#1f2328">database owner access from changing rows.</text>
+<line x1="24" y1="491" x2="776" y2="491" stroke="#d0d7de" stroke-width="1"/>
+<text x="24" y="509" font-size="13" font-weight="600" fill="#57606a">Provenance: MEASURED at snapshot time (hashes recomputed) · SYNTHETIC demo data</text>
+<text x="24" y="527" font-size="13" fill="#57606a">Source: docs/evidence/visualizations/data/audit-analytics.json</text>
+<text x="24" y="545" font-size="13" fill="#57606a">Snapshot 2026-11-04 · commit 590a088 · synthetic demo dataset</text>
+</svg>

@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 688" width="800" height="688" role="img" aria-labelledby="t-workflow-stage-transitions d-workflow-stage-transitions" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title id="t-workflow-stage-transitions">Recorded stage and status changes, by action</title>
+<desc id="d-workflow-stage-transitions">Recorded stage and status changes, by action. 363 state-changing events of 191 applications. Counts are events, not applications.</desc>
+<rect x="0.5" y="0.5" width="799" height="687" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="20" font-weight="600" fill="#1f2328">Recorded stage and status changes, by action</text>
+<text x="24" y="54" font-size="14" fill="#57606a">363 state-changing events of 191 applications. Counts are events, not applications.</text>
+<line x1="434" y1="76" x2="434" y2="560" stroke="#57606a" stroke-width="1"/>
+<text x="434" y="578" font-size="13" text-anchor="middle" fill="#57606a">0</text>
+<line x1="509.91" y1="76" x2="509.91" y2="560" stroke="#d0d7de" stroke-width="1"/>
+<text x="509.91" y="578" font-size="13" text-anchor="middle" fill="#57606a">50</text>
+<line x1="585.82" y1="76" x2="585.82" y2="560" stroke="#d0d7de" stroke-width="1"/>
+<text x="585.82" y="578" font-size="13" text-anchor="middle" fill="#57606a">100</text>
+<line x1="661.73" y1="76" x2="661.73" y2="560" stroke="#d0d7de" stroke-width="1"/>
+<text x="661.73" y="578" font-size="13" text-anchor="middle" fill="#57606a">150</text>
+<line x1="737.64" y1="76" x2="737.64" y2="560" stroke="#d0d7de" stroke-width="1"/>
+<text x="737.64" y="578" font-size="13" text-anchor="middle" fill="#57606a">200</text>
+<text x="424" y="100" font-size="14" text-anchor="end" fill="#1f2328">SUBMIT: new application → SCRUTINY/IN_STAGE</text>
+<rect x="434" y="85" width="245.95" height="20" fill="#0072B2" stroke="none"/>
+<text x="687.95" y="100" font-size="14" fill="#1f2328">162</text>
+<text x="424" y="130" font-size="14" text-anchor="end" fill="#1f2328">SCHEDULE_EVC: EVC/IN_STAGE → EVC/IN_STAGE</text>
+<rect x="434" y="115" width="68.32" height="20" fill="#0072B2" stroke="none"/>
+<text x="510.32" y="130" font-size="14" fill="#1f2328">45</text>
+<text x="424" y="156.5" font-size="14" text-anchor="end" fill="#1f2328">SUBMIT_EVC_REPORT: EVC/IN_STAGE →</text>
+<text x="424" y="173.5" font-size="14" text-anchor="end" fill="#1f2328">DECISION/IN_STAGE</text>
+<rect x="434" y="150" width="62.25" height="20" fill="#0072B2" stroke="none"/>
+<text x="504.25" y="165" font-size="14" fill="#1f2328">41</text>
+<text x="424" y="200" font-size="14" text-anchor="end" fill="#1f2328">DECIDE: DECISION/IN_STAGE → DECISION/APPROVED</text>
+<rect x="434" y="185" width="51.62" height="20" fill="#0072B2" stroke="none"/>
+<text x="493.62" y="200" font-size="14" fill="#1f2328">34</text>
+<text x="424" y="230" font-size="14" text-anchor="end" fill="#1f2328">SUBMIT: new application → EVC/IN_STAGE</text>
+<rect x="434" y="215" width="44.03" height="20" fill="#0072B2" stroke="none"/>
+<text x="486.03" y="230" font-size="14" fill="#1f2328">29</text>
+<text x="424" y="260" font-size="14" text-anchor="end" fill="#1f2328">COMPLETE_STAGE: SCRUTINY/IN_STAGE → EVC/IN_STAGE</text>
+<rect x="434" y="245" width="34.92" height="20" fill="#0072B2" stroke="none"/>
+<text x="476.92" y="260" font-size="14" fill="#1f2328">23</text>
+<text x="424" y="286.5" font-size="14" text-anchor="end" fill="#1f2328">DECIDE: DECISION/IN_STAGE →</text>
+<text x="424" y="303.5" font-size="14" text-anchor="end" fill="#1f2328">DECISION/APPROVED_WITH_CONDITIONS</text>
+<rect x="434" y="280" width="12.15" height="20" fill="#0072B2" stroke="none"/>
+<text x="454.15" y="295" font-size="14" fill="#1f2328">8</text>
+<text x="424" y="326.5" font-size="14" text-anchor="end" fill="#1f2328">COMPLETE_STAGE: SCRUTINY/IN_STAGE →</text>
+<text x="424" y="343.5" font-size="14" text-anchor="end" fill="#1f2328">DECISION/IN_STAGE</text>
+<rect x="434" y="320" width="9.11" height="20" fill="#0072B2" stroke="none"/>
+<text x="451.11" y="335" font-size="14" fill="#1f2328">6</text>
+<text x="424" y="370" font-size="14" text-anchor="end" fill="#1f2328">RETURN: SCRUTINY/IN_STAGE → SCRUTINY/RETURNED</text>
+<rect x="434" y="355" width="9.11" height="20" fill="#0072B2" stroke="none"/>
+<text x="451.11" y="370" font-size="14" fill="#1f2328">6</text>
+<text x="424" y="400" font-size="14" text-anchor="end" fill="#1f2328">DECIDE: DECISION/IN_STAGE → DECISION/REJECTED</text>
+<rect x="434" y="385" width="4.55" height="20" fill="#0072B2" stroke="none"/>
+<text x="446.55" y="400" font-size="14" fill="#1f2328">3</text>
+<text x="424" y="426.5" font-size="14" text-anchor="end" fill="#1f2328">CLOSED: DECISION/APPROVED_WITH_CONDITIONS →</text>
+<text x="424" y="443.5" font-size="14" text-anchor="end" fill="#1f2328">DECISION/CLOSED</text>
+<rect x="434" y="420" width="3.04" height="20" fill="#0072B2" stroke="none"/>
+<text x="445.04" y="435" font-size="14" fill="#1f2328">2</text>
+<text x="424" y="466.5" font-size="14" text-anchor="end" fill="#1f2328">SUBMIT_EVC_REPORT: EVC/IN_STAGE →</text>
+<text x="424" y="483.5" font-size="14" text-anchor="end" fill="#1f2328">SAC_SHC/IN_STAGE</text>
+<rect x="434" y="460" width="3.04" height="20" fill="#0072B2" stroke="none"/>
+<text x="445.04" y="475" font-size="14" fill="#1f2328">2</text>
+<text x="424" y="506.5" font-size="14" text-anchor="end" fill="#1f2328">FORWARD_SAC_SHC: SAC_SHC/IN_STAGE →</text>
+<text x="424" y="523.5" font-size="14" text-anchor="end" fill="#1f2328">SAC_SHC/IN_STAGE</text>
+<rect x="434" y="500" width="1.52" height="20" fill="#0072B2" stroke="none"/>
+<text x="443.52" y="515" font-size="14" fill="#1f2328">1</text>
+<text x="424" y="550" font-size="14" text-anchor="end" fill="#1f2328">REPLY: SCRUTINY/RETURNED → SCRUTINY/IN_STAGE</text>
+<rect x="434" y="535" width="1.52" height="20" fill="#0072B2" stroke="none"/>
+<text x="443.52" y="550" font-size="14" fill="#1f2328">1</text>
+<text x="400" y="600" font-size="13" text-anchor="middle" fill="#57606a">recorded events (count); from → to is stage/status before and after the action</text>
+<line x1="24" y1="618" x2="776" y2="618" stroke="#d0d7de" stroke-width="1"/>
+<text x="24" y="636" font-size="13" font-weight="600" fill="#57606a">Provenance: MEASURED · SYNTHETIC demo data</text>
+<text x="24" y="654" font-size="13" fill="#57606a">Source: docs/evidence/visualizations/data/workflow.json</text>
+<text x="24" y="672" font-size="13" fill="#57606a">Snapshot 2026-11-04 · commit 590a088 · synthetic demo dataset</text>
+</svg>

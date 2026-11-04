@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 884" width="800" height="884" role="img" aria-labelledby="t-alerts-audit-audit-by-action d-alerts-audit-audit-by-action" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title id="t-alerts-audit-audit-by-action">Audit events by action</title>
+<desc id="d-alerts-audit-audit-by-action">Audit events by action. 772 audit events. Each event is counted once here; counts only, no case content.</desc>
+<rect x="0.5" y="0.5" width="799" height="883" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="20" font-weight="600" fill="#1f2328">Audit events by action</text>
+<text x="24" y="54" font-size="14" fill="#57606a">772 audit events. Each event is counted once here; counts only, no case content.</text>
+<line x1="224" y1="76" x2="224" y2="756" stroke="#57606a" stroke-width="1"/>
+<text x="224" y="774" font-size="13" text-anchor="middle" fill="#57606a">0</text>
+<line x1="326.73" y1="76" x2="326.73" y2="756" stroke="#d0d7de" stroke-width="1"/>
+<text x="326.73" y="774" font-size="13" text-anchor="middle" fill="#57606a">50</text>
+<line x1="429.46" y1="76" x2="429.46" y2="756" stroke="#d0d7de" stroke-width="1"/>
+<text x="429.46" y="774" font-size="13" text-anchor="middle" fill="#57606a">100</text>
+<line x1="532.18" y1="76" x2="532.18" y2="756" stroke="#d0d7de" stroke-width="1"/>
+<text x="532.18" y="774" font-size="13" text-anchor="middle" fill="#57606a">150</text>
+<line x1="634.91" y1="76" x2="634.91" y2="756" stroke="#d0d7de" stroke-width="1"/>
+<text x="634.91" y="774" font-size="13" text-anchor="middle" fill="#57606a">200</text>
+<line x1="737.64" y1="76" x2="737.64" y2="756" stroke="#d0d7de" stroke-width="1"/>
+<text x="737.64" y="774" font-size="13" text-anchor="middle" fill="#57606a">250</text>
+<text x="214" y="98" font-size="14" text-anchor="end" fill="#1f2328">ASSIGN</text>
+<rect x="224" y="85" width="452" height="16" fill="#0072B2" stroke="none"/>
+<text x="684" y="98" font-size="14" fill="#1f2328">220</text>
+<text x="214" y="124" font-size="14" text-anchor="end" fill="#1f2328">SUBMIT</text>
+<rect x="224" y="111" width="392.42" height="16" fill="#0072B2" stroke="none"/>
+<text x="624.42" y="124" font-size="14" fill="#1f2328">191</text>
+<text x="214" y="150" font-size="14" text-anchor="end" fill="#1f2328">RELEASE</text>
+<rect x="224" y="137" width="170.53" height="16" fill="#0072B2" stroke="none"/>
+<text x="402.53" y="150" font-size="14" fill="#1f2328">83</text>
+<text x="214" y="176" font-size="14" text-anchor="end" fill="#1f2328">DECIDE</text>
+<rect x="224" y="163" width="92.46" height="16" fill="#0072B2" stroke="none"/>
+<text x="324.46" y="176" font-size="14" fill="#1f2328">45</text>
+<text x="214" y="202" font-size="14" text-anchor="end" fill="#1f2328">SCHEDULE_EVC</text>
+<rect x="224" y="189" width="92.46" height="16" fill="#0072B2" stroke="none"/>
+<text x="324.46" y="202" font-size="14" fill="#1f2328">45</text>
+<text x="214" y="228" font-size="14" text-anchor="end" fill="#1f2328">SUBMIT_EVC_REPORT</text>
+<rect x="224" y="215" width="88.35" height="16" fill="#0072B2" stroke="none"/>
+<text x="320.35" y="228" font-size="14" fill="#1f2328">43</text>
+<text x="214" y="254" font-size="14" text-anchor="end" fill="#1f2328">ESCALATED</text>
+<rect x="224" y="241" width="63.69" height="16" fill="#0072B2" stroke="none"/>
+<text x="295.69" y="254" font-size="14" fill="#1f2328">31</text>
+<text x="214" y="280" font-size="14" text-anchor="end" fill="#1f2328">COMPLETE_STAGE</text>
+<rect x="224" y="267" width="59.58" height="16" fill="#0072B2" stroke="none"/>
+<text x="291.58" y="280" font-size="14" fill="#1f2328">29</text>
+<text x="214" y="306" font-size="14" text-anchor="end" fill="#1f2328">FORM_CHECK_JUSTIFIED</text>
+<rect x="224" y="293" width="36.98" height="16" fill="#0072B2" stroke="none"/>
+<text x="268.98" y="306" font-size="14" fill="#1f2328">18</text>
+<text x="214" y="332" font-size="14" text-anchor="end" fill="#1f2328">FORM_CHECK_WARNING</text>
+<rect x="224" y="319" width="36.98" height="16" fill="#0072B2" stroke="none"/>
+<text x="268.98" y="332" font-size="14" fill="#1f2328">18</text>
+<text x="214" y="358" font-size="14" text-anchor="end" fill="#1f2328">ALERTS_SENT</text>
+<rect x="224" y="345" width="14.38" height="16" fill="#0072B2" stroke="none"/>
+<text x="246.38" y="358" font-size="14" fill="#1f2328">7</text>
+<text x="214" y="384" font-size="14" text-anchor="end" fill="#1f2328">RETURN</text>
+<rect x="224" y="371" width="12.33" height="16" fill="#0072B2" stroke="none"/>
+<text x="244.33" y="384" font-size="14" fill="#1f2328">6</text>
+<text x="214" y="410" font-size="14" text-anchor="end" fill="#1f2328">RULES_APPROVED</text>
+<rect x="224" y="397" width="8.22" height="16" fill="#0072B2" stroke="none"/>
+<text x="240.22" y="410" font-size="14" fill="#1f2328">4</text>
+<text x="214" y="436" font-size="14" text-anchor="end" fill="#1f2328">RULES_DRAFTED</text>
+<rect x="224" y="423" width="8.22" height="16" fill="#0072B2" stroke="none"/>
+<text x="240.22" y="436" font-size="14" fill="#1f2328">4</text>
+<text x="214" y="462" font-size="14" text-anchor="end" fill="#1f2328">RULES_PUBLISHED</text>
+<rect x="224" y="449" width="8.22" height="16" fill="#0072B2" stroke="none"/>
+<text x="240.22" y="462" font-size="14" fill="#1f2328">4</text>
+<text x="214" y="488" font-size="14" text-anchor="end" fill="#1f2328">RULES_SUBMITTED</text>
+<rect x="224" y="475" width="8.22" height="16" fill="#0072B2" stroke="none"/>
+<text x="240.22" y="488" font-size="14" fill="#1f2328">4</text>
+<text x="214" y="514" font-size="14" text-anchor="end" fill="#1f2328">UPLOAD_EVIDENCE</text>
+<rect x="224" y="501" width="8.22" height="16" fill="#0072B2" stroke="none"/>
+<text x="240.22" y="514" font-size="14" fill="#1f2328">4</text>
+<text x="214" y="540" font-size="14" text-anchor="end" fill="#1f2328">LOGIN</text>
+<rect x="224" y="527" width="6.16" height="16" fill="#0072B2" stroke="none"/>
+<text x="238.16" y="540" font-size="14" fill="#1f2328">3</text>
+<text x="214" y="566" font-size="14" text-anchor="end" fill="#1f2328">RULES_EDITED</text>
+<rect x="224" y="553" width="6.16" height="16" fill="#0072B2" stroke="none"/>
+<text x="238.16" y="566" font-size="14" fill="#1f2328">3</text>
+<text x="214" y="592" font-size="14" text-anchor="end" fill="#1f2328">CLOSED</text>
+<rect x="224" y="579" width="4.11" height="16" fill="#0072B2" stroke="none"/>
+<text x="236.11" y="592" font-size="14" fill="#1f2328">2</text>
+<text x="214" y="618" font-size="14" text-anchor="end" fill="#1f2328">FORM_CHECK_LABEL</text>
+<rect x="224" y="605" width="4.11" height="16" fill="#0072B2" stroke="none"/>
+<text x="236.11" y="618" font-size="14" fill="#1f2328">2</text>
+<text x="214" y="644" font-size="14" text-anchor="end" fill="#1f2328">VERIFY_EVIDENCE</text>
+<rect x="224" y="631" width="4.11" height="16" fill="#0072B2" stroke="none"/>
+<text x="236.11" y="644" font-size="14" fill="#1f2328">2</text>
+<text x="214" y="670" font-size="14" text-anchor="end" fill="#1f2328">ASSIGN_FAILED</text>
+<rect x="224" y="657" width="2.05" height="16" fill="#0072B2" stroke="none"/>
+<text x="234.05" y="670" font-size="14" fill="#1f2328">1</text>
+<text x="214" y="696" font-size="14" text-anchor="end" fill="#1f2328">FORWARD_SAC_SHC</text>
+<rect x="224" y="683" width="2.05" height="16" fill="#0072B2" stroke="none"/>
+<text x="234.05" y="696" font-size="14" fill="#1f2328">1</text>
+<text x="214" y="722" font-size="14" text-anchor="end" fill="#1f2328">REPLY</text>
+<rect x="224" y="709" width="2.05" height="16" fill="#0072B2" stroke="none"/>
+<text x="234.05" y="722" font-size="14" fill="#1f2328">1</text>
+<text x="214" y="748" font-size="14" text-anchor="end" fill="#1f2328">RULES_CYCLE_CREATED</text>
+<rect x="224" y="735" width="2.05" height="16" fill="#0072B2" stroke="none"/>
+<text x="234.05" y="748" font-size="14" fill="#1f2328">1</text>
+<text x="480.82" y="796" font-size="13" text-anchor="middle" fill="#57606a">audit events (count)</text>
+<line x1="24" y1="814" x2="776" y2="814" stroke="#d0d7de" stroke-width="1"/>
+<text x="24" y="832" font-size="13" font-weight="600" fill="#57606a">Provenance: MEASURED (counts only) · SYNTHETIC demo data</text>
+<text x="24" y="850" font-size="13" fill="#57606a">Source: docs/evidence/visualizations/data/audit-analytics.json</text>
+<text x="24" y="868" font-size="13" fill="#57606a">Snapshot 2026-11-04 · commit 590a088 · synthetic demo dataset</text>
+</svg>

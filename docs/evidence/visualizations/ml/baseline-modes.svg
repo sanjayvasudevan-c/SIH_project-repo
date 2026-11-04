@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 453" width="800" height="453" role="img" aria-labelledby="t-ml-baseline-modes d-ml-baseline-modes" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title id="t-ml-baseline-modes">Rules only vs model only vs hybrid</title>
+<desc id="d-ml-baseline-modes">Rules only vs model only vs hybrid. Precision, recall and false-alarm rate for the three ways of running the check (0 to 1; synthetic test forms).</desc>
+<defs><pattern id="h-ml-baseline-modes-lg2" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#D55E00"/><line x1="0" y1="0" x2="0" y2="6" stroke="#ffffff" stroke-width="2.5"/></pattern><pattern id="h-ml-baseline-modes-2" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#D55E00"/><line x1="0" y1="0" x2="0" y2="6" stroke="#ffffff" stroke-width="2.5"/></pattern></defs>
+<rect x="0.5" y="0.5" width="799" height="452" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="20" font-weight="600" fill="#1f2328">Rules only vs model only vs hybrid</text>
+<text x="24" y="54" font-size="14" fill="#57606a">Precision, recall and false-alarm rate for the three ways of running the check (0 to 1;</text>
+<text x="24" y="74" font-size="14" fill="#57606a">synthetic test forms).</text>
+<rect x="24" y="85" width="14" height="14" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="44" y="96" font-size="13" fill="#1f2328">precision</text>
+<rect x="135.86" y="85" width="14" height="14" fill="#009E73" stroke="#009E73" stroke-width="1"/>
+<text x="155.86" y="96" font-size="13" fill="#1f2328">recall</text>
+<rect x="225.1" y="85" width="14" height="14" fill="url(#h-ml-baseline-modes-lg2)" stroke="#D55E00" stroke-width="1"/>
+<text x="245.1" y="96" font-size="13" fill="#1f2328">false alarm</text>
+<line x1="214" y1="114" x2="214" y2="324" stroke="#57606a" stroke-width="1"/>
+<text x="214" y="345" font-size="13" text-anchor="middle" fill="#57606a">0</text>
+<line x1="297.96" y1="114" x2="297.96" y2="324" stroke="#d0d7de" stroke-width="1"/>
+<text x="297.96" y="345" font-size="13" text-anchor="middle" fill="#57606a">0.2</text>
+<line x1="381.93" y1="114" x2="381.93" y2="324" stroke="#d0d7de" stroke-width="1"/>
+<text x="381.93" y="345" font-size="13" text-anchor="middle" fill="#57606a">0.4</text>
+<line x1="465.89" y1="114" x2="465.89" y2="324" stroke="#d0d7de" stroke-width="1"/>
+<text x="465.89" y="345" font-size="13" text-anchor="middle" fill="#57606a">0.6</text>
+<line x1="549.86" y1="114" x2="549.86" y2="324" stroke="#d0d7de" stroke-width="1"/>
+<text x="549.86" y="345" font-size="13" text-anchor="middle" fill="#57606a">0.8</text>
+<line x1="633.82" y1="114" x2="633.82" y2="324" stroke="#d0d7de" stroke-width="1"/>
+<text x="633.82" y="345" font-size="13" text-anchor="middle" fill="#57606a">1</text>
+<text x="204" y="151.5" font-size="14" text-anchor="end" fill="#1f2328">Rules only</text>
+<rect x="214" y="120" width="419.82" height="16" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="639.82" y="133" font-size="13" fill="#1f2328">precision 1.000</text>
+<rect x="214" y="139" width="360.63" height="16" fill="#009E73" stroke="#009E73" stroke-width="1"/>
+<text x="580.63" y="152" font-size="13" fill="#1f2328">recall 0.859</text>
+<rect x="214" y="158" width="0" height="16" fill="url(#h-ml-baseline-modes-2)" stroke="#D55E00" stroke-width="1"/>
+<text x="220" y="171" font-size="13" fill="#1f2328">false alarm 0.000</text>
+<text x="204" y="222.5" font-size="14" text-anchor="end" fill="#1f2328">Model only</text>
+<rect x="214" y="191" width="353.49" height="16" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="573.49" y="204" font-size="13" fill="#1f2328">precision 0.842</text>
+<rect x="214" y="210" width="49.12" height="16" fill="#009E73" stroke="#009E73" stroke-width="1"/>
+<text x="269.12" y="223" font-size="13" fill="#1f2328">recall 0.117</text>
+<rect x="214" y="229" width="9.24" height="16" fill="url(#h-ml-baseline-modes-2)" stroke="#D55E00" stroke-width="1"/>
+<text x="229.24" y="242" font-size="13" fill="#1f2328">false alarm 0.022</text>
+<text x="204" y="285" font-size="14" text-anchor="end" fill="#1f2328">Hybrid (rules or</text>
+<text x="204" y="302" font-size="14" text-anchor="end" fill="#1f2328">model)</text>
+<rect x="214" y="262" width="409.32" height="16" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="629.32" y="275" font-size="13" fill="#1f2328">precision 0.975</text>
+<rect x="214" y="281" width="362.3" height="16" fill="#009E73" stroke="#009E73" stroke-width="1"/>
+<text x="582.3" y="294" font-size="13" fill="#1f2328">recall 0.863</text>
+<rect x="214" y="300" width="9.24" height="16" fill="url(#h-ml-baseline-modes-2)" stroke="#D55E00" stroke-width="1"/>
+<text x="229.24" y="313" font-size="13" fill="#1f2328">false alarm 0.022</text>
+<text x="423.91" y="365" font-size="13" text-anchor="middle" fill="#57606a">fraction of forms (0 to 1); higher is better for precision and recall, lower for false alarms</text>
+<line x1="24" y1="383" x2="776" y2="383" stroke="#d0d7de" stroke-width="1"/>
+<text x="24" y="401" font-size="13" font-weight="600" fill="#57606a">Provenance: MEASURED on SYNTHETIC test data</text>
+<text x="24" y="419" font-size="13" fill="#57606a">Source: formcheck/metrics.json</text>
+<text x="24" y="437" font-size="13" fill="#57606a">formcheck/metrics.json · evaluation run 2026-11-03 @ 6f6e7cd · synthetic data</text>
+</svg>

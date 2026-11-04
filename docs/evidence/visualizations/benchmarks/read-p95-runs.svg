@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 663" width="800" height="663" role="img" aria-labelledby="t-benchmarks-read-p95-runs d-benchmarks-read-p95-runs" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title id="t-benchmarks-read-p95-runs">p95 read latency, two recorded runs side by side</title>
+<desc id="d-benchmarks-read-p95-runs">p95 read latency, two recorded runs side by side. Runs 565c210 (2026-11-03) and f78d82e (2026-11-04).</desc>
+<defs><pattern id="h-benchmarks-read-p95-runs-lg0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#0072B2"/><line x1="0" y1="0" x2="0" y2="6" stroke="#ffffff" stroke-width="2.5"/></pattern><pattern id="h-benchmarks-read-p95-runs-0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#0072B2"/><line x1="0" y1="0" x2="0" y2="6" stroke="#ffffff" stroke-width="2.5"/></pattern></defs>
+<rect x="0.5" y="0.5" width="799" height="662" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="20" font-weight="600" fill="#1f2328">p95 read latency, two recorded runs side by side</text>
+<text x="24" y="54" font-size="14" fill="#57606a">Runs 565c210 (2026-11-03) and f78d82e (2026-11-04).</text>
+<rect x="24" y="65" width="14" height="14" fill="url(#h-benchmarks-read-p95-runs-lg0)" stroke="#0072B2" stroke-width="1"/>
+<text x="44" y="76" font-size="13" fill="#1f2328">565c210</text>
+<rect x="120.78" y="65" width="14" height="14" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="140.78" y="76" font-size="13" fill="#1f2328">f78d82e</text>
+<line x1="244" y1="94" x2="244" y2="351" stroke="#57606a" stroke-width="1"/>
+<text x="244" y="372" font-size="13" text-anchor="middle" fill="#57606a">0</text>
+<line x1="323.47" y1="94" x2="323.47" y2="351" stroke="#d0d7de" stroke-width="1"/>
+<text x="323.47" y="372" font-size="13" text-anchor="middle" fill="#57606a">500</text>
+<line x1="402.94" y1="94" x2="402.94" y2="351" stroke="#d0d7de" stroke-width="1"/>
+<text x="402.94" y="372" font-size="13" text-anchor="middle" fill="#57606a">1,000</text>
+<line x1="482.42" y1="94" x2="482.42" y2="351" stroke="#d0d7de" stroke-width="1"/>
+<text x="482.42" y="372" font-size="13" text-anchor="middle" fill="#57606a">1,500</text>
+<line x1="561.89" y1="94" x2="561.89" y2="351" stroke="#d0d7de" stroke-width="1"/>
+<text x="561.89" y="372" font-size="13" text-anchor="middle" fill="#57606a">2,000</text>
+<line x1="641.36" y1="94" x2="641.36" y2="351" stroke="#d0d7de" stroke-width="1"/>
+<text x="641.36" y="372" font-size="13" text-anchor="middle" fill="#57606a">2,500</text>
+<text x="234" y="122" font-size="14" text-anchor="end" fill="#1f2328">Action Center (officer)</text>
+<rect x="244" y="100" width="73.27" height="16" fill="url(#h-benchmarks-read-p95-runs-0)" stroke="#0072B2" stroke-width="1"/>
+<text x="323.27" y="113" font-size="13" fill="#1f2328">565c210 461 ms</text>
+<rect x="244" y="119" width="80.74" height="16" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="330.74" y="132" font-size="13" fill="#1f2328">f78d82e 508 ms</text>
+<text x="234" y="165.5" font-size="14" text-anchor="end" fill="#1f2328">Action Center summary</text>
+<text x="234" y="182.5" font-size="14" text-anchor="end" fill="#1f2328">(senior)</text>
+<rect x="244" y="152" width="31.63" height="16" fill="url(#h-benchmarks-read-p95-runs-0)" stroke="#0072B2" stroke-width="1"/>
+<text x="281.63" y="165" font-size="13" fill="#1f2328">565c210 199 ms</text>
+<rect x="244" y="171" width="41.17" height="16" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="291.17" y="184" font-size="13" fill="#1f2328">f78d82e 259 ms</text>
+<text x="234" y="217.5" font-size="14" text-anchor="end" fill="#1f2328">Applications list</text>
+<text x="234" y="234.5" font-size="14" text-anchor="end" fill="#1f2328">(officer)</text>
+<rect x="244" y="204" width="129.54" height="16" fill="url(#h-benchmarks-read-p95-runs-0)" stroke="#0072B2" stroke-width="1"/>
+<text x="379.54" y="217" font-size="13" fill="#1f2328">565c210 815 ms</text>
+<rect x="244" y="223" width="162.44" height="16" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="412.44" y="236" font-size="13" fill="#1f2328">f78d82e 1,022 ms</text>
+<text x="234" y="278" font-size="14" text-anchor="end" fill="#1f2328">Team report (senior)</text>
+<rect x="244" y="256" width="294.21" height="16" fill="url(#h-benchmarks-read-p95-runs-0)" stroke="#0072B2" stroke-width="1"/>
+<text x="544.21" y="269" font-size="13" fill="#1f2328">565c210 1,851 ms</text>
+<rect x="244" y="275" width="364.94" height="16" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="614.94" y="288" font-size="13" fill="#1f2328">f78d82e 2,296 ms</text>
+<text x="234" y="330" font-size="14" text-anchor="end" fill="#1f2328">Authority queue</text>
+<rect x="244" y="308" width="55.31" height="16" fill="url(#h-benchmarks-read-p95-runs-0)" stroke="#0072B2" stroke-width="1"/>
+<text x="305.31" y="321" font-size="13" fill="#1f2328">565c210 348 ms</text>
+<rect x="244" y="327" width="74.86" height="16" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="324.86" y="340" font-size="13" fill="#1f2328">f78d82e 471 ms</text>
+<text x="442.68" y="392" font-size="13" text-anchor="middle" fill="#57606a">p95 response time (milliseconds); lower is better</text>
+<rect x="24" y="410" width="752" height="149" rx="6" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1"/>
+<text x="40" y="440" font-size="14" font-weight="600" fill="#D55E00">Not a like-for-like comparison.</text>
+<text x="40" y="460" font-size="13" fill="#1f2328">The machine blocks match on cpus, cpuModel, memoryGb, node and PostgreSQL 16.15, but each bar</text>
+<text x="40" y="480" font-size="13" fill="#1f2328">is ONE run on a shared machine with other work on it, the commits differ (the code changed</text>
+<text x="40" y="500" font-size="13" fill="#1f2328">between them) and the data differs slightly (27,412 vs 27,409 deadline items). No run-to-run</text>
+<text x="40" y="520" font-size="13" fill="#1f2328">variance was measured, so a difference of this size cannot be called a regression or an</text>
+<text x="40" y="540" font-size="13" fill="#1f2328">improvement.</text>
+<line x1="24" y1="575" x2="776" y2="575" stroke="#d0d7de" stroke-width="1"/>
+<text x="24" y="593" font-size="13" font-weight="600" fill="#57606a">Provenance: MEASURED · SYNTHETIC dataset</text>
+<text x="24" y="611" font-size="13" fill="#57606a">Source: docs/evidence/benchmark-results/565c210.json and</text>
+<text x="24" y="629" font-size="13" fill="#57606a">docs/evidence/benchmark-results/f78d82e.json</text>
+<text x="24" y="647" font-size="13" fill="#57606a">Benchmark run 2026-11-04 · commit f78d82e · synthetic dataset, one shared machine</text>
+</svg>

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 358" width="800" height="358" role="img" aria-labelledby="t-alerts-audit-alerts-by-kind d-alerts-audit-alerts-by-kind" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title id="t-alerts-audit-alerts-by-kind">Alerts logged, by kind</title>
+<desc id="d-alerts-audit-alerts-by-kind">Alerts logged, by kind. 107 alerts. One row per deadline item, kind and level (digests: one per user per day).</desc>
+<rect x="0.5" y="0.5" width="799" height="357" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="20" font-weight="600" fill="#1f2328">Alerts logged, by kind</text>
+<text x="24" y="54" font-size="14" fill="#57606a">107 alerts. One row per deadline item, kind and level (digests: one per user per day).</text>
+<line x1="224" y1="76" x2="224" y2="230" stroke="#57606a" stroke-width="1"/>
+<text x="224" y="248" font-size="13" text-anchor="middle" fill="#57606a">0</text>
+<line x1="340.23" y1="76" x2="340.23" y2="230" stroke="#d0d7de" stroke-width="1"/>
+<text x="340.23" y="248" font-size="13" text-anchor="middle" fill="#57606a">10</text>
+<line x1="456.46" y1="76" x2="456.46" y2="230" stroke="#d0d7de" stroke-width="1"/>
+<text x="456.46" y="248" font-size="13" text-anchor="middle" fill="#57606a">20</text>
+<line x1="572.69" y1="76" x2="572.69" y2="230" stroke="#d0d7de" stroke-width="1"/>
+<text x="572.69" y="248" font-size="13" text-anchor="middle" fill="#57606a">30</text>
+<line x1="688.92" y1="76" x2="688.92" y2="230" stroke="#d0d7de" stroke-width="1"/>
+<text x="688.92" y="248" font-size="13" text-anchor="middle" fill="#57606a">40</text>
+<text x="214" y="100" font-size="14" text-anchor="end" fill="#1f2328">AT_RISK</text>
+<rect x="224" y="85" width="197.59" height="20" fill="#0072B2" stroke="none"/>
+<text x="429.59" y="100" font-size="14" fill="#1f2328">17 alerts</text>
+<text x="214" y="130" font-size="14" text-anchor="end" fill="#1f2328">DIGEST</text>
+<rect x="224" y="115" width="185.97" height="20" fill="#0072B2" stroke="none"/>
+<text x="417.97" y="130" font-size="14" fill="#1f2328">16 alerts</text>
+<text x="214" y="160" font-size="14" text-anchor="end" fill="#1f2328">ESCALATION</text>
+<rect x="224" y="145" width="360.31" height="20" fill="#0072B2" stroke="none"/>
+<text x="592.31" y="160" font-size="14" fill="#1f2328">31 alerts</text>
+<text x="214" y="190" font-size="14" text-anchor="end" fill="#1f2328">OVERDUE</text>
+<rect x="224" y="175" width="244.08" height="20" fill="#0072B2" stroke="none"/>
+<text x="476.08" y="190" font-size="14" fill="#1f2328">21 alerts</text>
+<text x="214" y="220" font-size="14" text-anchor="end" fill="#1f2328">REMINDER</text>
+<rect x="224" y="205" width="255.71" height="20" fill="#0072B2" stroke="none"/>
+<text x="487.71" y="220" font-size="14" fill="#1f2328">22 alerts</text>
+<text x="456.46" y="270" font-size="13" text-anchor="middle" fill="#57606a">alerts logged (count)</text>
+<line x1="24" y1="288" x2="776" y2="288" stroke="#d0d7de" stroke-width="1"/>
+<text x="24" y="306" font-size="13" font-weight="600" fill="#57606a">Provenance: MEASURED · SYNTHETIC demo data</text>
+<text x="24" y="324" font-size="13" fill="#57606a">Source: docs/evidence/visualizations/data/alerts.json</text>
+<text x="24" y="342" font-size="13" fill="#57606a">Snapshot 2026-11-04 · commit 590a088 · synthetic demo dataset</text>
+</svg>

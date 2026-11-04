@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 575" width="800" height="575" role="img" aria-labelledby="t-ml-recall-by-fault d-ml-recall-by-fault" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title id="t-ml-recall-by-fault">Recall by fault type: the unit-error weakness</title>
+<desc id="d-ml-recall-by-fault">Recall by fault type: the unit-error weakness. Share of the 200 test forms of each fault type that each mode flagged.</desc>
+<defs><pattern id="h-ml-recall-by-fault-lg1" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#E69F00"/><line x1="0" y1="0" x2="0" y2="6" stroke="#ffffff" stroke-width="2.5"/></pattern><pattern id="h-ml-recall-by-fault-1" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#E69F00"/><line x1="0" y1="0" x2="0" y2="6" stroke="#ffffff" stroke-width="2.5"/></pattern></defs>
+<rect x="0.5" y="0.5" width="799" height="574" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="20" font-weight="600" fill="#1f2328">Recall by fault type: the unit-error weakness</text>
+<text x="24" y="54" font-size="14" fill="#57606a">Share of the 200 test forms of each fault type that each mode flagged.</text>
+<rect x="24" y="65" width="14" height="14" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="44" y="76" font-size="13" fill="#1f2328">rules</text>
+<rect x="105.7" y="65" width="14" height="14" fill="url(#h-ml-recall-by-fault-lg1)" stroke="#E69F00" stroke-width="1"/>
+<text x="125.7" y="76" font-size="13" fill="#1f2328">model</text>
+<rect x="187.4" y="65" width="14" height="14" fill="#009E73" stroke="#009E73" stroke-width="1"/>
+<text x="207.4" y="76" font-size="13" fill="#1f2328">hybrid</text>
+<line x1="234" y1="94" x2="234" y2="446" stroke="#57606a" stroke-width="1"/>
+<text x="234" y="467" font-size="13" text-anchor="middle" fill="#57606a">0</text>
+<line x1="321.5" y1="94" x2="321.5" y2="446" stroke="#d0d7de" stroke-width="1"/>
+<text x="321.5" y="467" font-size="13" text-anchor="middle" fill="#57606a">0.2</text>
+<line x1="409.01" y1="94" x2="409.01" y2="446" stroke="#d0d7de" stroke-width="1"/>
+<text x="409.01" y="467" font-size="13" text-anchor="middle" fill="#57606a">0.4</text>
+<line x1="496.51" y1="94" x2="496.51" y2="446" stroke="#d0d7de" stroke-width="1"/>
+<text x="496.51" y="467" font-size="13" text-anchor="middle" fill="#57606a">0.6</text>
+<line x1="584.02" y1="94" x2="584.02" y2="446" stroke="#d0d7de" stroke-width="1"/>
+<text x="584.02" y="467" font-size="13" text-anchor="middle" fill="#57606a">0.8</text>
+<line x1="671.52" y1="94" x2="671.52" y2="446" stroke="#d0d7de" stroke-width="1"/>
+<text x="671.52" y="467" font-size="13" text-anchor="middle" fill="#57606a">1</text>
+<rect x="18" y="96" width="764" height="61" rx="4" fill="#fdf0e6" stroke="#D55E00" stroke-width="1.5"/>
+<text x="224" y="123" font-size="14" font-weight="600" text-anchor="end" fill="#D55E00">Unit error on land area</text>
+<text x="224" y="140" font-size="14" font-weight="600" text-anchor="end" fill="#D55E00">(weakest)</text>
+<rect x="234" y="100" width="129.07" height="16" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="369.07" y="113" font-size="13" fill="#1f2328">rules 0.295</text>
+<rect x="234" y="119" width="30.63" height="16" fill="url(#h-ml-recall-by-fault-1)" stroke="#E69F00" stroke-width="1"/>
+<text x="270.63" y="132" font-size="13" fill="#1f2328">model 0.070</text>
+<rect x="234" y="138" width="137.82" height="16" fill="#009E73" stroke="#009E73" stroke-width="1"/>
+<text x="377.82" y="151" font-size="13" fill="#1f2328">hybrid 0.315</text>
+<text x="224" y="194" font-size="14" text-anchor="end" fill="#1f2328">Built-up larger than</text>
+<text x="224" y="211" font-size="14" text-anchor="end" fill="#1f2328">plot</text>
+<rect x="234" y="171" width="437.52" height="16" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="677.52" y="184" font-size="13" fill="#1f2328">rules 1.000</text>
+<rect x="234" y="190" width="122.51" height="16" fill="url(#h-ml-recall-by-fault-1)" stroke="#E69F00" stroke-width="1"/>
+<text x="362.51" y="203" font-size="13" fill="#1f2328">model 0.280</text>
+<rect x="234" y="209" width="437.52" height="16" fill="#009E73" stroke="#009E73" stroke-width="1"/>
+<text x="677.52" y="222" font-size="13" fill="#1f2328">hybrid 1.000</text>
+<text x="224" y="273.5" font-size="14" text-anchor="end" fill="#1f2328">Faculty shortage</text>
+<rect x="234" y="242" width="437.52" height="16" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="677.52" y="255" font-size="13" fill="#1f2328">rules 1.000</text>
+<rect x="234" y="261" width="39.38" height="16" fill="url(#h-ml-recall-by-fault-1)" stroke="#E69F00" stroke-width="1"/>
+<text x="279.38" y="274" font-size="13" fill="#1f2328">model 0.090</text>
+<rect x="234" y="280" width="437.52" height="16" fill="#009E73" stroke="#009E73" stroke-width="1"/>
+<text x="677.52" y="293" font-size="13" fill="#1f2328">hybrid 1.000</text>
+<text x="224" y="344.5" font-size="14" text-anchor="end" fill="#1f2328">Expired lease</text>
+<rect x="234" y="313" width="437.52" height="16" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="677.52" y="326" font-size="13" fill="#1f2328">rules 1.000</text>
+<rect x="234" y="332" width="26.25" height="16" fill="url(#h-ml-recall-by-fault-1)" stroke="#E69F00" stroke-width="1"/>
+<text x="266.25" y="345" font-size="13" fill="#1f2328">model 0.060</text>
+<rect x="234" y="351" width="437.52" height="16" fill="#009E73" stroke="#009E73" stroke-width="1"/>
+<text x="677.52" y="364" font-size="13" fill="#1f2328">hybrid 1.000</text>
+<text x="224" y="407" font-size="14" text-anchor="end" fill="#1f2328">Bulk fill with missing</text>
+<text x="224" y="424" font-size="14" text-anchor="end" fill="#1f2328">documents</text>
+<rect x="234" y="384" width="437.52" height="16" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="677.52" y="397" font-size="13" fill="#1f2328">rules 1.000</text>
+<rect x="234" y="403" width="37.19" height="16" fill="url(#h-ml-recall-by-fault-1)" stroke="#E69F00" stroke-width="1"/>
+<text x="277.19" y="416" font-size="13" fill="#1f2328">model 0.085</text>
+<rect x="234" y="422" width="437.52" height="16" fill="#009E73" stroke="#009E73" stroke-width="1"/>
+<text x="677.52" y="435" font-size="13" fill="#1f2328">hybrid 1.000</text>
+<text x="452.76" y="487" font-size="13" text-anchor="middle" fill="#57606a">recall (0 to 1); higher is better</text>
+<line x1="24" y1="505" x2="776" y2="505" stroke="#d0d7de" stroke-width="1"/>
+<text x="24" y="523" font-size="13" font-weight="600" fill="#57606a">Provenance: MEASURED on SYNTHETIC test data</text>
+<text x="24" y="541" font-size="13" fill="#57606a">Source: formcheck/metrics.json</text>
+<text x="24" y="559" font-size="13" fill="#57606a">formcheck/metrics.json · evaluation run 2026-11-03 @ 6f6e7cd · synthetic data</text>
+</svg>

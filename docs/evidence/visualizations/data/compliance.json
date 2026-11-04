@@ -1,0 +1,86 @@
+{
+  "definition": {
+    "scope": "Every number is counted from the live rows in this system's database. In this demo those rows include records made by the seed script and by simulated-clock runs, so the figures describe this deployment, not AICTE's real caseload.",
+    "window": "Deadline items are selected by their due date in the window; alerts by the date the engine raised them; engine runs by the date the engine treated as today (equal to the real date on a system running in real time; the simulated date in this demo's back-dated history), the same clock as alerts. The same From/To applies to all of them (inclusive; all dates if none given).",
+    "deadlines": {
+      "asOf": "Evaluated on the system's current date (2026-11-04), the same date the deadline engine uses. Denominator for every state: openTotal, the open (not paused, met, missed or closed) deadline items due in the window; the four states add up to it.",
+      "overdue": "Open item whose due date has passed: days remaining < 0, counted in working days for stage deadlines (weekends and holidays skipped) and calendar days for undertakings and document expiries. This is the engine's own test for raising an overdue alert.",
+      "atRisk": "Open stage-type item (stage, EVC scheduling, EVC report, evidence verification) not yet overdue where the share of its allowed working days already used is at least 80% (the at-risk threshold in rule pack 2027-28 v1). Used = (allowed days - days remaining) / allowed days. Same test as the engine's at-risk alert.",
+      "dueSoon": "Open undertaking or document-expiry item, not overdue, that is within 30 calendar days of its due date (the earliest reminder point in rule pack 2027-28 v1).",
+      "onTrack": "Open items that are none of the above.",
+      "met": "Items closed as met on time. Shown for items due in the window; not part of openTotal. missed, paused and closed are likewise counted but outside the open total."
+    },
+    "escalations": "Escalation alerts raised in the window, by level; empty (not zero at each level) when the engine has never run and no alert has ever been recorded. Level 1, 2 and 3 are raised when an item is 3 / 7 / 14 days overdue (working days for stage deadlines, calendar days for undertakings and document expiries). Each level is raised once per item.",
+    "alerts": "total = alerts logged in the window (by kind); blank (null), with reminderTiming, when no engine run and no alert has ever been recorded (none recorded, not a measured zero). reminderTiming covers REMINDER alerts only: late = a reminder raised more than one day after its reminder date (the engine had not run in time, or the deadline item was created after that reminder date had already passed, and the log cannot tell the two apart), onTime = the other reminders, so onTime + late = reminders (not total); the other alert kinds have no timeliness measure in this system and are counted neither way. suppressed = duplicate alerts the engine declined to create, summed from engine run records in the window. The log's unique key (item, kind, level) is why a repeated cycle creates no second alert; this build has no external delivery channel. A total of 0 means no alert was logged in this window. Suppressed is blank (not 0) when no engine run is dated in the window (engineRunCount 0): then no run reported anything for the window, which is a different question from how many alerts were logged."
+  },
+  "provenance": {
+    "deadlines": "DERIVED",
+    "escalations": "MEASURED",
+    "alerts": "MEASURED",
+    "suppressed": "MEASURED"
+  },
+  "data": {
+    "window": {
+      "from": null,
+      "to": null
+    },
+    "asOf": "2026-11-04",
+    "deadlines": {
+      "openTotal": 178,
+      "overdue": 22,
+      "atRisk": 7,
+      "dueSoon": 4,
+      "onTrack": 145,
+      "met": 165,
+      "missed": 1,
+      "paused": 5,
+      "closed": 0
+    },
+    "escalations": [
+      {
+        "level": 1,
+        "count": 20
+      },
+      {
+        "level": 2,
+        "count": 8
+      },
+      {
+        "level": 3,
+        "count": 3
+      }
+    ],
+    "alerts": {
+      "total": 107,
+      "byKind": [
+        {
+          "kind": "AT_RISK",
+          "count": 17
+        },
+        {
+          "kind": "DIGEST",
+          "count": 16
+        },
+        {
+          "kind": "ESCALATION",
+          "count": 31
+        },
+        {
+          "kind": "OVERDUE",
+          "count": 21
+        },
+        {
+          "kind": "REMINDER",
+          "count": 22
+        }
+      ],
+      "reminderTiming": {
+        "reminders": 22,
+        "onTime": 1,
+        "late": 21
+      },
+      "suppressed": 96,
+      "engineRunCount": 25
+    }
+  }
+}

@@ -1,0 +1,165 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 626" width="800" height="626" role="img" aria-labelledby="t-workflow-volume-over-time d-workflow-volume-over-time" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title id="t-workflow-volume-over-time">Submitted, decided and overdue per day</title>
+<desc id="d-workflow-volume-over-time">Submitted, decided and overdue per day. Only days on which something was recorded are drawn: days with nothing are left out, never shown as zero, and nothing is interpolated.</desc>
+<rect x="0.5" y="0.5" width="799" height="625" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="20" font-weight="600" fill="#1f2328">Submitted, decided and overdue per day</text>
+<text x="24" y="54" font-size="14" fill="#57606a">Only days on which something was recorded are drawn: days with nothing are left out, never</text>
+<text x="24" y="74" font-size="14" fill="#57606a">shown as zero, and nothing is interpolated.</text>
+<text x="24" y="114" font-size="14" font-weight="600" fill="#0072B2">Applications submitted that day</text>
+<line x1="70" y1="218" x2="766" y2="218" stroke="#57606a" stroke-width="1"/>
+<text x="64" y="223" font-size="13" text-anchor="end" fill="#57606a">0</text>
+<line x1="70" y1="170" x2="766" y2="170" stroke="#d0d7de" stroke-width="1"/>
+<text x="64" y="175" font-size="13" text-anchor="end" fill="#57606a">20</text>
+<line x1="70" y1="122" x2="766" y2="122" stroke="#d0d7de" stroke-width="1"/>
+<text x="64" y="127" font-size="13" text-anchor="end" fill="#57606a">40</text>
+<rect x="70" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="87.1" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="95.65" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="104.2" y="213.2" width="3.42" height="4.8" fill="#0072B2" stroke="none"/>
+<rect x="121.3" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="125.58" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="129.85" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="146.95" y="213.2" width="3.42" height="4.8" fill="#0072B2" stroke="none"/>
+<rect x="155.5" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="159.78" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="164.05" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="181.16" y="213.2" width="3.42" height="4.8" fill="#0072B2" stroke="none"/>
+<rect x="189.71" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="206.81" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="215.36" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="223.91" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="241.01" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="249.56" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="266.66" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="275.21" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="283.76" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="300.86" y="213.2" width="3.42" height="4.8" fill="#0072B2" stroke="none"/>
+<rect x="309.41" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="313.69" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="326.51" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="335.06" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="356.44" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="369.26" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="390.64" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="403.47" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="424.84" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="446.22" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="459.04" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="480.42" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="493.25" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="514.62" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="536" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="540.27" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="548.82" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="565.92" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="578.75" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="595.85" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="600.13" y="210.8" width="3.42" height="7.2" fill="#0072B2" stroke="none"/>
+<rect x="608.68" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="630.05" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="634.33" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="642.88" y="213.2" width="3.42" height="4.8" fill="#0072B2" stroke="none"/>
+<rect x="655.7" y="213.2" width="3.42" height="4.8" fill="#0072B2" stroke="none"/>
+<rect x="659.98" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="664.25" y="213.2" width="3.42" height="4.8" fill="#0072B2" stroke="none"/>
+<rect x="668.53" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="672.8" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="689.91" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="694.18" y="210.8" width="3.42" height="7.2" fill="#0072B2" stroke="none"/>
+<rect x="698.46" y="215.6" width="3.42" height="2.4" fill="#0072B2" stroke="none"/>
+<rect x="702.73" y="213.2" width="3.42" height="4.8" fill="#0072B2" stroke="none"/>
+<rect x="715.56" y="213.2" width="3.42" height="4.8" fill="#0072B2" stroke="none"/>
+<rect x="719.83" y="196.4" width="3.42" height="21.6" fill="#0072B2" stroke="none"/>
+<rect x="724.11" y="186.8" width="3.42" height="31.2" fill="#0072B2" stroke="none"/>
+<rect x="728.38" y="196.4" width="3.42" height="21.6" fill="#0072B2" stroke="none"/>
+<rect x="732.66" y="194" width="3.42" height="24" fill="#0072B2" stroke="none"/>
+<rect x="745.48" y="191.6" width="3.42" height="26.4" fill="#0072B2" stroke="none"/>
+<rect x="749.76" y="186.8" width="3.42" height="31.2" fill="#0072B2" stroke="none"/>
+<rect x="754.03" y="186.8" width="3.42" height="31.2" fill="#0072B2" stroke="none"/>
+<rect x="758.31" y="191.6" width="3.42" height="26.4" fill="#0072B2" stroke="none"/>
+<rect x="762.58" y="141.2" width="3.42" height="76.8" fill="#0072B2" stroke="none"/>
+<text x="776" y="114" font-size="13" text-anchor="end" fill="#57606a">peak 32 on 2026-10-30</text>
+<text x="24" y="240" font-size="14" font-weight="600" fill="#009E73">Applications decided that day</text>
+<line x1="70" y1="344" x2="766" y2="344" stroke="#57606a" stroke-width="1"/>
+<text x="64" y="349" font-size="13" text-anchor="end" fill="#57606a">0</text>
+<line x1="70" y1="296" x2="766" y2="296" stroke="#d0d7de" stroke-width="1"/>
+<text x="64" y="301" font-size="13" text-anchor="end" fill="#57606a">1</text>
+<line x1="70" y1="248" x2="766" y2="248" stroke="#d0d7de" stroke-width="1"/>
+<text x="64" y="253" font-size="13" text-anchor="end" fill="#57606a">2</text>
+<rect x="99.93" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="117.03" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="125.58" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="129.85" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="134.13" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="151.23" y="248" width="3.42" height="96" fill="#009E73" stroke="none"/>
+<rect x="159.78" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="164.05" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="176.88" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="185.43" y="248" width="3.42" height="96" fill="#009E73" stroke="none"/>
+<rect x="193.98" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="206.81" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="211.08" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="219.63" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="236.73" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="245.28" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="253.83" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="270.93" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="279.49" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="296.59" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="305.14" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="313.69" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="330.79" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="339.34" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="356.44" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="394.92" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="420.57" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="446.22" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="463.32" y="248" width="3.42" height="96" fill="#009E73" stroke="none"/>
+<rect x="488.97" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="514.62" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="540.27" y="248" width="3.42" height="96" fill="#009E73" stroke="none"/>
+<rect x="565.92" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="583.03" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="595.85" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="608.68" y="248" width="3.42" height="96" fill="#009E73" stroke="none"/>
+<rect x="625.78" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="634.33" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="655.7" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<rect x="689.91" y="296" width="3.42" height="48" fill="#009E73" stroke="none"/>
+<text x="776" y="240" font-size="13" text-anchor="end" fill="#57606a">peak 2 on 2026-06-09</text>
+<text x="24" y="366" font-size="14" font-weight="600" fill="#D55E00">Deadline items with an overdue alert, plotted on their DUE date</text>
+<line x1="70" y1="470" x2="766" y2="470" stroke="#57606a" stroke-width="1"/>
+<text x="64" y="475" font-size="13" text-anchor="end" fill="#57606a">0</text>
+<line x1="70" y1="422" x2="766" y2="422" stroke="#d0d7de" stroke-width="1"/>
+<text x="64" y="427" font-size="13" text-anchor="end" fill="#57606a">2</text>
+<line x1="70" y1="374" x2="766" y2="374" stroke="#d0d7de" stroke-width="1"/>
+<text x="64" y="379" font-size="13" text-anchor="end" fill="#57606a">4</text>
+<rect x="685.63" y="446" width="3.42" height="24" fill="#D55E00" stroke="none"/>
+<rect x="689.91" y="446" width="3.42" height="24" fill="#D55E00" stroke="none"/>
+<rect x="694.18" y="446" width="3.42" height="24" fill="#D55E00" stroke="none"/>
+<rect x="719.83" y="422" width="3.42" height="48" fill="#D55E00" stroke="none"/>
+<rect x="728.38" y="422" width="3.42" height="48" fill="#D55E00" stroke="none"/>
+<rect x="732.66" y="446" width="3.42" height="24" fill="#D55E00" stroke="none"/>
+<rect x="745.48" y="422" width="3.42" height="48" fill="#D55E00" stroke="none"/>
+<rect x="749.76" y="422" width="3.42" height="48" fill="#D55E00" stroke="none"/>
+<rect x="754.03" y="374" width="3.42" height="96" fill="#D55E00" stroke="none"/>
+<rect x="758.31" y="398" width="3.42" height="72" fill="#D55E00" stroke="none"/>
+<rect x="762.58" y="422" width="3.42" height="48" fill="#D55E00" stroke="none"/>
+<text x="776" y="366" font-size="13" text-anchor="end" fill="#57606a">peak 4 on 2026-10-28</text>
+<line x1="117.03" y1="474" x2="117.03" y2="478" stroke="#57606a" stroke-width="1"/>
+<text x="117.03" y="492" font-size="13" text-anchor="middle" fill="#57606a">2026-06</text>
+<line x1="245.28" y1="474" x2="245.28" y2="478" stroke="#57606a" stroke-width="1"/>
+<text x="245.28" y="492" font-size="13" text-anchor="middle" fill="#57606a">2026-07</text>
+<line x1="377.82" y1="474" x2="377.82" y2="478" stroke="#57606a" stroke-width="1"/>
+<text x="377.82" y="492" font-size="13" text-anchor="middle" fill="#57606a">2026-08</text>
+<line x1="510.35" y1="474" x2="510.35" y2="478" stroke="#57606a" stroke-width="1"/>
+<text x="510.35" y="492" font-size="13" text-anchor="middle" fill="#57606a">2026-09</text>
+<line x1="638.6" y1="474" x2="638.6" y2="478" stroke="#57606a" stroke-width="1"/>
+<text x="638.6" y="492" font-size="13" text-anchor="middle" fill="#57606a">2026-10</text>
+<text x="24" y="529" font-size="13" fill="#57606a">Horizontal axis: calendar day (real date scale). Vertical axes start at zero and each panel has its</text>
+<text x="24" y="548" font-size="13" fill="#57606a">own scale.</text>
+<line x1="24" y1="556" x2="776" y2="556" stroke="#d0d7de" stroke-width="1"/>
+<text x="24" y="574" font-size="13" font-weight="600" fill="#57606a">Provenance: MEASURED · SYNTHETIC demo data</text>
+<text x="24" y="592" font-size="13" fill="#57606a">Source: docs/evidence/visualizations/data/workflow.json</text>
+<text x="24" y="610" font-size="13" fill="#57606a">Snapshot 2026-11-04 · commit 590a088 · synthetic demo dataset</text>
+</svg>

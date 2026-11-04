@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" width="800" height="420" role="img" aria-labelledby="t-workflow-processing-time d-workflow-processing-time" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title id="t-workflow-processing-time">Median working days from submission to decision</title>
+<desc id="d-workflow-processing-time">Median working days from submission to decision. Decided applications only. In-flight applications are not finished, so their time is not yet known.</desc>
+<rect x="0.5" y="0.5" width="799" height="419" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="20" font-weight="600" fill="#1f2328">Median working days from submission to decision</text>
+<text x="24" y="54" font-size="14" fill="#57606a">Decided applications only. In-flight applications are not finished, so their time is not yet</text>
+<text x="24" y="74" font-size="14" fill="#57606a">known.</text>
+<rect x="24" y="100" width="752" height="116" rx="6" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1"/>
+<text x="44" y="152" font-size="40" font-weight="600" fill="#0072B2">5</text>
+<text x="82.82" y="150" font-size="16" font-weight="600" fill="#1f2328">working days (median)</text>
+<text x="44" y="182" font-size="14" fill="#57606a">Over the 45 decided applications. A further 146 applications are in flight and are</text>
+<text x="44" y="201" font-size="14" fill="#57606a">excluded, not counted as zero. No mean is given.</text>
+<line x1="224" y1="228" x2="224" y2="292" stroke="#57606a" stroke-width="1"/>
+<text x="224" y="310" font-size="13" text-anchor="middle" fill="#57606a">0</text>
+<line x1="395.21" y1="228" x2="395.21" y2="292" stroke="#d0d7de" stroke-width="1"/>
+<text x="395.21" y="310" font-size="13" text-anchor="middle" fill="#57606a">50</text>
+<line x1="566.43" y1="228" x2="566.43" y2="292" stroke="#d0d7de" stroke-width="1"/>
+<text x="566.43" y="310" font-size="13" text-anchor="middle" fill="#57606a">100</text>
+<line x1="737.64" y1="228" x2="737.64" y2="292" stroke="#d0d7de" stroke-width="1"/>
+<text x="737.64" y="310" font-size="13" text-anchor="middle" fill="#57606a">150</text>
+<text x="214" y="252" font-size="14" text-anchor="end" fill="#1f2328">Decided (in the median)</text>
+<rect x="224" y="237" width="154.09" height="20" fill="#009E73" stroke="none"/>
+<text x="386.09" y="252" font-size="14" fill="#1f2328">45</text>
+<text x="214" y="282" font-size="14" text-anchor="end" fill="#1f2328">In flight (excluded)</text>
+<rect x="224" y="267" width="499.94" height="20" fill="#6e7781" stroke="none"/>
+<text x="731.94" y="282" font-size="14" fill="#1f2328">146</text>
+<text x="480.82" y="332" font-size="13" text-anchor="middle" fill="#57606a">applications (count); the two add up to all submitted applications</text>
+<line x1="24" y1="350" x2="776" y2="350" stroke="#d0d7de" stroke-width="1"/>
+<text x="24" y="368" font-size="13" font-weight="600" fill="#57606a">Provenance: DERIVED · SYNTHETIC demo data</text>
+<text x="24" y="386" font-size="13" fill="#57606a">Source: docs/evidence/visualizations/data/workflow.json</text>
+<text x="24" y="404" font-size="13" fill="#57606a">Snapshot 2026-11-04 · commit 590a088 · synthetic demo dataset</text>
+</svg>

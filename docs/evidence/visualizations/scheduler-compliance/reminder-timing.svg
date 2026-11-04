@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 304" width="800" height="304" role="img" aria-labelledby="t-scheduler-compliance-reminder-timing d-scheduler-compliance-reminder-timing" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title id="t-scheduler-compliance-reminder-timing">Reminder alerts: on time vs late</title>
+<desc id="d-scheduler-compliance-reminder-timing">Reminder alerts: on time vs late. Late = raised more than one day after the reminder date. The log cannot tell a slow engine from an item created after its reminder date had passed.</desc>
+<rect x="0.5" y="0.5" width="799" height="303" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="20" font-weight="600" fill="#1f2328">Reminder alerts: on time vs late</text>
+<text x="24" y="54" font-size="14" fill="#57606a">Late = raised more than one day after the reminder date. The log cannot tell a slow engine</text>
+<text x="24" y="74" font-size="14" fill="#57606a">from an item created after its reminder date had passed.</text>
+<rect x="24" y="102" width="717.82" height="34" fill="#D55E00" stroke="#ffffff" stroke-width="1.5"/>
+<rect x="741.82" y="102" width="34.18" height="34" fill="#009E73" stroke="#ffffff" stroke-width="1.5"/>
+<rect x="24" y="102" width="752" height="34" fill="none" stroke="#57606a" stroke-width="1"/>
+<rect x="24" y="146" width="14" height="14" fill="#D55E00" stroke="#D55E00" stroke-width="1"/>
+<text x="48" y="158" font-size="14" fill="#1f2328">Late (more than one day after the reminder date)</text>
+<text x="646" y="158" font-size="14" font-weight="600" text-anchor="end" fill="#1f2328">21 reminders</text>
+<text x="776" y="158" font-size="14" text-anchor="end" fill="#57606a">95.5%</text>
+<rect x="24" y="170" width="14" height="14" fill="#009E73" stroke="#009E73" stroke-width="1"/>
+<text x="48" y="182" font-size="14" fill="#1f2328">On time</text>
+<text x="646" y="182" font-size="14" font-weight="600" text-anchor="end" fill="#1f2328">1 reminders</text>
+<text x="776" y="182" font-size="14" text-anchor="end" fill="#57606a">4.5%</text>
+<line x1="24" y1="192" x2="776" y2="192" stroke="#d0d7de" stroke-width="1"/>
+<text x="48" y="212" font-size="14" font-weight="600" fill="#1f2328">Total (the bar above)</text>
+<text x="646" y="212" font-size="14" font-weight="600" text-anchor="end" fill="#1f2328">22 reminders</text>
+<line x1="24" y1="234" x2="776" y2="234" stroke="#d0d7de" stroke-width="1"/>
+<text x="24" y="252" font-size="13" font-weight="600" fill="#57606a">Provenance: MEASURED · SYNTHETIC demo data</text>
+<text x="24" y="270" font-size="13" fill="#57606a">Source: docs/evidence/visualizations/data/compliance.json</text>
+<text x="24" y="288" font-size="13" fill="#57606a">Snapshot 2026-11-04 · commit 590a088 · synthetic demo dataset</text>
+</svg>

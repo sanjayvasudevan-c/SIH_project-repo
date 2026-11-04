@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400" role="img" aria-labelledby="t-ml-headline-metrics d-ml-headline-metrics" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title id="t-ml-headline-metrics">Form-check headline metrics (hybrid mode)</title>
+<desc id="d-ml-headline-metrics">Form-check headline metrics (hybrid mode). Advisory check on synthetic test forms. Every figure below is stored in formcheck/metrics.json.</desc>
+<rect x="0.5" y="0.5" width="799" height="399" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="20" font-weight="600" fill="#1f2328">Form-check headline metrics (hybrid mode)</text>
+<text x="24" y="54" font-size="14" fill="#57606a">Advisory check on synthetic test forms. Every figure below is stored in</text>
+<text x="24" y="74" font-size="14" fill="#57606a">formcheck/metrics.json.</text>
+<rect x="24" y="100" width="752" height="34" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1"/>
+<text x="32" y="126" font-size="13" font-weight="600" fill="#1f2328">Metric</text>
+<text x="366.93" y="126" font-size="13" font-weight="600" text-anchor="end" fill="#1f2328">Value</text>
+<text x="382.93" y="126" font-size="13" font-weight="600" fill="#1f2328">Basis</text>
+<line x1="24" y1="168" x2="776" y2="168" stroke="#d0d7de" stroke-width="1"/>
+<text x="32" y="160" font-size="13" font-weight="600" fill="#1f2328">Precision</text>
+<text x="366.93" y="160" font-size="13" text-anchor="end" fill="#1f2328">0.975</text>
+<text x="382.93" y="160" font-size="13" fill="#1f2328">stored: flagged forms that were faulty</text>
+<line x1="24" y1="202" x2="776" y2="202" stroke="#d0d7de" stroke-width="1"/>
+<text x="32" y="194" font-size="13" font-weight="600" fill="#1f2328">Recall, overall</text>
+<text x="366.93" y="194" font-size="13" text-anchor="end" fill="#1f2328">0.863</text>
+<text x="382.93" y="194" font-size="13" fill="#1f2328">stored: faulty forms that were flagged</text>
+<line x1="24" y1="236" x2="776" y2="236" stroke="#d0d7de" stroke-width="1"/>
+<text x="32" y="228" font-size="13" font-weight="600" fill="#1f2328">Recall, unit errors only</text>
+<text x="366.93" y="228" font-size="13" text-anchor="end" fill="#1f2328">0.315</text>
+<text x="382.93" y="228" font-size="13" fill="#1f2328">stored: the weak spot (see recall-by-fault)</text>
+<line x1="24" y1="270" x2="776" y2="270" stroke="#d0d7de" stroke-width="1"/>
+<text x="32" y="262" font-size="13" font-weight="600" fill="#1f2328">False-alarm rate</text>
+<text x="366.93" y="262" font-size="13" text-anchor="end" fill="#1f2328">2.2%</text>
+<text x="382.93" y="262" font-size="13" fill="#1f2328">stored: normal forms wrongly flagged</text>
+<text x="24" y="302" font-size="14" fill="#57606a">Test set: 1,000 faulty and 1,000 normal synthetic forms. Not validated on real AICTE</text>
+<text x="24" y="322" font-size="14" fill="#57606a">applications.</text>
+<line x1="24" y1="330" x2="776" y2="330" stroke="#d0d7de" stroke-width="1"/>
+<text x="24" y="348" font-size="13" font-weight="600" fill="#57606a">Provenance: MEASURED on SYNTHETIC test data</text>
+<text x="24" y="366" font-size="13" fill="#57606a">Source: formcheck/metrics.json</text>
+<text x="24" y="384" font-size="13" fill="#57606a">formcheck/metrics.json · evaluation run 2026-11-03 @ 6f6e7cd · synthetic data</text>
+</svg>

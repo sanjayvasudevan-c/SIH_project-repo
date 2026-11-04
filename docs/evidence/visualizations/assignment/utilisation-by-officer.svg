@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1547" width="800" height="1547" role="img" aria-labelledby="t-assignment-utilisation-by-officer d-assignment-utilisation-by-officer" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title id="t-assignment-utilisation-by-officer">Utilisation by officer, highest first</title>
+<desc id="d-assignment-utilisation-by-officer">Utilisation by officer, highest first. 56 officers, current open book. Utilisation = open points ÷ capacity points. Dashed line: the normal cap (1.00); bars above it are orange.</desc>
+<rect x="0.5" y="0.5" width="799" height="1546" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="20" font-weight="600" fill="#1f2328">Utilisation by officer, highest first</text>
+<text x="24" y="54" font-size="14" fill="#57606a">56 officers, current open book. Utilisation = open points ÷ capacity points. Dashed line:</text>
+<text x="24" y="74" font-size="14" fill="#57606a">the normal cap (1.00); bars above it are orange.</text>
+<line x1="194" y1="110" x2="194" y2="1419" stroke="#57606a" stroke-width="1"/>
+<text x="194" y="1437" font-size="13" text-anchor="middle" fill="#57606a">0</text>
+<line x1="304.67" y1="110" x2="304.67" y2="1419" stroke="#d0d7de" stroke-width="1"/>
+<text x="304.67" y="1437" font-size="13" text-anchor="middle" fill="#57606a">0.5</text>
+<line x1="415.33" y1="110" x2="415.33" y2="1419" stroke="#d0d7de" stroke-width="1"/>
+<text x="415.33" y="1437" font-size="13" text-anchor="middle" fill="#57606a">1</text>
+<line x1="526" y1="110" x2="526" y2="1419" stroke="#d0d7de" stroke-width="1"/>
+<text x="526" y="1437" font-size="13" text-anchor="middle" fill="#57606a">1.5</text>
+<text x="184" y="130.5" font-size="14" text-anchor="end" fill="#1f2328">Arjun Rao</text>
+<rect x="194" y="118.5" width="287.73" height="14" fill="#D55E00" stroke="none"/>
+<text x="489.73" y="130.5" font-size="14" fill="#1f2328">1.30 above cap (7.8 of 6 pts)</text>
+<text x="184" y="153.5" font-size="14" text-anchor="end" fill="#1f2328">Neha Joshi</text>
+<rect x="194" y="141.5" width="126.16" height="14" fill="#0072B2" stroke="none"/>
+<text x="328.16" y="153.5" font-size="14" fill="#1f2328">0.57</text>
+<text x="184" y="176.5" font-size="14" text-anchor="end" fill="#1f2328">Radha Natarajan</text>
+<rect x="194" y="164.5" width="99.6" height="14" fill="#0072B2" stroke="none"/>
+<text x="301.6" y="176.5" font-size="14" fill="#1f2328">0.45</text>
+<text x="184" y="199.5" font-size="14" text-anchor="end" fill="#1f2328">Pallavi Pawar</text>
+<rect x="194" y="187.5" width="88.53" height="14" fill="#0072B2" stroke="none"/>
+<text x="290.53" y="199.5" font-size="14" fill="#1f2328">0.40</text>
+<text x="184" y="222.5" font-size="14" text-anchor="end" fill="#1f2328">Keerthi Gowda</text>
+<rect x="194" y="210.5" width="84.11" height="14" fill="#0072B2" stroke="none"/>
+<text x="286.11" y="222.5" font-size="14" fill="#1f2328">0.38</text>
+<text x="184" y="245.5" font-size="14" text-anchor="end" fill="#1f2328">Ashok Murthy</text>
+<rect x="194" y="233.5" width="81.89" height="14" fill="#0072B2" stroke="none"/>
+<text x="283.89" y="245.5" font-size="14" fill="#1f2328">0.37</text>
+<text x="184" y="268.5" font-size="14" text-anchor="end" fill="#1f2328">Naveen Thomas</text>
+<rect x="194" y="256.5" width="81.89" height="14" fill="#0072B2" stroke="none"/>
+<text x="283.89" y="268.5" font-size="14" fill="#1f2328">0.37</text>
+<text x="184" y="291.5" font-size="14" text-anchor="end" fill="#1f2328">Sowmya Natarajan</text>
+<rect x="194" y="279.5" width="81.89" height="14" fill="#0072B2" stroke="none"/>
+<text x="283.89" y="291.5" font-size="14" fill="#1f2328">0.37</text>
+<text x="184" y="314.5" font-size="14" text-anchor="end" fill="#1f2328">Sneha Nair</text>
+<rect x="194" y="302.5" width="75.25" height="14" fill="#0072B2" stroke="none"/>
+<text x="277.25" y="314.5" font-size="14" fill="#1f2328">0.34</text>
+<text x="184" y="337.5" font-size="14" text-anchor="end" fill="#1f2328">Aishwarya Kamath</text>
+<rect x="194" y="325.5" width="70.83" height="14" fill="#0072B2" stroke="none"/>
+<text x="272.83" y="337.5" font-size="14" fill="#1f2328">0.32</text>
+<text x="184" y="360.5" font-size="14" text-anchor="end" fill="#1f2328">Balaji Swamy</text>
+<rect x="194" y="348.5" width="70.83" height="14" fill="#0072B2" stroke="none"/>
+<text x="272.83" y="360.5" font-size="14" fill="#1f2328">0.32</text>
+<text x="184" y="383.5" font-size="14" text-anchor="end" fill="#1f2328">Bhavana Pawar</text>
+<rect x="194" y="371.5" width="70.83" height="14" fill="#0072B2" stroke="none"/>
+<text x="272.83" y="383.5" font-size="14" fill="#1f2328">0.32</text>
+<text x="184" y="406.5" font-size="14" text-anchor="end" fill="#1f2328">Harish Chandran</text>
+<rect x="194" y="394.5" width="70.83" height="14" fill="#0072B2" stroke="none"/>
+<text x="272.83" y="406.5" font-size="14" fill="#1f2328">0.32</text>
+<text x="184" y="429.5" font-size="14" text-anchor="end" fill="#1f2328">Janani Joshi</text>
+<rect x="194" y="417.5" width="70.83" height="14" fill="#0072B2" stroke="none"/>
+<text x="272.83" y="429.5" font-size="14" fill="#1f2328">0.32</text>
+<text x="184" y="452.5" font-size="14" text-anchor="end" fill="#1f2328">Mohan Iyengar</text>
+<rect x="194" y="440.5" width="70.83" height="14" fill="#0072B2" stroke="none"/>
+<text x="272.83" y="452.5" font-size="14" fill="#1f2328">0.32</text>
+<text x="184" y="475.5" font-size="14" text-anchor="end" fill="#1f2328">Nandini</text>
+<text x="184" y="492.5" font-size="14" text-anchor="end" fill="#1f2328">Ramachandran</text>
+<rect x="194" y="472" width="70.83" height="14" fill="#0072B2" stroke="none"/>
+<text x="272.83" y="484" font-size="14" fill="#1f2328">0.32</text>
+<text x="184" y="515.5" font-size="14" text-anchor="end" fill="#1f2328">Pooja Pillai</text>
+<rect x="194" y="503.5" width="70.83" height="14" fill="#0072B2" stroke="none"/>
+<text x="272.83" y="515.5" font-size="14" fill="#1f2328">0.32</text>
+<text x="184" y="538.5" font-size="14" text-anchor="end" fill="#1f2328">Prakash Kulkarni</text>
+<rect x="194" y="526.5" width="70.83" height="14" fill="#0072B2" stroke="none"/>
+<text x="272.83" y="538.5" font-size="14" fill="#1f2328">0.32</text>
+<text x="184" y="561.5" font-size="14" text-anchor="end" fill="#1f2328">Priya Raman</text>
+<rect x="194" y="549.5" width="70.83" height="14" fill="#0072B2" stroke="none"/>
+<text x="272.83" y="561.5" font-size="14" fill="#1f2328">0.32</text>
+<text x="184" y="584.5" font-size="14" text-anchor="end" fill="#1f2328">Rajiv Naidu</text>
+<rect x="194" y="572.5" width="70.83" height="14" fill="#0072B2" stroke="none"/>
+<text x="272.83" y="584.5" font-size="14" fill="#1f2328">0.32</text>
+<text x="184" y="607.5" font-size="14" text-anchor="end" fill="#1f2328">Shalini Hegde</text>
+<rect x="194" y="595.5" width="70.83" height="14" fill="#0072B2" stroke="none"/>
+<text x="272.83" y="607.5" font-size="14" fill="#1f2328">0.32</text>
+<text x="184" y="630.5" font-size="14" text-anchor="end" fill="#1f2328">Srinivas Nair</text>
+<rect x="194" y="618.5" width="70.83" height="14" fill="#0072B2" stroke="none"/>
+<text x="272.83" y="630.5" font-size="14" fill="#1f2328">0.32</text>
+<text x="184" y="653.5" font-size="14" text-anchor="end" fill="#1f2328">Ajay Kulkarni</text>
+<rect x="194" y="641.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="653.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="676.5" font-size="14" text-anchor="end" fill="#1f2328">Anand Mathew</text>
+<rect x="194" y="664.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="676.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="699.5" font-size="14" text-anchor="end" fill="#1f2328">Archana Hegde</text>
+<rect x="194" y="687.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="699.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="722.5" font-size="14" text-anchor="end" fill="#1f2328">Arvind Naidu</text>
+<rect x="194" y="710.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="722.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="745.5" font-size="14" text-anchor="end" fill="#1f2328">Chitra Pillai</text>
+<rect x="194" y="733.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="745.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="768.5" font-size="14" text-anchor="end" fill="#1f2328">Deepa Shinde</text>
+<rect x="194" y="756.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="768.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="791.5" font-size="14" text-anchor="end" fill="#1f2328">Dinesh Reddy</text>
+<rect x="194" y="779.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="791.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="814.5" font-size="14" text-anchor="end" fill="#1f2328">Divya Varma</text>
+<rect x="194" y="802.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="814.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="837.5" font-size="14" text-anchor="end" fill="#1f2328">Gayathri Rao</text>
+<rect x="194" y="825.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="837.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="860.5" font-size="14" text-anchor="end" fill="#1f2328">Karthik Shetty</text>
+<rect x="194" y="848.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="860.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="883.5" font-size="14" text-anchor="end" fill="#1f2328">Kavya Desai</text>
+<rect x="194" y="871.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="883.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="906.5" font-size="14" text-anchor="end" fill="#1f2328">Kiran Iyengar</text>
+<rect x="194" y="894.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="906.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="929.5" font-size="14" text-anchor="end" fill="#1f2328">Lavanya Subramaniam</text>
+<rect x="194" y="917.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="929.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="952.5" font-size="14" text-anchor="end" fill="#1f2328">Malini Ramachandran</text>
+<rect x="194" y="940.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="952.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="975.5" font-size="14" text-anchor="end" fill="#1f2328">Manoj Prasad</text>
+<rect x="194" y="963.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="975.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="998.5" font-size="14" text-anchor="end" fill="#1f2328">Rahul Patil</text>
+<rect x="194" y="986.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="998.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="1021.5" font-size="14" text-anchor="end" fill="#1f2328">Rekha Pawar</text>
+<rect x="194" y="1009.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="1021.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="1044.5" font-size="14" text-anchor="end" fill="#1f2328">Sanjay Krishnan</text>
+<rect x="194" y="1032.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="1044.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="1067.5" font-size="14" text-anchor="end" fill="#1f2328">Sudha Kamath</text>
+<rect x="194" y="1055.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="1067.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="1090.5" font-size="14" text-anchor="end" fill="#1f2328">Sunil Nair</text>
+<rect x="194" y="1078.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="1090.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="1113.5" font-size="14" text-anchor="end" fill="#1f2328">Swathi Desai</text>
+<rect x="194" y="1101.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="1113.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="1136.5" font-size="14" text-anchor="end" fill="#1f2328">Uma Joseph</text>
+<rect x="194" y="1124.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="1136.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="1159.5" font-size="14" text-anchor="end" fill="#1f2328">Vivek Chandran</text>
+<rect x="194" y="1147.5" width="66.4" height="14" fill="#0072B2" stroke="none"/>
+<text x="268.4" y="1159.5" font-size="14" fill="#1f2328">0.30</text>
+<text x="184" y="1182.5" font-size="14" text-anchor="end" fill="#1f2328">Ravi Kumar</text>
+<rect x="194" y="1170.5" width="56.44" height="14" fill="#0072B2" stroke="none"/>
+<text x="258.44" y="1182.5" font-size="14" fill="#1f2328">0.26</text>
+<text x="184" y="1205.5" font-size="14" text-anchor="end" fill="#1f2328">Vinod Bhat</text>
+<rect x="194" y="1193.5" width="56.44" height="14" fill="#0072B2" stroke="none"/>
+<text x="258.44" y="1205.5" font-size="14" fill="#1f2328">0.26</text>
+<text x="184" y="1228.5" font-size="14" text-anchor="end" fill="#1f2328">Amit Shinde</text>
+<rect x="194" y="1216.5" width="55.33" height="14" fill="#0072B2" stroke="none"/>
+<text x="257.33" y="1228.5" font-size="14" fill="#1f2328">0.25</text>
+<text x="184" y="1251.5" font-size="14" text-anchor="end" fill="#1f2328">Sachin More</text>
+<rect x="194" y="1239.5" width="55.33" height="14" fill="#0072B2" stroke="none"/>
+<text x="257.33" y="1251.5" font-size="14" fill="#1f2328">0.25</text>
+<text x="184" y="1274.5" font-size="14" text-anchor="end" fill="#1f2328">Anitha Shetty</text>
+<rect x="194" y="1262.5" width="33.2" height="14" fill="#0072B2" stroke="none"/>
+<text x="235.2" y="1274.5" font-size="14" fill="#1f2328">0.15</text>
+<text x="184" y="1297.5" font-size="14" text-anchor="end" fill="#1f2328">Gopal Shinde</text>
+<rect x="194" y="1285.5" width="33.2" height="14" fill="#0072B2" stroke="none"/>
+<text x="235.2" y="1297.5" font-size="14" fill="#1f2328">0.15</text>
+<text x="184" y="1320.5" font-size="14" text-anchor="end" fill="#1f2328">Hema Mathew</text>
+<rect x="194" y="1308.5" width="33.2" height="14" fill="#0072B2" stroke="none"/>
+<text x="235.2" y="1320.5" font-size="14" fill="#1f2328">0.15</text>
+<text x="184" y="1343.5" font-size="14" text-anchor="end" fill="#1f2328">Preethi Menon</text>
+<rect x="194" y="1331.5" width="33.2" height="14" fill="#0072B2" stroke="none"/>
+<text x="235.2" y="1343.5" font-size="14" fill="#1f2328">0.15</text>
+<text x="184" y="1366.5" font-size="14" text-anchor="end" fill="#1f2328">Ramesh Varma</text>
+<rect x="194" y="1354.5" width="33.2" height="14" fill="#0072B2" stroke="none"/>
+<text x="235.2" y="1366.5" font-size="14" fill="#1f2328">0.15</text>
+<text x="184" y="1389.5" font-size="14" text-anchor="end" fill="#1f2328">Siddharth Patil</text>
+<rect x="194" y="1377.5" width="33.2" height="14" fill="#0072B2" stroke="none"/>
+<text x="235.2" y="1389.5" font-size="14" fill="#1f2328">0.15</text>
+<text x="184" y="1412.5" font-size="14" text-anchor="end" fill="#1f2328">Meena Pillai</text>
+<rect x="194" y="1400.5" width="0" height="14" fill="#0072B2" stroke="none"/>
+<text x="202" y="1412.5" font-size="14" fill="#1f2328">0.00</text>
+<line x1="415.33" y1="110" x2="415.33" y2="1419" stroke="#D55E00" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="415.33" y="105" font-size="13" font-weight="600" text-anchor="middle" fill="#D55E00">cap 1.00</text>
+<text x="360" y="1459" font-size="13" text-anchor="middle" fill="#57606a">utilisation = open points ÷ capacity points (1.00 = at capacity)</text>
+<line x1="24" y1="1477" x2="776" y2="1477" stroke="#d0d7de" stroke-width="1"/>
+<text x="24" y="1495" font-size="13" font-weight="600" fill="#57606a">Provenance: DERIVED + MEASURED · SYNTHETIC demo data</text>
+<text x="24" y="1513" font-size="13" fill="#57606a">Source: docs/evidence/visualizations/data/assignment.json</text>
+<text x="24" y="1531" font-size="13" fill="#57606a">Snapshot 2026-11-04 · commit 590a088 · synthetic demo dataset</text>
+</svg>

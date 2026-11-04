@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 484" width="800" height="484" role="img" aria-labelledby="t-alerts-audit-alerts-per-day d-alerts-audit-alerts-per-day" font-family="system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+<title id="t-alerts-audit-alerts-per-day">Alerts logged per day</title>
+<desc id="d-alerts-audit-alerts-per-day">Alerts logged per day. Simulated calendar days on which at least one alert was logged. Days with none are omitted, not zero-filled.</desc>
+<rect x="0.5" y="0.5" width="799" height="483" rx="6" fill="#ffffff" stroke="#d0d7de"/>
+<text x="24" y="34" font-size="20" font-weight="600" fill="#1f2328">Alerts logged per day</text>
+<text x="24" y="54" font-size="14" fill="#57606a">Simulated calendar days on which at least one alert was logged. Days with none are omitted,</text>
+<text x="24" y="74" font-size="14" fill="#57606a">not zero-filled.</text>
+<text x="24" y="106" font-size="13" fill="#57606a">alerts logged that day (count)</text>
+<line x1="70" y1="354" x2="768" y2="354" stroke="#57606a" stroke-width="1"/>
+<text x="64" y="359" font-size="13" text-anchor="end" fill="#57606a">0</text>
+<line x1="70" y1="310" x2="768" y2="310" stroke="#d0d7de" stroke-width="1"/>
+<text x="64" y="315" font-size="13" text-anchor="end" fill="#57606a">10</text>
+<line x1="70" y1="266" x2="768" y2="266" stroke="#d0d7de" stroke-width="1"/>
+<text x="64" y="271" font-size="13" text-anchor="end" fill="#57606a">20</text>
+<line x1="70" y1="222" x2="768" y2="222" stroke="#d0d7de" stroke-width="1"/>
+<text x="64" y="227" font-size="13" text-anchor="end" fill="#57606a">30</text>
+<line x1="70" y1="178" x2="768" y2="178" stroke="#d0d7de" stroke-width="1"/>
+<text x="64" y="183" font-size="13" text-anchor="end" fill="#57606a">40</text>
+<line x1="70" y1="134" x2="768" y2="134" stroke="#d0d7de" stroke-width="1"/>
+<text x="64" y="139" font-size="13" text-anchor="end" fill="#57606a">50</text>
+<rect x="106.86" y="349.6" width="25" height="4.4" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="119.36" y="343.6" font-size="13" text-anchor="middle" fill="#1f2328">1</text>
+<text x="119.86" y="372" font-size="13" text-anchor="middle" fill="#57606a">2026-09-14</text>
+<rect x="206.57" y="349.6" width="25" height="4.4" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="219.07" y="343.6" font-size="13" text-anchor="middle" fill="#1f2328">1</text>
+<text x="219.57" y="372" font-size="13" text-anchor="middle" fill="#57606a">2026-09-28</text>
+<rect x="306.29" y="340.8" width="25" height="13.2" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="318.79" y="334.8" font-size="13" text-anchor="middle" fill="#1f2328">3</text>
+<text x="319.29" y="372" font-size="13" text-anchor="middle" fill="#57606a">2026-10-05</text>
+<rect x="406" y="283.6" width="25" height="70.4" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="418.5" y="277.6" font-size="13" text-anchor="middle" fill="#1f2328">16</text>
+<text x="419" y="372" font-size="13" text-anchor="middle" fill="#57606a">2026-10-19</text>
+<rect x="505.71" y="257.2" width="25" height="96.8" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="518.21" y="251.2" font-size="13" text-anchor="middle" fill="#1f2328">22</text>
+<text x="518.71" y="372" font-size="13" text-anchor="middle" fill="#57606a">2026-10-26</text>
+<rect x="605.43" y="164.8" width="25" height="189.2" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="617.93" y="158.8" font-size="13" text-anchor="middle" fill="#1f2328">43</text>
+<text x="618.43" y="372" font-size="13" text-anchor="middle" fill="#57606a">2026-11-02</text>
+<rect x="705.14" y="261.6" width="25" height="92.4" fill="#0072B2" stroke="#0072B2" stroke-width="1"/>
+<text x="717.64" y="255.6" font-size="13" text-anchor="middle" fill="#1f2328">21</text>
+<text x="718.14" y="372" font-size="13" text-anchor="middle" fill="#57606a">2026-11-03</text>
+<text x="419" y="394" font-size="13" text-anchor="middle" fill="#57606a">simulated calendar day (only days with alerts are shown)</text>
+<line x1="24" y1="414" x2="776" y2="414" stroke="#d0d7de" stroke-width="1"/>
+<text x="24" y="432" font-size="13" font-weight="600" fill="#57606a">Provenance: MEASURED · SYNTHETIC demo data</text>
+<text x="24" y="450" font-size="13" fill="#57606a">Source: docs/evidence/visualizations/data/alerts.json</text>
+<text x="24" y="468" font-size="13" fill="#57606a">Snapshot 2026-11-04 · commit 590a088 · synthetic demo dataset</text>
+</svg>
