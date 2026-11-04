@@ -53,8 +53,8 @@ const DOCS = {
     const nb = s.benches[s.benches.length - 1];
     return {
       shows: 'How long the deadline engine took for its first and its second full cycle, in each recorded run.',
-      measured: [`Wall-clock milliseconds around each ${tick('runCycle')} call in ${tick('npm run load:test')}. The first cycle starts with no alerts logged; the second repeats on unchanged data. In the newest run the cycle checked ${fmt(nb.engine.firstCycle.result?.itemsChecked ?? 0)} open items. Source: ${tick(nb._file)}.`],
-      concludes: 'At about fifteen thousand applications a full engine cycle takes minutes, not seconds, and the second cycle is faster because it creates nothing.',
+      measured: [`Wall-clock milliseconds around each full engine cycle in ${tick('npm run load:test')}. The first cycle starts with no alerts logged; the second repeats on unchanged data. In the newest run the cycle checked ${fmt(nb.engine.firstCycle.result?.itemsChecked ?? 0)} open items. Source: ${tick(nb._file)}.`],
+      concludes: `At ${fmt(nb.data.applications)} applications a full engine cycle took ${(nb.engine.firstCycle.ms / 1000).toFixed(0)} s (first) and ${(nb.engine.secondCycle.ms / 1000).toFixed(0)} s (second) in the newest run.`,
       cannot: 'That this is acceptable for AICTE\'s real volume, or that the engine scales linearly. Neither run measured resource use (memory, CPU) and each duration is a single sample.',
     };
   },
@@ -83,7 +83,7 @@ const DOCS = {
     return {
       shows: 'How much data the benchmark ran against: applications, deadline items (and how many were open) and assignments.',
       measured: [`Row counts read from the database immediately after the bulk load in ${tick(nb._file)} (bulk load took ${fmt(nb.data.bulkLoadMs)} ms). ${fmt(nb.data.seededApplications)} of the applications are the seeded demo applications; the rest are generated.`],
-      concludes: 'The latency and engine figures were taken at roughly two orders of magnitude more data than the demo database holds.',
+      concludes: `The latency and engine figures were taken at about ${Math.round(nb.data.applications / nb.data.seededApplications)} times as many applications as the seeded demo database holds.`,
       cannot: 'That the generated data has the shape of real applications. It is uniform synthetic data, so skew in real data (a few very busy officers or colleges) is not represented.',
     };
   },
@@ -91,7 +91,7 @@ const DOCS = {
     const nb = s.benches[s.benches.length - 1];
     return {
       shows: 'Per screen: how many requests were sent, at what concurrency, how many failed, requests per second and the slowest single request.',
-      measured: [`From the same load test as the latency chart (${tick(nb._file)}). Errors are responses that were not successful or requests that failed to complete. Requests per second is requests divided by the elapsed time of that screen's test.`],
+      measured: [`From the same load test as the latency chart (${tick(nb._file)}). An error is a response with a non-success HTTP status. Requests per second is requests divided by the wall-clock time of that screen's test. The load generator and the API ran on the same machine.`],
       concludes: `No request failed in any of the ${nb.reads.length} screens (${nb.reads.reduce((a, r) => a + r.errors, 0)} errors in ${fmt(nb.reads.reduce((a, r) => a + r.requests, 0))} requests).`,
       cannot: 'That the system is free of errors under other load patterns, longer runs or mixed read/write traffic. The test is reads only, 400 requests per screen.',
     };
@@ -112,7 +112,7 @@ const DOCS = {
     return {
       shows: 'The current status of every submitted application, in the words the application itself uses.',
       measured: [quote(w.definition.statusDistribution), 'The status words are the ones in the application screens: In progress, Waiting on college (returned for a deficiency), Approved, Approved with conditions, Rejected, Closed.'],
-      concludes: 'The mix of outcomes and in-progress work in this synthetic dataset, and that the six statuses cover every submitted application.',
+      concludes: 'The mix of outcomes and in-progress work in this synthetic dataset; the six statuses cover every submitted application.',
       cannot: 'An approval rate or a rejection rate for real applications: most applications here are still in progress and the outcomes come from seeded decisions.',
     };
   },
@@ -121,7 +121,7 @@ const DOCS = {
     return {
       shows: 'Per calendar day: applications submitted, applications decided, and deadline items that received an overdue alert (plotted on the date the item was due).',
       measured: [quote(w.definition.volumeOverTime)],
-      concludes: 'When activity was recorded in this dataset and that overdue items cluster late in the period, where the simulated clock moved forward.',
+      concludes: 'On which calendar days submissions, decisions and overdue due-dates were recorded in this dataset.',
       cannot: 'A trend or a seasonal pattern: the days are seeded and clock-simulated, and days with no event are absent rather than zero, so the horizontal gaps are not a measurement of quiet periods.',
     };
   },
@@ -140,7 +140,7 @@ const DOCS = {
     return {
       shows: 'Every kind of recorded state change, as the action that caused it and the stage/status before and after, with how many times it happened.',
       measured: [quote(w.definition.transitions)],
-      concludes: 'Which paths applications actually took through the workflow in this dataset, for example how many scrutiny completions went on to the expert visit stage and how many went straight to the decision.',
+      concludes: 'Which paths applications actually took through the workflow in this dataset: read each bar as an action and the state change it made.',
       cannot: 'The order of steps for any one application, or time spent between steps. Counts are events, and an application that was returned and resubmitted is counted each time. A move that was not audited is not inferred.',
     };
   },
@@ -151,14 +151,14 @@ const DOCS = {
     return {
       shows: `Each of the ${o.length} officers' current load as a share of their capacity, highest first, with the normal cap as a dashed line. ${above.length ? `${above.length} officer${above.length > 1 ? 's are' : ' is'} above the cap and drawn in orange: ${above.map((x) => `${x.name} (${x.utilisation.toFixed(2)})`).join(', ')}.` : 'No officer is above the cap.'}`,
       measured: [quote(a.definition.officers), `Spread across officers: mean ${a.data.spread.meanUtilisation.toFixed(2)}, standard deviation ${a.data.spread.stdDev.toFixed(2)} over ${a.data.spread.officerCount} officers.`],
-      concludes: 'Load is concentrated well below the cap for nearly every officer, and one officer is above the cap. The stored explanation for the above-cap officer is quoted verbatim in the worked example.',
-      cannot: `That the distribution is correct or ideal: ${a.definition.spread ? 'the aggregate itself says' : 'the policy decides'} that "equal counts are not the goal". Capacity is a configured number, not observed effort. Nothing here shows the quality or speed of an officer's work.`,
+      concludes: `${above.length} of ${o.length} officers are above the cap; the other ${o.length - above.length} are at or below it (highest of those: ${Math.max(...o.filter((x) => x.utilisation <= x.maxUtil).map((x) => x.utilisation)).toFixed(2)}). The stored explanation for an above-cap officer is quoted verbatim in the worked example.`,
+      cannot: `That the distribution is correct or ideal: the aggregate's own definition says it "describes how load is spread, not whether it is right" and that "equal counts are not the goal". Capacity is a configured number, not observed effort. Nothing here shows the quality or speed of an officer's work.`,
     };
   },
   'assignment/utilisation-distribution.svg': (s) => ({
     shows: 'How many officers fall into each 0.10-wide band of utilisation.',
     measured: ['Derived from the same officer list as the previous chart; each officer is placed in the band containing their utilisation. No separate query was run. Band 0.3 means 0.30 up to 0.39.'],
-    concludes: 'The shape of the spread: most officers cluster in a few adjacent bands and a single officer sits far to the right.',
+    concludes: 'The shape of the spread across bands, read from the bars and their counts.',
     cannot: 'Anything the previous chart does not already say: this is the same data re-grouped, so it is not independent evidence.',
   }),
   'assignment/decisions-by-outcome.svg': (s) => {
@@ -195,7 +195,7 @@ const DOCS = {
     return {
       shows: 'How many escalation alerts were raised at each level.',
       measured: [quote(c.definition.escalations)],
-      concludes: 'Higher levels are rarer than lower ones, consistent with items being escalated only as they stay overdue for longer.',
+      concludes: `${c.data.escalations.map((e) => `level ${e.level}: ${fmt(e.count)}`).join(', ')}. A level is raised only once an item has stayed overdue long enough, so the counts can only fall as the level rises if items are resolved in between.`,
       cannot: 'That anyone acted on an escalation: the system records the decision to alert, and acknowledgement is not recorded.',
     };
   },
@@ -204,7 +204,7 @@ const DOCS = {
     return {
       shows: `The duration of each of the ${e.total} recorded engine runs, in run order.`,
       measured: [quote(e.definition.rows), quote(e.definition.totals)],
-      concludes: 'Run time rises as the engine has more open items and more alerts to log; every recorded run finished without failure.',
+      concludes: `Slowest recorded run: ${fmt(Math.max(...e.rows.map((r) => r.durationMs)))} ms; fastest: ${fmt(Math.min(...e.rows.map((r) => r.durationMs)))} ms; ${fmt(e.totals.failedCount)} failed.`,
       cannot: 'Production run time: each bar is the duration of one run on this machine\'s database, with runs executed on a simulated clock in quick succession. It is not a service-level figure.',
     };
   },
@@ -223,7 +223,7 @@ const DOCS = {
     return {
       shows: `Of ${fmt(r.reminders)} reminder alerts, ${fmt(r.late)} were raised more than a day after their reminder date and ${fmt(r.onTime)} on time.`,
       measured: [quote(s.snap.alerts.definition.reminderTiming)],
-      concludes: 'In this dataset most reminders were logged after their reminder date, and the log shows the engine only ran when the demo moved its clock.',
+      concludes: `${fmt(r.late)} of ${fmt(r.reminders)} reminders were logged more than a day after their reminder date.`,
       cannot: 'That the engine was slow. The log cannot tell a late engine from an item that was created after its reminder date had already passed, and this demo creates items with dates already in the past.',
     };
   },
@@ -296,7 +296,7 @@ const DOCS = {
     return {
       shows: `The four headline numbers of the form check in hybrid mode: precision ${h.precision.toFixed(3)}, overall recall ${h.recall.toFixed(3)}, recall on unit errors ${s.metrics.perFault.unit_error['Hybrid (rules or model)'].toFixed(3)} and false-alarm rate ${pct(h.false_alarm_rate)}.`,
       measured: [`Stored by ${tick('python3 -m training.evaluate')} in ${tick('formcheck/metrics.json')} (evaluation run ${s.metrics.generatedAt.slice(0, 10)}). The hybrid flags a form if the rules or the model flags it. Test forms: ${fmt(s.metrics.datasets.testFaulty)} faulty (200 per fault type) and ${fmt(s.metrics.datasets.testNormal)} normal. All four are stored values, not derived here.`],
-      concludes: 'On the synthetic test forms the hybrid check found most seeded faults, with a small false-alarm rate, and found few unit errors.',
+      concludes: 'On the synthetic test forms the hybrid check flagged most faulty forms with a small false-alarm rate, and flagged few unit errors.',
       cannot: 'How well it would do on real AICTE applications. The forms are synthetic, generated by the same program that produced the training data, and the faults are the ones we wrote. No real-world accuracy claim is made.',
     };
   },
@@ -305,14 +305,14 @@ const DOCS = {
     return {
       shows: 'The four outcomes of the hybrid check on the test forms: faulty forms flagged and missed, normal forms flagged and passed.',
       measured: [`DERIVED: the evaluation stores rates, not counts. True positives = recall ${h.recall} × ${fmt(s.metrics.datasets.testFaulty)} faulty forms; false positives = false-alarm rate ${h.false_alarm_rate} × ${fmt(s.metrics.datasets.testNormal)} normal forms; the other two cells are the remainders. The chart re-derives precision from these counts and compares it with the stored value.`],
-      concludes: 'The stored rates are consistent with one 2×2 table of counts (863, 137, 22, 978), so the headline figures do not contradict each other.',
+      concludes: 'The stored rates are consistent with one 2×2 table of counts, and the chart checks that its precision equals the stored precision.',
       cannot: 'That these are the true counts: they are rebuilt from rates rounded to three decimals and are good to about one form. The matrix is also not evidence of real-world performance.',
     };
   },
   'ml/baseline-modes.svg': (s) => ({
     shows: 'Rules only, model only and the hybrid, each with precision, recall and false-alarm rate.',
     measured: [`All nine values are stored in ${tick('formcheck/metrics.json')}. Rules only never flags a normal form (false-alarm rate 0.000) but misses what its rules were not written for; the model alone finds few faults; the hybrid takes the rules' recall and adds a small false-alarm rate from the model.`],
-    concludes: 'Combining the two gives slightly higher recall than rules alone (a small gain) at the price of a 2.2% false-alarm rate.',
+    concludes: `Hybrid recall ${s.metrics.modes['Hybrid (rules or model)'].recall.toFixed(3)} against ${s.metrics.modes['Rules only'].recall.toFixed(3)} for rules only, at a false-alarm rate of ${pct(s.metrics.modes['Hybrid (rules or model)'].false_alarm_rate)} against ${pct(s.metrics.modes['Rules only'].false_alarm_rate)}.`,
     cannot: 'That the model earns its place on real data. On these synthetic forms its added recall is small, and the comparison is against the rules we wrote ourselves.',
   }),
   'ml/recall-by-fault.svg': (s) => {
@@ -320,7 +320,7 @@ const DOCS = {
     return {
       shows: `Recall for each of the five fault types in each mode. Unit errors on land area are highlighted: the hybrid caught ${u['Hybrid (rules or model)'].toFixed(3)} of them (rules ${u['Rules only'].toFixed(3)}, model ${u['Model only'].toFixed(3)}).`,
       measured: [`Stored in ${tick('formcheck/metrics.json')} under ${tick('perFault')}: 200 synthetic test forms per fault type, and the share each mode flagged.`],
-      concludes: 'The check is strong on the four fault types its rules describe and weak on unit errors, where the built-up area stays below the plot area and no rule fires. The weakness is shown, not hidden.',
+      concludes: 'Recall is 1.000 on the four fault types the rules describe and low on unit errors, where the built-up area stays below the plot area so no rule fires (per formcheck/EVALUATION.md). The weakness is shown, not hidden.',
       cannot: 'That a unit error would be caught on a real form, or that other fault types we did not simulate would be. 200 forms per type is a small sample and the faults are synthetic.',
     };
   },
@@ -356,7 +356,7 @@ export function categoryReadme(dir, charts, src) {
 }
 
 export const KEY_CHARTS = [
-  ['benchmarks/read-latency.svg', 'How fast the API answers on a 15,000-application synthetic dataset.'],
+  ['benchmarks/read-latency.svg', 'How fast the API answers on a large synthetic dataset.'],
   ['workflow/stage-funnel.svg', 'Where applications are in the workflow, against the stages on their route.'],
   ['assignment/utilisation-by-officer.svg', 'Officer load against capacity, with the one above-cap officer highlighted.'],
   ['scheduler-compliance/deadline-states.svg', 'Open deadline items by state, adding up to the open total.'],

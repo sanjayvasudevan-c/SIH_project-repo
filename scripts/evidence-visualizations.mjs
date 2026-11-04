@@ -182,7 +182,7 @@ export function registry(src) {
 
   add({
     dir: 'benchmarks', file: 'throughput-errors.svg', title: 'Throughput and errors per screen',
-    subtitle: `Newest run, commit ${nb.commit}. Errors = requests that did not return success.`,
+    subtitle: `Newest run, commit ${nb.commit}. Errors = responses with a non-success HTTP status.`,
     provenance: () => 'MEASURED · SYNTHETIC dataset', source: () => bsrc(nb), stamp: () => benchStamp(nb),
     draw(c) {
       c.table({

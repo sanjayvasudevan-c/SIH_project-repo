@@ -321,7 +321,8 @@ export function chart({ id, title, subtitle = '', desc = '' }) {
         if (v > 0) rect(left + si * bw, bottom - bh, bw - 1, bh, { fill: fillFor(series[si], si), stroke: series[si].color });
         if (v > 0 || showZero) {
           const lift = stagger && si % 2 === 1 ? 17 : 0;
-          t(left + si * bw + (bw - 1) / 2, bottom - bh - 6 - lift, fmt(v), { size: 13, anchor: 'middle' });
+          const edge = stagger ? (si % 2 === 0 ? left + (si + 1) * bw - 1 : left + si * bw) : left + si * bw + (bw - 1) / 2;
+          t(edge, bottom - bh - 6 - lift, fmt(v), { size: 13, anchor: stagger ? (si % 2 === 0 ? 'end' : 'start') : 'middle' });
         }
         model.marks.push({ series: series[si].name, label: cat.label, value: v, text: fmt(v) });
       });
@@ -444,10 +445,7 @@ export function chart({ id, title, subtitle = '', desc = '' }) {
         model.marks.push({ series: p.key, label: d.day, value: v, text: String(v) });
       });
       const top1 = days.reduce((b, d) => (d[p.key] > b[p.key] ? d : b), days[0]);
-      if (top1[p.key] > 0) {
-        const px = Math.min(xAt(top1.day) + bw / 2, W - M - textW(`peak ${top1[p.key]} on ${top1.day}`, 13) / 2 - 4);
-        t(Math.max(px, x0 + textW(`peak ${top1[p.key]} on ${top1.day}`, 13) / 2), sy(top1[p.key]) - 6, `peak ${top1[p.key]} on ${top1.day}`, { size: 13, anchor: 'middle' });
-      }
+      if (top1[p.key] > 0) t(W - M, c.y, `peak ${top1[p.key]} on ${top1.day}`, { size: 13, anchor: 'end', fill: COLORS.muted });
       c.y = bottom;
     });
     // month ticks on the shared axis
