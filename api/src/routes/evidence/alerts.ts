@@ -1,4 +1,4 @@
-// Evidence Center: alerts. Counts of what the deadline engine logged, never case detail. AlertLog records that an alert was
+// Verification API: alerts. Counts of what the deadline engine logged, never case detail. AlertLog records that an alert was
 // raised and nothing about whether anyone saw it, so acknowledgement is reported as NOT RECORDED, not as zero. When the alerted deadline
 // item closed IS recorded (DeadlineItem.closedAt), but this endpoint does not compute it; that is stated as notComputed.
 import { Prisma } from '@prisma/client';
@@ -45,7 +45,7 @@ export async function alerts(q: Q) {
       notRecorded:
         'Acknowledgement (someone confirming they have seen an alert) is not recorded: a notification has a read flag but no timestamp, and no alert is tied to a person who confirmed it, so no figure for it exists here. It is listed so its absence is visible rather than mistaken for zero.',
       notComputed:
-        'Time from an alert to its deadline item closing IS recorded per item (the item\'s closedAt, stamped with the system clock when the item is closed; AlertLog.itemId links each alert to its item), but this page does not compute or chart it. An item that is still open has no closedAt, so it has no such time, and closing an item does not show that the alert prompted anyone to act. Exception flags also carry raised and resolved timestamps, but they are separate from alerts.',
+        'Time from an alert to its deadline item closing IS recorded per item (the item\'s closedAt, stamped with the system clock when the item is closed; AlertLog.itemId links each alert to its item), but this endpoint does not return that measure. An item that is still open has no closedAt, so it has no such time, and closing an item does not show that the alert prompted anyone to act. Exception flags also carry raised and resolved timestamps, but they are separate from alerts.',
     },
     provenance: { total: 'MEASURED', byKind: 'MEASURED', reminderTiming: 'MEASURED', perDay: 'MEASURED', escalationsByLevel: 'MEASURED', notifications: 'MEASURED', notRecorded: null, notComputed: null } as Record<string, Provenance | null>,
     data: {

@@ -31,7 +31,7 @@ The target reaction: *production-grade, feasible, and clearly ahead of the other
 ## Non-goals
 
 - No new application features. The engine is tested and correct; this is presentation of existing behaviour.
-- No in-app Evidence Center. That is the separate, larger plan in `docs/evidence/README.md`, deliberately not
+- No in-app Evidence Center. That was the separate, larger plan in `docs/engineering/plans/2026-11-03-evidence-center.md`, deliberately not
   started here.
 - No interactive web dashboard (see Approaches).
 - No change to the SIH portal submission text. The recall discrepancy is noted, not acted on, pending a decision.

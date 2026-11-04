@@ -74,7 +74,7 @@ A generic engine with an ordinary history table would need the append-only grant
 Source: `Assignment.reasonText` (`api/prisma/schema.prisma`), composed in `api/src/assignment/engine.ts`. Example: "Assigned to Priya Raman (Officer, South): portfolio officer for ABC Engineering College; utilisation 0.15 after this task. 50 eligible; none excluded. Tier 0. Rules 2027-28 v1."
 
 Caveats:
-- The reason names the winner and counts the exclusions. The full eligible-versus-excluded breakdown is persisted in `AssignmentTrace` and viewable by ADMIN in the Evidence Center.
+- The reason names the winner and counts the exclusions. The full eligible-versus-excluded breakdown is persisted in `AssignmentTrace` and remains available through the ADMIN-only `/api/evidence/assignment-trace/:applicationId` endpoint.
 - Weights, capacities and thresholds are placeholders pending AICTE validation.
 - Tested: `assignment.test.ts` (lowest score, exclusions listed).
 

@@ -9,7 +9,7 @@ Use this page to find the project overview, implementation evidence, and develop
 - [Architecture versus prototype scope](evidence/ARCHITECTURE_VS_PROTOTYPE.md): what is built and what remains outside the prototype.
 - [Workflow diagrams](evidence/WORKFLOW.md): case lifecycle, assignment, escalation, and rule publication.
 - [Benchmark methodology and results](evidence/BENCHMARKS.md): machine-readable runs, measurements, and caveats.
-- [Evidence Center implementation record](evidence/README.md): in-app ADMIN feature, data contract, provenance rules, and source map.
+- [Evidence API and verification records](evidence/README.md): retained ADMIN-only endpoints, verification tooling, and archived screenshots.
 
 ## Technical reference
 
@@ -24,6 +24,6 @@ Use this page to find the project overview, implementation evidence, and develop
 ## Screens and artifacts
 
 - [Workflow screenshots](screens/)
-- [Evidence Center screenshots](screens/evidence/): archived views of the former app presentation; retained for technical review.
+- [Archived verification screenshots](screens/evidence/): historical views of the removed Evidence Center UI, retained for technical review.
 - [Benchmark JSON and charts](evidence/benchmark-results/)
 - [Presentation](presentation/GeoLogics_SIH2026_Presentation.pptx)

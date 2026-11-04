@@ -49,9 +49,9 @@ Sequential builds work with Docker installations that do not have the Buildx plu
 | `npm --workspace api run typecheck` | Type-check the API |
 | `npm --workspace web run build` | Type-check and build the web application |
 | `node --test scripts/*.test.mjs` | Run chart generator tests |
-| `npm run evidence:verify` | Compare Evidence Center aggregates against independent SQL; needs a seeded database |
+| `npm run evidence:verify` | Compare verification API aggregates against independent SQL; needs a seeded database |
 
-Sign in as the seeded ADMIN user and open **Evidence Center** in the application navigation. It reads the ADMIN-only API; database-backed sections need the configured PostgreSQL database, while model and benchmark sections read committed evaluation artifacts. Panels identify their scope, provenance and definition. `npm run evidence:verify` independently checks API aggregates against SQL.
+The former Evidence Center page is not part of the application navigation. The retained `/api/evidence/*` endpoints are ADMIN-only and can be inspected through the API tests and `npm run evidence:verify`, which independently compares aggregates with SQL.
 
 ## Development without Docker
 

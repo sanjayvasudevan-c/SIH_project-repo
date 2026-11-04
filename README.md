@@ -65,7 +65,7 @@ The [evaluation guide](docs/evaluation/README.md) connects each major claim to i
 
 The [interactive benchmark explorer](docs/index.html) reads the committed JSON runs and lets evaluators switch between run records and benchmark questions. To view it locally, run `python3 -m http.server 8000 --directory docs` and open <http://localhost:8000>. A manual Pages workflow is prepared; Pages is not configured or deployed yet. See [publishing instructions](docs/README.md). The Markdown reports and raw data remain browsable here.
 
-Administrators can open the in-app Evidence Center at `/admin/evidence/overview` for eight sections of workflow, assignment, scheduler, alert, audit, ML-evaluation and performance evidence. The read-only ADMIN API draws live figures from the demo database and committed evaluation artifacts; each panel shows scope, source and measurement definition. Synthetic benchmarks and ML results are labelled, and missing verification is shown as not verified. See the [implementation record](docs/evidence/README.md).
+The former ADMIN Evidence Center page has been removed. Its read-only `/api/evidence/*` endpoints and verification CLI remain available for technical review. The API uses existing audit, assignment, scheduler, and artifact data; no records or database structures were removed. See the [verification API and artifacts guide](docs/evidence/README.md).
 
 ## Run the prototype
 
@@ -98,11 +98,11 @@ node --test scripts/*.test.mjs
 npm run evidence:verify
 ```
 
-The API suite and evidence verifier require the configured PostgreSQL database. The Evidence Center UI reads the ADMIN-only API; `npm run evidence:verify` compares API aggregates with independent SQL.
+The API suite and evidence verifier require the configured PostgreSQL database. `npm run evidence:verify` compares API aggregates with independent SQL; there is no Evidence Center UI in the application.
 
 ## Demo and team
 
-- [Hosted prototype](https://aicte-demo-website.vercel.app) — the main-branch Vercel deployment was successful on 4 November 2026; the separate open Dependabot Vitest preview failed and is documented in the [Evidence Center record](docs/evidence/README.md).
+- [Hosted prototype](https://aicte-demo-website.vercel.app) — the main-branch Vercel deployment was successful on 4 November 2026; the separate open Dependabot Vitest preview failed and is documented in the [verification guide](docs/evidence/README.md).
 - [SIH presentation](docs/presentation/GeoLogics_SIH2026_Presentation.pptx)
 - [Demo video](https://drive.google.com/file/d/1MtdBjbsbe71ODzVC4wfgrNmJwZF5oWQB/view?usp=sharing)
 - [Team GeoLogics contributors](CONTRIBUTORS.md)
@@ -116,7 +116,7 @@ The API suite and evidence verifier require the configured PostgreSQL database. 
 | `formcheck/` | Python form-check service, model evaluation, and synthetic dataset generators |
 | `shared/` | Shared seed rules and expression variables |
 | `docs/evaluation/` | Evaluator narrative tying claims to implementation and evidence |
-| `docs/evidence/` | Benchmark artifacts, charts, architecture, audit, and Evidence Center implementation record |
+| `docs/evidence/` | Benchmark artifacts, charts, architecture, audit, and verification API documentation |
 | `docs/engineering/` | Preserved plans and design specifications |
 | `docs/development/` | Local setup and demo walkthrough |
 | `docs/screens/` | Recorded interface screenshots |
