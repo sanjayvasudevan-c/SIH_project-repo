@@ -71,7 +71,10 @@ async function timeCycle() {
   const t0 = process.hrtime.bigint();
   const result = await runEngineCycle({ source: 'load-test' });
   const elapsed = ms(t0);
-  return { ms: Math.round(elapsed), newAlerts: (await prisma.alertLog.count()) - before, result };
+  const newAlerts = (await prisma.alertLog.count()) - before;
+  // Read back from the EngineRun row the cycle wrote (the audit record), never inferred from newAlerts being 0.
+  const run = await prisma.engineRun.findUniqueOrThrow({ where: { id: BigInt(result.engineRunId) }, select: { alertsSuppressed: true, alertsCreated: true } });
+  return { ms: Math.round(elapsed), newAlerts, alertsSuppressed: run.alertsSuppressed, result };
 }
 
 function pct(sorted: number[], p: number) {
@@ -159,12 +162,16 @@ async function main() {
   await new Promise((r) => server.once('listening', r));
   const reads = await readLoad((server.address() as AddressInfo).port);
   server.close();
+  const pg = await pgVersion();
   const report = {
+    provenance: 'BENCHMARK' as const,
+    repeats: 1, // one run, no variance figure
+    resourceUse: null, // CPU and memory use during the run were NOT measured
     commit: gitCommit(),
     datasetSize: TARGET,
-    pgVersion: await pgVersion(),
+    pgVersion: pg,
     date: new Date().toISOString(),
-    machine: { cpus: os.cpus().length, cpuModel: os.cpus()[0]?.model, memoryGb: Math.round(os.totalmem() / 2 ** 30), node: process.version },
+    machine: { cpus: os.cpus().length, cpuModel: os.cpus()[0]?.model, memoryGb: Math.round(os.totalmem() / 2 ** 30), totalMemoryBytes: os.totalmem(), node: process.version, os: `${os.type()} ${os.release()} ${os.arch()}`, postgres: pg },
     data: { ...data, bulkLoadMs: loadMs },
     engine: { firstCycle: first, secondCycle: second },
     reads,

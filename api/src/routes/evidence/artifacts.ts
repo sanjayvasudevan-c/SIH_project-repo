@@ -16,8 +16,8 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../
 export const evidenceDir = (): string => process.env.EVIDENCE_DIR ?? path.join(repoRoot, 'docs', 'evidence');
 const formcheckMetricsPath = (): string => process.env.FORMCHECK_METRICS ?? path.join(repoRoot, 'formcheck', 'metrics.json');
 
-export type Provenance = 'MEASURED' | 'DERIVED' | 'SYNTHETIC' | 'TARGET' | 'LIVE_DEMO';
-const PROVENANCES = ['MEASURED', 'DERIVED', 'SYNTHETIC', 'TARGET', 'LIVE_DEMO'];
+export type Provenance = 'MEASURED' | 'DERIVED' | 'SYNTHETIC' | 'TARGET' | 'LIVE_DEMO' | 'BENCHMARK';
+const PROVENANCES = ['MEASURED', 'DERIVED', 'SYNTHETIC', 'TARGET', 'LIVE_DEMO', 'BENCHMARK'];
 
 async function readJson(file: string): Promise<unknown> {
   try {
@@ -63,7 +63,7 @@ export interface ArtifactEntry {
   data: unknown;
 }
 
-/** Provenance is the file's own declaration, else unstated (null): a guessed label would be worse. */
+/** Provenance is the file's own declaration, else the caller's fallback, else unstated (null). */
 function entry(name: string, json: unknown, fallback: Provenance | null = null): ArtifactEntry {
   if (json === undefined || json === null || typeof json !== 'object' || Array.isArray(json)) return { name, status: 'NOT_VERIFIED', provenance: fallback, commit: null, data: null };
   const o = json as { commit?: unknown; provenance?: unknown };
@@ -76,7 +76,7 @@ export async function readArtifacts(): Promise<ArtifactEntry[]> {
   const dir = path.join(evidenceDir(), 'benchmark-results');
   const files = (await fs.readdir(dir).catch(() => [] as string[])).filter((f) => f.endsWith('.json')).sort();
   const out: ArtifactEntry[] = [];
-  for (const f of files) out.push(entry(`benchmark-results/${f}`, await readJson(path.join(dir, f))));
+  for (const f of files) out.push(entry(`benchmark-results/${f}`, await readJson(path.join(dir, f)), 'BENCHMARK')); // Ruling E17: the directory exists for benchmarks; files may declare otherwise
   out.push(entry('formcheck/metrics.json', await readJson(formcheckMetricsPath())));
   return out;
 }

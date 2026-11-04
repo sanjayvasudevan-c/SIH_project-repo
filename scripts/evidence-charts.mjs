@@ -52,6 +52,8 @@ export function validateBench(bench) {
   if (!bench.engine || typeof bench.engine !== 'object') bad('engine', 'an object');
   for (const k of ['firstCycle', 'secondCycle']) {
     if (!bench.engine[k] || !isNum(bench.engine[k].newAlerts)) bad(`engine.${k}.newAlerts`, 'a number');
+    // Optional (runs before 2026-11-04 did not measure it), but never a wrong type when present.
+    if (bench.engine[k].alertsSuppressed !== undefined && !isNum(bench.engine[k].alertsSuppressed)) bad(`engine.${k}.alertsSuppressed`, 'a number');
   }
 }
 
@@ -125,7 +127,15 @@ export function buildCharts(bench, metrics) {
   // Recall is drawn and labelled exactly as stored in metrics.json (already 3 decimals).
   const modes = Object.entries(metrics.modes).map(([label, m]) => ({ label: short(label), value: m.recall, text: m.recall.toFixed(3) }));
 
+  // Drawn only when the run measured both counters (EngineRun.alertsSuppressed); older runs get no chart, not an inferred one.
+  const first = bench.engine.firstCycle;
+  const second = bench.engine.secondCycle;
+  const dup = isNum(first.alertsSuppressed) && isNum(second.alertsSuppressed)
+    ? { 'duplicate-prevention.svg': counts('Duplicate alert prevention', [{ label: 'Created (cycle 1)', value: first.newAlerts }, { label: 'Suppressed (cycle 2)', value: second.alertsSuppressed }], 'alerts') }
+    : {};
+
   return {
+    ...dup,
     'read-latency.svg': counts('Read latency, p95', reads, 'ms'),
     'engine-cycle.svg': counts('New alerts per cycle (alerts, not time)', engine, 'alerts'),
     'dataset-scale.svg': counts('Dataset scale', scale, ''),

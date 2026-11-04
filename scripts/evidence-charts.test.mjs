@@ -99,3 +99,26 @@ test('barChart refuses an empty series or a point with no value instead of print
   assert.throws(() => barChart({ title: 'T', caption: 'c', series: [], max: 1 }), /no data points/);
   assert.throws(() => barChart({ title: 'T', caption: 'c', series: [{ label: 'a' }], max: 1 }), (e) => !(e instanceof TypeError) && /series\[0\] \(a\).*numeric value/.test(e.message));
 });
+
+test('the duplicate-prevention chart plots created against suppressed, from the measured counters', () => {
+  const b = benchFixture();
+  b.engine.firstCycle.alertsSuppressed = 0;
+  b.engine.secondCycle.alertsSuppressed = 777;
+  const charts = buildCharts(b, metricsFixture());
+  const svg = charts['duplicate-prevention.svg'];
+  assert.ok(svg, 'duplicate-prevention.svg is produced when the run measured alertsSuppressed');
+  assert.match(svg, /Created \(cycle 1\)/);
+  assert.match(svg, /Suppressed \(cycle 2\)/);
+  assert.match(svg, /777 alerts/);
+  assert.ok(!svg.includes('undefined') && !svg.includes('NaN'));
+});
+
+test('an older bench without alertsSuppressed draws no duplicate-prevention chart rather than inventing one', () => {
+  assert.ok(!('duplicate-prevention.svg' in buildCharts(benchFixture(), metricsFixture())));
+});
+
+test('a non-numeric alertsSuppressed names the field and the producer', () => {
+  const b = benchFixture();
+  b.engine.secondCycle.alertsSuppressed = 'lots';
+  assert.throws(() => buildCharts(b, metricsFixture()), /engine\.secondCycle\.alertsSuppressed.*load:test/s);
+});

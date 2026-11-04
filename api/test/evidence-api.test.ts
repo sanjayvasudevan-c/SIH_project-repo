@@ -146,14 +146,15 @@ describe('/api/evidence', () => {
 
   it('lists stored artifacts with provenance, marking an unreadable one NOT_VERIFIED', async () => {
     await fs.mkdir(path.join(dir, 'benchmark-results'));
-    await fs.writeFile(path.join(dir, 'benchmark-results', 'a1b2c3d.json'), JSON.stringify({ commit: 'a1b2c3d', provenance: 'MEASURED', data: {} }));
+    await fs.writeFile(path.join(dir, 'benchmark-results', 'a1b2c3d.json'), JSON.stringify({ commit: 'a1b2c3d', provenance: 'MEASURED', data: {} })); // its own declaration wins
     await fs.writeFile(path.join(dir, 'benchmark-results', 'broken.json'), '{oops');
     await fs.writeFile(path.join(dir, 'benchmark-results', 'plain.json'), JSON.stringify({ commit: 'a1b2c3d' }));
     const r = await request(app).get('/api/evidence/artifacts').set(...bearer(admin));
     const by = new Map(r.body.artifacts.map((a: { name: string }) => [a.name, a]));
     expect(by.get('benchmark-results/a1b2c3d.json')).toMatchObject({ status: 'READ', provenance: 'MEASURED', commit: 'a1b2c3d' });
     expect(by.get('benchmark-results/broken.json')).toMatchObject({ status: 'NOT_VERIFIED', data: null });
-    expect(by.get('benchmark-results/plain.json')).toMatchObject({ status: 'READ', provenance: null }); // not guessed
+    expect(by.get('benchmark-results/plain.json')).toMatchObject({ status: 'READ', provenance: 'BENCHMARK' }); // directory fallback (Ruling E17)
+    expect(by.get('benchmark-results/broken.json')).toMatchObject({ provenance: 'BENCHMARK' });
     expect(by.get('formcheck/metrics.json')).toMatchObject({ status: 'NOT_VERIFIED', provenance: null });
   });
 
