@@ -248,6 +248,7 @@ function Directory() {
   return (
     <Card title="Directory">
       {q.isLoading ? <p className="text-base text-secondary">Loading the directory…</p> : null}
+      {q.error ? <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-danger/30 bg-danger/5 p-3 text-sm text-danger"><span>{q.error instanceof ApiError ? q.error.message : 'Could not load the directory.'}</span><Button size="sm" onClick={() => q.refetch()}>Retry</Button></div> : null}
       <ul>
         {children(null).map((u) => (
           <Node key={u.id} u={u} depth={0} />
@@ -268,18 +269,23 @@ function Scheduler() {
   const instances = q.data?.instances ?? [];
   const live = (at: string) => nowMs - new Date(at).getTime() < 150_000;
   const leader = instances.find((i) => i.isLeader && live(i.lastRunAt));
+  const statusError = q.error ?? clock.error;
+  const statusErrorMessage = statusError instanceof ApiError ? statusError.message : 'Could not load scheduler status.';
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatTile label="Scheduler leader" value={leader ? leader.instanceId : 'None'} />
-        <StatTile label="Instances reporting" value={instances.filter((i) => live(i.lastRunAt)).length} />
-        <StatTile label="Form check service" value={q.data?.formcheck === 'ok' ? 'Running' : 'Down'} emphasis={q.data?.formcheck === 'ok' ? undefined : 'warning'} />
+        <StatTile label="Scheduler leader" value={q.isError || clock.isError ? 'Unavailable' : leader ? leader.instanceId : 'None'} />
+        <StatTile label="Instances reporting" value={q.isError || clock.isError ? 'Unavailable' : instances.filter((i) => live(i.lastRunAt)).length} />
+        <StatTile label="Form check service" value={q.isError ? 'Unavailable' : q.data?.formcheck === 'ok' ? 'Running' : 'Down'} emphasis={q.isError || q.data?.formcheck !== 'ok' ? 'warning' : undefined} />
       </div>
+      {statusError ? <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-danger/30 bg-danger/5 p-3 text-sm text-danger"><span>{statusErrorMessage}</span><Button size="sm" onClick={() => { void q.refetch(); void clock.refetch(); }}>Retry</Button></div> : null}
       <Table
         caption="Scheduler instances"
         rows={instances}
         rowKey={(r) => r.instanceId}
         loading={q.isLoading}
+        error={statusError ? statusErrorMessage : null}
+        onRetry={() => { void q.refetch(); void clock.refetch(); }}
         emptyMessage="No scheduler has reported yet."
         columns={[
           { key: 'id', header: 'Instance', render: (r) => <span className="id-text">{r.instanceId}</span> },

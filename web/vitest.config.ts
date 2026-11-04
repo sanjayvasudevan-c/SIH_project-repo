@@ -10,5 +10,7 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
     css: false,
+    minWorkers: 1,
+    maxWorkers: 2,
   },
 });

@@ -34,20 +34,26 @@ describe('assignment engine', () => {
     const inst = await southInstitutionWithoutPortfolio();
     const college = await collegeOf(inst.name);
     const officers = await prisma.user.findMany({ where: { role: 'OFFICER', region: { code: 'SOUTH' } }, orderBy: { id: 'asc' } });
-    // Everyone gets some load so the choice is decided by score; one officer stays empty.
+    const target = await userByEmail('meena@demo.in');
+    const leaveOfficer = await userByEmail('arjun@demo.in');
+    const overCapacityOfficer = await userByEmail('ravi@demo.in');
+    // The seed gives Ravi 20 points of capacity. Pin the synthetic candidate to 10 so this
+    // assertion tests the over-capacity rule rather than depending on generated-ID ordering.
+    await prisma.officerProfile.update({ where: { userId: overCapacityOfficer.id }, data: { capacityPoints: 10, maxUtil: 1 } });
+    // Every candidate gets a controlled load; the target is deliberately light.
     const anchor = await submitApp(app, await userByEmail('college.abc@demo.in'));
     const anchorId = anchor.body.application.id;
-    const target = officers[7]!;
-    // Equal history for everyone (no specialisation mismatch); the target carries the least load.
+    // Remove the anchor's real task load so it cannot change the synthetic score comparison.
+    await prisma.assignment.updateMany({ where: { applicationId: anchorId, taskType: 'SCRUTINY', releasedAt: null }, data: { releasedAt: clock.now(), releasedReason: 'TEST' } });
+    // Equal specialization history; controlled open load determines the score before exclusions.
     for (const o of officers) {
       const cap = Number((await prisma.officerProfile.findUniqueOrThrow({ where: { userId: o.id } })).capacityPoints);
       await addOpenLoad(o.id, o.id === target.id ? 1 : 0.2 * cap, anchorId);
     }
     await prisma.officerAvailability.create({
-      data: { userId: officers[3]!.id, kind: 'LEAVE', startsOn: clock.today(), endsOn: addDays(clock.today(), 10), reason: 'Medical', createdById: officers[3]!.id },
+      data: { userId: leaveOfficer.id, kind: 'LEAVE', startsOn: clock.today(), endsOn: addDays(clock.today(), 10), reason: 'Medical', createdById: leaveOfficer.id },
     });
-    await addOpenLoad(officers[5]!.id, 8, anchorId); // 10 points + 1.5 > capacity 10
-    // Clear the anchor's own scrutiny assignment so it does not count against Priya.
+    await addOpenLoad(overCapacityOfficer.id, 8, anchorId); // 10 synthetic points + scrutiny weight > capacity 10
     const s = await submitApp(app, college);
     expect(s.status, JSON.stringify(s.body)).toBe(201);
     const a = await openAssignment(s.body.application.id);

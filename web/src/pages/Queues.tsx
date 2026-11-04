@@ -48,7 +48,7 @@ export function CommitteeQueuePage() {
       </section>
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">SAC/SHC cases</h2>
-        <CaseTable caption="SAC/SHC cases" rows={q.data?.sacShc} loading={q.isLoading} cols={['no', 'institution', 'type', 'days', 'due', 'status']} emptyMessage="No cases are waiting for a SAC/SHC recommendation." />
+        <CaseTable caption="SAC/SHC cases" rows={q.data?.sacShc} loading={q.isLoading} error={q.error ? (q.error as Error).message : null} onRetry={() => q.refetch()} cols={['no', 'institution', 'type', 'days', 'due', 'status']} emptyMessage="No cases are waiting for a SAC/SHC recommendation." />
       </section>
     </div>
   );
@@ -77,7 +77,7 @@ export function BureauQueuePage() {
       </section>
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">SAC/SHC forwarding</h2>
-        <CaseTable caption="SAC/SHC forwarding" rows={q.data?.sacShc} loading={q.isLoading} cols={['no', 'institution', 'type', 'days', 'due', 'status']} emptyMessage="No SAC/SHC cases are waiting to be forwarded." />
+        <CaseTable caption="SAC/SHC forwarding" rows={q.data?.sacShc} loading={q.isLoading} error={q.error ? (q.error as Error).message : null} onRetry={() => q.refetch()} cols={['no', 'institution', 'type', 'days', 'due', 'status']} emptyMessage="No SAC/SHC cases are waiting to be forwarded." />
       </section>
     </div>
   );

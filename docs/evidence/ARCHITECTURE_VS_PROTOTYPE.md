@@ -22,7 +22,7 @@ The submission describes a nine-phase design (phases 0 to 8). This repository bu
 | 7 | Offline OCR cross-check of uploaded documents against form values | Not built |
 | 8 | Production hardening: PgBouncer, read replica, audit partitions, stateless replicas, backups with point-in-time recovery, monitoring, two-factor sign-in, AICTE single sign-on, encryption at rest, virus scanning, row-level security, SMS and e-mail gateways, full Hindi and regional languages, security and accessibility audits, DPDP Act review, AICTE portal adapter | Not built. Nothing here is production-ready. |
 
-Also absent, and stated so that nothing below is read as covering it: there is no lint configuration; GitHub Actions is defined in `.github/workflows/ci.yml`, but this document does not claim a successful hosted run. The Evidence Center UI, scheduler run history and assignment traces are implemented; ADMIN users can view the center in the app. There is no external notification channel (e-mail or SMS), so external delivery is not implemented.
+Also absent, and stated so that nothing below is read as covering it: there is no lint configuration. This document does not claim a successful live Vercel deployment; GitHub Actions results are recorded separately below. The Evidence Center UI, scheduler run history and assignment traces are implemented; ADMIN users can view the center in the app. There is no external notification channel (e-mail or SMS), so external delivery is not implemented.
 
 ### How to read the Status column
 
@@ -103,6 +103,7 @@ COLLEGE (`college.abc@demo.in`), OFFICER (`priya@`, `arjun@`, `meena@`, `ravi@` 
 | Phases 5 to 8 | Not built; see the phase table above. |
 | Docker compose stack | Defined, but never exercised: the audit ran the services natively (a PostgreSQL service, `tsx` API, Vite dev server, schedulers via npm scripts). |
 | Hosted mode (Vercel and Neon) | Implemented per earlier sessions; not tested in the 2026-11-03 audit, which made no network calls to the live site. |
+| Vercel scheduled tick | `/api/cron/tick` requires `CRON_SECRET`; configure it in the Vercel project environment. The handler rejects missing or incorrect credentials before database initialization. The deployed value was not inspected in this audit. |
 | CI, lint | CI runs (`.github/workflows/ci.yml`: typecheck, API tests, form-check tests, web build, chart tests); all five jobs passed on revision `73eb610` in [run 41788372958](https://github.com/sanjayvasudevan-c/SIH_project-repo/actions/runs/41788372958). This revision adds the missing install step for chart tests and synchronizes the lockfile with the Vite 8 upgrade on `main`. Lint is absent: no ESLint, Prettier or Ruff configuration, so `tsc --noEmit` and `tsc -b` are the only static gates. |
 | Scheduler run history and assignment decision trace | Implemented in `EngineRun` and `AssignmentTrace`; viewable by ADMIN in the Evidence Center. |
 

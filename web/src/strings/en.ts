@@ -32,6 +32,7 @@ export const en = {
     workforce: 'Workforce',
     admin: 'Administration',
     evidence: 'Evidence Center',
+    projectReview: 'Project review',
     styleguide: 'Style guide',
     rules: 'Rules Center',
     notices: 'What changed',

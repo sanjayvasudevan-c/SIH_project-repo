@@ -12,6 +12,7 @@ vi.mock('./components/Layout', async () => {
 });
 vi.mock('./pages/admin/Admin', () => ({ AdminPage: () => <h1>Administration test page</h1> }));
 vi.mock('./pages/admin/evidence/EvidenceCenter', () => ({ EvidenceCenterPage: () => <h1>Evidence Center test page</h1> }));
+vi.mock('./pages/admin/projectStory/ProjectStory', () => ({ ProjectStory: () => <h1>Project review test page</h1> }));
 vi.mock('./pages/NoAccess', () => ({ NoAccessPage: () => <h1>No access test page</h1> }));
 
 function CurrentPath() {
@@ -37,5 +38,22 @@ describe('Evidence Center application route', () => {
 
     expect(screen.getByRole('heading', { name: 'No access test page' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Evidence Center test page' })).not.toBeInTheDocument();
+  });
+});
+
+describe('Project review application route', () => {
+  beforeEach(() => {
+    auth.user.role = 'ADMIN';
+  });
+
+  it('renders the project reviewer journey for ADMIN', async () => {
+    renderWithApp(<App />, { route: '/admin/project-story?chapter=findings' });
+    expect(await screen.findByRole('heading', { level: 1, name: 'Project review test page' })).toBeInTheDocument();
+  });
+
+  it('keeps the project reviewer journey behind the ADMIN role check', () => {
+    auth.user.role = 'OFFICER';
+    renderWithApp(<App />, { route: '/admin/project-story' });
+    expect(screen.getByRole('heading', { name: 'No access test page' })).toBeInTheDocument();
   });
 });

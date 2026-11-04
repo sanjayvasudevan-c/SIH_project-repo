@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { PageHeader, Select, Tabs } from '../../../components/ui';
 import { useTitle } from '../../../lib/useTitle';
 import { SectionBoundary } from './ErrorBoundary';
@@ -28,6 +28,7 @@ export function EvidenceCenterPage() {
         title="Evidence Center"
         description="Figures drawn from the data stored by this system. Each shows where it comes from, what it covers and how it is measured."
         breadcrumb={[{ label: 'Administration', to: '/admin' }, { label: 'Evidence Center' }]}
+        actions={<Link to="/admin/project-story" className="inline-flex items-center rounded-md border border-subtle px-3 py-2 text-sm font-semibold hover:bg-subtle">Project review</Link>}
       />
       <div>
         <div className="hidden md:block">

@@ -42,6 +42,10 @@ describe('EvidenceCenter shell', () => {
     expect(within(select).getAllByRole('option').map((o) => o.textContent)).toEqual(LABELS);
     expect(Array.from(select.options).map((o) => o.value)).toEqual(IDS);
   });
+  it('offers a direct link to the project reviewer journey', () => {
+    renderWithApp(app(), { route: '/admin/evidence/overview' });
+    expect(screen.getByRole('link', { name: 'Project review' })).toHaveAttribute('href', '/admin/project-story');
+  });
   it('tabs are shown from md up and the select below it', () => {
     renderWithApp(app(), { route: '/admin/evidence/overview' });
     expect(screen.getByRole('tablist').parentElement!.parentElement!.className).toMatch(/hidden md:block/);
