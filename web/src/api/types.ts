@@ -329,3 +329,252 @@ export interface FilingContext {
   programmes: { code: string; label: string; level: string; discipline: string; inPurview: boolean }[];
   types: { type: AppType; label: string; category: string; channel: string; eligible: boolean; route: string[]; documents: DocCfg[] }[];
 }
+
+// ── Evidence Center ──────────────────────────────────────────────────────────
+/** Where a figure comes from. `null` in an envelope means the API did not declare it. */
+export type Provenance = 'MEASURED' | 'DERIVED' | 'SYNTHETIC' | 'TARGET' | 'LIVE_DEMO' | 'TEST_RUN' | 'BENCHMARK' | 'SIMULATED';
+export interface EvidenceEnvelope<T> {
+  definition: Record<string, string>;
+  provenance: Record<string, Provenance | null>;
+  data: T;
+}
+
+// Shapes of the evidence endpoints used by the Overview and Workflow sections (read from the live responses).
+export type TestStatus = 'PASS' | 'FAIL' | 'STALE' | 'NOT_VERIFIED';
+export type EngineRunStatus = 'RUNNING' | 'OK' | 'FAILED';
+
+/** GET /evidence/summary. Unlike the aggregates it is flat (no `data` key). */
+export interface EvidenceSummary {
+  status: TestStatus;
+  commit: string | null;
+  headUnresolved: boolean;
+  artifactCommit: string | null;
+  detail: string | null;
+  checks: { passed: number | null; failed: number | null; notVerified: number | null };
+  lastRunAt: string | null;
+  scheduler: {
+    lastRunAt: string | null;
+    lastStatus: EngineRunStatus | null;
+    lastDurationMs: number | null;
+    stuckRuns: number;
+    heartbeat: { instanceId: string; isLeader: boolean; lastSeenAt: string; ageSeconds: number } | null;
+  };
+  definition: Record<string, string>;
+  provenance: Record<string, Provenance | null>;
+}
+
+export interface WorkflowFunnelStage {
+  stage: string;
+  label: string;
+  reached: number;
+  onRoute: number;
+  share: number | null;
+}
+export interface WorkflowStatusRow {
+  status: Status;
+  count: number;
+  share: number | null;
+}
+export interface WorkflowVolumePoint {
+  day: string;
+  submitted: number;
+  decided: number;
+  overdue: number;
+}
+/** GET /evidence/workflow `data`. */
+export interface WorkflowData {
+  window: { from: string | null; to: string | null };
+  submittedTotal: number;
+  funnel: WorkflowFunnelStage[];
+  statusDistribution: WorkflowStatusRow[];
+  processingTime: { decidedCount: number; inFlightCount: number; medianWorkingDays: number | null; unit: string };
+  volumeOverTime: WorkflowVolumePoint[];
+}
+
+/** GET /evidence/engine-runs (the fields the Overview reads). */
+export interface EngineRunRow {
+  id: string;
+  startedAt: string;
+  finishedAt: string | null;
+  durationMs: number | null;
+  simulatedToday: string;
+  status: EngineRunStatus;
+}
+export interface EngineRunsResponse {
+  total: number;
+  rows: EngineRunRow[];
+  totals: { runCount: number; failedCount: number; abandonedCount: number; alertsCreated: number | null; alertsSuppressed: number | null };
+  definition: Record<string, string>;
+  provenance: Record<string, Provenance | null>;
+}
+
+/** GET /evidence/audit-analytics `data`: counts only, never case content. */
+export interface AuditAnalyticsData {
+  window?: { from: string | null; to: string | null };
+  filters?: { actor: string | null; action: string | null; entity: string | null };
+  total: number;
+  byActorRole?: { actorRole: string; count: number }[];
+  byAction?: { action: string; count: number }[];
+  byEntity?: { entity: string; count: number }[];
+  integrity: { ok: boolean; chainsChecked: number; rowsChecked: number; brokenChainCount: number; scope: string };
+}
+
+/** GET /evidence/artifacts: one entry per stored evidence file. `data` is the parsed JSON, null when it could not be read. */
+export interface ArtifactEntry {
+  name: string;
+  status: 'READ' | 'NOT_VERIFIED';
+  provenance: Provenance | null;
+  commit: string | null;
+  data: unknown;
+}
+export interface ArtifactsResponse {
+  artifacts: ArtifactEntry[];
+}
+
+// ── Evidence Center: assignment (read from the live responses) ───────────────
+export type AssignmentOutcome = 'ASSIGNED' | 'BUREAU_OVERFLOW' | 'BLOCKED';
+export type ExcludedBy = 'UNAVAILABLE' | 'BARRED' | 'RECUSED' | 'OVER_CAPACITY';
+export interface AssignmentOfficer {
+  officerId: string;
+  name: string;
+  role: string;
+  capacityPoints: number;
+  maxUtil: number;
+  openPoints: number;
+  openTasks: number;
+  openPointsAssignedInWindow: number;
+  utilisation: number;
+}
+export interface AssignmentCoverage {
+  tracedCount: number;
+  assignmentTotal: number;
+  blockedCount: number;
+}
+export interface AssignmentDecision {
+  traceId: string;
+  applicationId: string;
+  applicationNo: string | null;
+  taskType: string;
+  outcome: AssignmentOutcome;
+  chosenOfficer: string | null;
+  decidedAt: string;
+  considered: number;
+  eligible: number;
+}
+/** GET /evidence/assignment `data`. */
+export interface AssignmentData {
+  window: { from: string | null; to: string | null };
+  officers: AssignmentOfficer[];
+  spread: { officerCount: number; meanUtilisation: number | null; stdDev: number | null };
+  coverage: AssignmentCoverage;
+  outcomes: { outcome: AssignmentOutcome; count: number }[];
+  candidates: { candidatesConsidered: number; eligible: number; excluded: { reason: ExcludedBy; count: number }[] };
+  continuityOverrides: {
+    count: number;
+    continuityUtilCap: number;
+    urgentMaxUtil: number;
+    rows: { officerId: string; officer: string; utilisation: number; normalCap: number; text: string }[];
+  };
+  recentDecisions: AssignmentDecision[];
+  rulePackVersions: { label: string; assignments: number }[];
+  policy: { label: string };
+}
+export interface TraceCandidate {
+  officerId: string;
+  name: string;
+  tier: number;
+  eligible: boolean;
+  excludedBy: ExcludedBy | null;
+  chosen: boolean;
+  capacity: number;
+  openPoints: number;
+  projectedUtil: number;
+  score: number;
+}
+export interface AssignmentTraceRow {
+  id: string;
+  assignmentId: string | null;
+  applicationId: string;
+  taskType: string;
+  decidedAt: string;
+  chosenOfficerId: string | null;
+  outcome: AssignmentOutcome;
+  weight: number;
+  candidates: TraceCandidate[];
+  reasonText: string;
+}
+/** GET /evidence/assignment-trace/:applicationId. `rows` holds every decision recorded for that application. */
+export interface AssignmentTraceResponse {
+  rows: AssignmentTraceRow[];
+  coverage: AssignmentCoverage;
+}
+
+// ── Evidence Center: scheduler & compliance and alerts (read from the live responses) ───────────────
+export type AlertKind = 'REMINDER' | 'AT_RISK' | 'OVERDUE' | 'ESCALATION' | 'DIGEST';
+export type RunProvenance = 'TEST_RUN' | 'BENCHMARK' | 'SIMULATED' | 'LIVE_DEMO';
+
+/** GET /evidence/compliance `data.deadlines`: the four open states add up to openTotal; the last four are outside it. */
+export interface ComplianceDeadlines {
+  openTotal: number;
+  overdue: number;
+  atRisk: number;
+  dueSoon: number;
+  onTrack: number;
+  met: number;
+  missed: number;
+  paused: number;
+  closed: number;
+}
+export interface ComplianceData {
+  window: { from: string | null; to: string | null };
+  asOf: string;
+  deadlines: ComplianceDeadlines;
+  escalations: { level: number; count: number }[];
+  alerts: {
+    total: number | null;
+    byKind: { kind: AlertKind; count: number }[];
+    reminderTiming: { reminders: number; onTime: number; late: number } | null;
+    suppressed: number | null;
+    engineRunCount: number;
+  };
+}
+/** `definition.deadlines` is an object of per-state texts here, unlike the other endpoints. */
+export interface ComplianceEnvelope {
+  definition: { scope?: string; window?: string; escalations?: string; alerts?: string; deadlines?: Record<string, string> };
+  provenance: Record<string, Provenance | null>;
+  data: ComplianceData;
+}
+
+/** A row of GET /evidence/engine-runs with everything the Scheduler section shows. */
+export interface EngineRunDetailRow extends EngineRunRow {
+  instanceId: string;
+  provenance: RunProvenance;
+  itemsChecked: number;
+  alertsCreated: number;
+  alertsSuppressed: number;
+  notifications: number;
+  flagsRaised: number;
+  escalations: number;
+  error: string | null;
+}
+export interface EngineRunsDetailResponse extends Omit<EngineRunsResponse, 'rows'> {
+  page: number;
+  pageSize: number;
+  rows: EngineRunDetailRow[];
+}
+
+/** GET /evidence/alerts `data`. `total` and `reminderTiming` are null when the engine has never recorded activity. */
+export interface AlertsData {
+  window: { from: string | null; to: string | null };
+  engineEverRan: boolean;
+  total: number | null;
+  byKind: { kind: AlertKind; count: number }[];
+  reminderTiming: { reminders: number; onTime: number; late: number } | null;
+  perDay: { day: string; count: number }[];
+  escalationsByLevel: { level: number; count: number }[];
+  notifications: { total: number; read: number; unread: number; informative: boolean };
+  /** Measures this system does not record at all (acknowledgement). */
+  notRecorded: string[];
+  /** Measures that are recorded but that this endpoint does not compute (alert to deadline item closing). */
+  notComputed: string[];
+}

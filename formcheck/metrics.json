@@ -50,5 +50,7 @@
       "Model only": 0.085,
       "Hybrid (rules or model)": 1.0
     }
-  }
+  },
+  "generatedAt": "2026-11-03T13:35:09+00:00",
+  "commit": "6f6e7cd"
 }

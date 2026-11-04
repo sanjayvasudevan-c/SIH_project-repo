@@ -71,7 +71,10 @@ async function timeCycle() {
   const t0 = process.hrtime.bigint();
   const result = await runEngineCycle({ source: 'load-test' });
   const elapsed = ms(t0);
-  return { ms: Math.round(elapsed), newAlerts: (await prisma.alertLog.count()) - before, result };
+  const newAlerts = (await prisma.alertLog.count()) - before;
+  // Read back from the EngineRun row the cycle wrote (the audit record), never inferred from newAlerts being 0.
+  const run = await prisma.engineRun.findUniqueOrThrow({ where: { id: BigInt(result.engineRunId) }, select: { alertsSuppressed: true, alertsCreated: true } });
+  return { ms: Math.round(elapsed), newAlerts, alertsSuppressed: run.alertsSuppressed, result };
 }
 
 function pct(sorted: number[], p: number) {
@@ -127,11 +130,28 @@ function gitCommit() {
 }
 
 async function pgVersion() {
-  const rows = await prisma.$queryRaw<{ version: string }[]>`SELECT version()`;
-  return /PostgreSQL (\S+)/.exec(rows[0].version)?.[1] ?? rows[0].version;
+  // Metadata only: a hiccup here must not discard a measured run.
+  try {
+    const rows = await prisma.$queryRaw<{ version: string }[]>`SELECT version()`;
+    return /PostgreSQL (\S+)/.exec(rows[0].version)?.[1] ?? rows[0].version;
+  } catch {
+    return 'unknown';
+  }
+}
+
+// Validated before the ~3.5 minute run, so a typo cannot cost a whole run. The value must be a path,
+// never the next flag (`--out --metrics x` would otherwise write to a file named "--metrics").
+function parseOut(argv: string[]): string | undefined {
+  const i = argv.indexOf('--out');
+  if (i === -1) return undefined;
+  const out = argv[i + 1];
+  if (!out || out.startsWith('--')) throw new Error(`--out needs a path (got ${out === undefined ? 'nothing' : `"${out}"`}); usage: npm run load:test -- --out <path>`);
+  mkdirSync(path.dirname(out), { recursive: true });
+  return out;
 }
 
 async function main() {
+  const out = parseOut(process.argv.slice(2));
   await recreateFromTemplate();
   const t0 = process.hrtime.bigint();
   const data = await bulkCopy();
@@ -142,25 +162,23 @@ async function main() {
   await new Promise((r) => server.once('listening', r));
   const reads = await readLoad((server.address() as AddressInfo).port);
   server.close();
+  const pg = await pgVersion();
   const report = {
+    provenance: 'BENCHMARK' as const,
+    repeats: 1, // one run, no variance figure
+    resourceUse: null, // CPU and memory use during the run were NOT measured
     commit: gitCommit(),
     datasetSize: TARGET,
-    pgVersion: await pgVersion(),
+    pgVersion: pg,
     date: new Date().toISOString(),
-    machine: { cpus: os.cpus().length, cpuModel: os.cpus()[0]?.model, memoryGb: Math.round(os.totalmem() / 2 ** 30), node: process.version },
+    machine: { cpus: os.cpus().length, cpuModel: os.cpus()[0]?.model, memoryGb: Math.round(os.totalmem() / 2 ** 30), totalMemoryBytes: os.totalmem(), node: process.version, os: `${os.type()} ${os.release()} ${os.arch()}`, postgres: pg },
     data: { ...data, bulkLoadMs: loadMs },
     engine: { firstCycle: first, secondCycle: second },
     reads,
   };
   const json = JSON.stringify(report, null, 2);
   console.log(json);
-  const outIdx = process.argv.indexOf('--out');
-  if (outIdx !== -1) {
-    const out = process.argv[outIdx + 1];
-    if (!out) throw new Error('--out needs a path');
-    mkdirSync(path.dirname(out), { recursive: true });
-    writeFileSync(out, json + '\n');
-  }
+  if (out) writeFileSync(out, json + '\n');
   await prisma.$disconnect();
   await recreateFromTemplate();
 }

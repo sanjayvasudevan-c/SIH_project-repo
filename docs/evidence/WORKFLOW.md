@@ -86,11 +86,11 @@ flowchart TD
   R -->|"reject with remarks"| X["REJECTED<br/>back to the maker"]
   X -->|"edit"| D
   A -->|"publish: RULE_APPROVER"| P["PUBLISHED<br/>previous becomes SUPERSEDED"]
-  P --> K["Cases filed under it keep its<br/>forms, documents, fees and route"]
+  P --> K["Cases filed under it keep its<br/>route, documents, fees,<br/>norms, form-check rules and timelines"]
 ```
 
 Source: `api/src/rules/versions.ts` (`submitVersion`, `approveVersion`, `rejectVersion`, `publishVersion`, `approverConflict`); the trigger in `api/prisma/sql/002_rulepack_guard.sql` re-checks the transitions and blocks content changes after the draft stage.
 
 Caveats:
-- Pinning is partial: `mergeSections` (`api/src/rules/resolved.ts`) takes schedule, reminders, escalation, assignment, committees and calendar from the cycle's currently published version; everything else stays on the case's own version.
+- Pinning is partial. `PINNED_SECTIONS` (programmes, applicationTypes, documents, norms, formCheckRules, timelines, fees, letters) and `OPERATIONAL_SECTIONS` (schedule, reminders, escalation, assignment, committees, calendar) are declared in `api/src/rules/schema.ts:14-15`; `mergeSections` (`api/src/rules/resolved.ts`) enforces the split by taking the operational six from the cycle's currently published version, and everything else, including the stage-deadline `timelines`, stays on the case's own version.
 - A published amendment can move open cases onto the new version where its apply scope allows (`rebaseAfterPublish`).

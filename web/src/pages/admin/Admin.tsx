@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, XCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { api, ApiError, qs } from '../../api/client';
 import { useClock } from '../../components/Layout';
 import { Badge, Button, Card, ConfirmDialog, Field, Input, PageHeader, Select, StatTile, Table, Tabs, useToast } from '../../components/ui';
@@ -297,7 +298,9 @@ export function AdminPage() {
   const [tab, setTab] = useState<'demo' | 'audit' | 'directory' | 'scheduler'>('demo');
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Administration" description="Demo controls, the audit log and its integrity check, the directory and the scheduler. Administrators take no case actions." />
+      <PageHeader title="Administration" description="Demo controls, the audit log and its integrity check, the directory and the scheduler. Administrators take no case actions."
+        actions={<Link to="/admin/evidence" className="font-medium text-accent hover:underline">Evidence Center</Link>}
+      />
       <Tabs
         label="Administration sections"
         value={tab}

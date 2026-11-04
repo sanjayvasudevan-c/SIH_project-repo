@@ -191,21 +191,42 @@ export async function loadCandidates(db: Db, task: Task, tier: number, instituti
   });
 }
 
+export interface TraceCandidate {
+  officerId: string;
+  name: string;
+  tier: number;
+  eligible: boolean;
+  excludedBy: 'UNAVAILABLE' | 'BARRED' | 'RECUSED' | 'OVER_CAPACITY' | null;
+  capacity: number;
+  openPoints: number;
+  projectedUtil: number;
+  score: number;
+  chosen: boolean;
+}
+
 interface Exclusions {
   unavailable: Candidate[];
   overCapacity: { c: Candidate; util: number }[];
-  barred: number;
-  recused: number;
+  barred: Candidate[];
+  recused: Candidate[];
+}
+
+/** What one tier's filtering produced: the exclusions, and the candidates that passed. */
+interface TierResult {
+  tier: number;
+  total: number;
+  ex: Exclusions;
+  pass: Candidate[];
 }
 
 function filterCandidates(cands: Candidate[], task: Task, weight: number, institutionId: string, capFor: (c: Candidate) => number) {
-  const ex: Exclusions = { unavailable: [], overCapacity: [], barred: 0, recused: 0 };
+  const ex: Exclusions = { unavailable: [], overCapacity: [], barred: [], recused: [] };
   const pass: Candidate[] = [];
   for (const c of cands) {
     const util = (c.openPoints + weight) / c.capacity;
     if (c.unavailable) ex.unavailable.push(c);
-    else if (c.barred.includes(institutionId)) ex.barred++;
-    else if (c.recused) ex.recused++;
+    else if (c.barred.includes(institutionId)) ex.barred.push(c);
+    else if (c.recused) ex.recused.push(c);
     else if (util > capFor(c) + 1e-9) ex.overCapacity.push({ c, util });
     else pass.push(c);
   }
@@ -254,9 +275,39 @@ function exclusionText(ex: Exclusions): string {
       .join(', ');
     parts.push(`${ex.overCapacity.length} over capacity (${utils}${ex.overCapacity.length > 3 ? ', …' : ''})`);
   }
-  if (ex.barred) parts.push(`${ex.barred} barred for this institution`);
-  if (ex.recused) parts.push(`${ex.recused} recused`);
+  if (ex.barred.length) parts.push(`${ex.barred.length} barred for this institution`);
+  if (ex.recused.length) parts.push(`${ex.recused.length} recused`);
   return parts.length ? `excluded ${parts.join(', ')}` : 'none excluded';
+}
+
+/**
+ * The candidate table behind a decision, read straight off the engine's own tier results (no re-derivation).
+ * excludedBy names the first filter that dropped the candidate, in the engine's order. The pick is always
+ * eligible: the continuity preference may keep an officer the plain capacity cap would have excluded.
+ */
+export function traceOf(p: TaskPolicy, byTier: TierResult[], pick: Pick | null, weight: number): TraceCandidate[] {
+  const row = (tier: number, c: Candidate, excludedBy: TraceCandidate['excludedBy']): TraceCandidate => {
+    const chosen = pick?.officer.id === c.id;
+    return {
+      officerId: c.id,
+      name: c.name,
+      tier,
+      eligible: chosen || excludedBy === null,
+      excludedBy: chosen ? null : excludedBy,
+      capacity: c.capacity,
+      openPoints: c.openPoints,
+      projectedUtil: (c.openPoints + weight) / c.capacity,
+      score: score(p, c, weight),
+      chosen,
+    };
+  };
+  return byTier.flatMap(({ tier, ex, pass }) => [
+    ...pass.map((c) => row(tier, c, null)),
+    ...ex.unavailable.map((c) => row(tier, c, 'UNAVAILABLE')),
+    ...ex.barred.map((c) => row(tier, c, 'BARRED')),
+    ...ex.recused.map((c) => row(tier, c, 'RECUSED')),
+    ...ex.overCapacity.map((o) => row(tier, o.c, 'OVER_CAPACITY')),
+  ]);
 }
 
 /** Run the selection without writing anything. Returns the pick and the exclusion summary per tier. */
@@ -270,7 +321,7 @@ export async function selectOfficer(
   const weight = taskWeight(p, task.taskType);
   const tiers = [...new Set(policy.eligibility[task.taskType].map((r) => r.tier))].sort();
   const maxUtilFor = (c: Candidate) => (task.urgent ? Math.max(policy.urgentMaxUtil, c.maxUtil) : c.maxUtil);
-  const exclusionsByTier: { tier: number; total: number; ex: Exclusions }[] = [];
+  const exclusionsByTier: TierResult[] = [];
 
   let preferredId: string | null = null;
   let preferredWhy = '';
@@ -285,7 +336,7 @@ export async function selectOfficer(
   for (const tier of tiers) {
     const cands = await loadCandidates(db, task, tier, ctx.institutionId);
     const { pass, ex } = filterCandidates(cands, task, weight, ctx.institutionId, maxUtilFor);
-    exclusionsByTier.push({ tier, total: cands.length, ex });
+    exclusionsByTier.push({ tier, total: cands.length, ex, pass });
 
     let chosen: Candidate | null = null;
     let why = '';
@@ -354,8 +405,8 @@ export async function assign(tx: Tx, task: Task, actor?: { id: string; role: str
       candidates: e.total,
       unavailable: e.ex.unavailable.length,
       overCapacity: e.ex.overCapacity.length,
-      barred: e.ex.barred,
-      recused: e.ex.recused,
+      barred: e.ex.barred.length,
+      recused: e.ex.recused.length,
     }));
     const hod = await regionHod(task.regionId, tx);
     const detail = counts
@@ -379,6 +430,17 @@ export async function assign(tx: Tx, task: Task, actor?: { id: string; role: str
         raisedAt: now(),
       },
       update: { resolvedAt: null },
+    });
+    await tx.assignmentTrace.create({
+      data: {
+        applicationId: task.applicationId,
+        taskType: task.taskType,
+        decidedAt: now(),
+        outcome: 'BLOCKED',
+        weight,
+        candidates: traceOf(p, exclusionsByTier, null, weight) as unknown as Prisma.InputJsonValue,
+        reasonText: `No eligible officer for ${TASK_LABEL[task.taskType].toLowerCase()} (${detail})`,
+      },
     });
     await appendAudit(tx, {
       actorId: actor?.id ?? null,
@@ -411,6 +473,20 @@ export async function assign(tx: Tx, task: Task, actor?: { id: string; role: str
       rulePackVersionId: p.versionId,
       recommendedOfficerId: pick.officer.id,
       assignedAt: at,
+    },
+  });
+  // Same transaction as the assignment: a rolled-back assignment leaves no trace claiming it happened.
+  await tx.assignmentTrace.create({
+    data: {
+      assignmentId: created.id,
+      applicationId: task.applicationId,
+      taskType: task.taskType,
+      decidedAt: at,
+      chosenOfficerId: pick.officer.id,
+      outcome: pick.tier === 0 ? 'ASSIGNED' : 'BUREAU_OVERFLOW',
+      weight,
+      candidates: traceOf(p, exclusionsByTier, pick, weight) as unknown as Prisma.InputJsonValue,
+      reasonText: pick.reasonText,
     },
   });
   if (movesHolder(task.taskType)) {

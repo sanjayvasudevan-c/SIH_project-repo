@@ -567,3 +567,44 @@ model StoredBlob {
   data      Bytes
   createdAt DateTime @default(now())
 }
+
+/// One row per deadline-engine cycle: the persisted run history. alertsSuppressed counts inserts that
+/// AlertLog's unique key swallowed (duplicate alerts prevented). provenance: LIVE_DEMO | SIMULATED | TEST_RUN | BENCHMARK.
+model EngineRun {
+  id               BigInt    @id @default(autoincrement())
+  startedAt        DateTime
+  finishedAt       DateTime?
+  durationMs       Int?
+  instanceId       String
+  simulatedToday   DateTime  @db.Date
+  provenance       String
+  itemsChecked     Int       @default(0)
+  alertsCreated    Int       @default(0)
+  alertsSuppressed Int       @default(0)
+  notifications    Int       @default(0)
+  flagsRaised      Int       @default(0)
+  escalations      Int       @default(0)
+  status           String // RUNNING | OK | FAILED
+  error            String?
+
+  @@index([startedAt])
+  @@index([status])
+}
+
+/// The candidate table behind one assignment decision, written in the same transaction as the decision.
+/// outcome: ASSIGNED | BUREAU_OVERFLOW | BLOCKED. candidates is TraceCandidate[] straight from the engine.
+model AssignmentTrace {
+  id              BigInt   @id @default(autoincrement())
+  assignmentId    String?
+  applicationId   String
+  taskType        String
+  decidedAt       DateTime
+  chosenOfficerId String?
+  outcome         String
+  weight          Float
+  candidates      Json
+  reasonText      String
+
+  @@index([applicationId])
+  @@index([decidedAt])
+}

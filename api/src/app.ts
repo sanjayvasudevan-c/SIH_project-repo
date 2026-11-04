@@ -8,6 +8,7 @@ import { authRouter } from './routes/auth.js';
 import { healthRouter } from './routes/health.js';
 import { demoRouter } from './routes/demo.js';
 import { adminRouter } from './routes/admin.js';
+import { evidenceRouter } from './routes/evidence.js';
 import { notificationsRouter } from './routes/notifications.js';
 import { applicationsRouter } from './routes/applications.js';
 import { documentsRouter } from './routes/documents.js';
@@ -43,6 +44,7 @@ export function createApp() {
   api.use(requireAuth);
   api.use('/demo', demoRouter());
   api.use('/admin', adminRouter());
+  api.use('/evidence', evidenceRouter());
   api.use('/notifications', notificationsRouter());
   api.use('/applications', applicationsRouter());
   api.use('/documents', documentsRouter());
@@ -64,7 +66,7 @@ export function createApp() {
   // Central error handler: never leaks stack traces.
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     if (err instanceof HttpError) {
-      res.status(err.status).json({ error: err.message, details: err.details });
+      res.status(err.status).json({ error: err.message, details: err.details, ...(err.code ? { code: err.code } : {}) });
       return;
     }
     const e = err as { type?: string; code?: string; message?: string };

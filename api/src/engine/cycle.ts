@@ -1,6 +1,7 @@
 // Deadline engine cycle (section 7.1): reminders, at-risk, overdue, escalation, availability starts,
 // Action Center flags, daily digests. Idempotent: every alert is guarded by AlertLog's unique key.
 import crypto from 'node:crypto';
+import os from 'node:os';
 import pg from 'pg';
 import type { DeadlineItem, ItemType } from '@prisma/client';
 import { prisma, TX_OPTIONS, type Tx } from '../lib/db.js';
@@ -18,7 +19,7 @@ import { buildFlags } from './flags.js';
 export type CycleResult = Record<string, number | string>;
 
 export const CYCLE_LOCK_ID = 727002;
-const COMPLIANCE: ItemType[] = ['UNDERTAKING', 'DOC_EXPIRY'];
+export const COMPLIANCE: ItemType[] = ['UNDERTAKING', 'DOC_EXPIRY'];
 
 export const ITEM_LABEL: Record<ItemType, string> = {
   STAGE_SLA: 'stage deadline',
@@ -33,13 +34,14 @@ export function daysToDueOf(item: Pick<DeadlineItem, 'dueDate' | 'unit'>, today:
   return item.unit === 'WORKING' ? workingDaysBetween(today, item.dueDate) : calendarDaysBetween(today, item.dueDate);
 }
 
-/** Insert an AlertLog row; true only when it was new (the alert must be sent). */
-async function alertOnce(tx: Tx, itemId: bigint, kind: string, offsetOrLevel: number, triggerDate: Date, late: boolean): Promise<boolean> {
+/** Insert an AlertLog row; true only when it was new (the alert must be sent). A conflict is a duplicate prevented. */
+async function alertOnce(tx: Tx, c: Counters, itemId: bigint, kind: string, offsetOrLevel: number, triggerDate: Date, late: boolean): Promise<boolean> {
   const rows = await tx.$queryRaw<{ id: bigint }[]>`
     INSERT INTO "AlertLog" ("itemId", kind, "offsetOrLevel", "triggerDate", late, "createdAt")
     VALUES (${itemId}, ${kind}, ${offsetOrLevel}, ${triggerDate}::date, ${late}, ${clock.now()})
     ON CONFLICT ("itemId", kind, "offsetOrLevel") DO NOTHING
     RETURNING id`;
+  if (rows.length === 0) c.alertsSuppressed++;
   return rows.length > 0;
 }
 
@@ -85,6 +87,7 @@ interface Counters {
   released: number;
   digests: number;
   notifications: number;
+  alertsSuppressed: number;
 }
 
 async function processItem(it: ItemWithApp, today: Date, c: Counters): Promise<void> {
@@ -102,7 +105,7 @@ async function processItem(it: ItemWithApp, today: Date, c: Counters): Promise<v
         if (d > offset) continue;
         const trigger = addDays(it.dueDate, -offset);
         const late = calendarDaysBetween(trigger, today) > 1;
-        if (await alertOnce(tx, it.id, 'REMINDER', offset, trigger, late)) {
+        if (await alertOnce(tx, c, it.id, 'REMINDER', offset, trigger, late)) {
           c.reminders++;
           if (late) c.lateReminders++;
           const when = d < 0 ? `was due on ${formatDate(it.dueDate)}` : d === 0 ? 'is due today' : `is due on ${formatDate(it.dueDate)} (in ${d} days)`;
@@ -117,7 +120,7 @@ async function processItem(it: ItemWithApp, today: Date, c: Counters): Promise<v
       // At risk: 80% of a stage SLA used, not yet overdue.
       const used = it.totalDays - d;
       if (d >= 0 && used / it.totalDays >= r.reminders.atRiskPct / 100) {
-        if (await alertOnce(tx, it.id, 'AT_RISK', r.reminders.atRiskPct, today, false)) {
+        if (await alertOnce(tx, c, it.id, 'AT_RISK', r.reminders.atRiskPct, today, false)) {
           c.atRisk++;
           c.notifications += await notify(tx, [it.responsibleUserId], {
             applicationId: it.applicationId,
@@ -132,7 +135,7 @@ async function processItem(it: ItemWithApp, today: Date, c: Counters): Promise<v
     const overdueBy = -d;
     const unit = it.unit === 'WORKING' ? 'working days' : 'days';
 
-    if (await alertOnce(tx, it.id, 'OVERDUE', 0, it.dueDate, false)) {
+    if (await alertOnce(tx, c, it.id, 'OVERDUE', 0, it.dueDate, false)) {
       c.overdue++;
       c.notifications += await notify(tx, [it.responsibleUserId], {
         applicationId: it.applicationId,
@@ -146,7 +149,7 @@ async function processItem(it: ItemWithApp, today: Date, c: Counters): Promise<v
     let level = it.escalationLevel;
     for (let n = 1; n <= thresholds.length; n++) {
       if (overdueBy < thresholds[n - 1]! || n <= level) continue;
-      if (!(await alertOnce(tx, it.id, 'ESCALATION', n, it.dueDate, false))) {
+      if (!(await alertOnce(tx, c, it.id, 'ESCALATION', n, it.dueDate, false))) {
         level = Math.max(level, n);
         continue;
       }
@@ -215,7 +218,7 @@ async function digests(today: Date, c: Counters): Promise<void> {
     const z = stalled.filter((s) => s.holderUserId && team.has(s.holderUserId)).length;
     if (x + y + z === 0) continue;
     await prisma.$transaction(async (tx) => {
-      if (!(await alertOnce(tx, userKey(m.id), 'DIGEST', day, today, false))) return;
+      if (!(await alertOnce(tx, c, userKey(m.id), 'DIGEST', day, today, false))) return;
       c.digests++;
       c.notifications += await notify(tx, [m.id], {
         kind: 'DIGEST',
@@ -240,15 +243,55 @@ export async function stalledApplications(today: Date) {
   return out;
 }
 
-/** One full cycle. Callers hold the cycle lock (runCycleWithLock). */
+/** Precedence: TEST_RUN > BENCHMARK > SIMULATED > LIVE_DEMO. */
+function runProvenance(meta: Record<string, string>): string {
+  if (process.env.VITEST || process.env.NODE_ENV === 'test') return 'TEST_RUN';
+  if (meta.source === 'load-test') return 'BENCHMARK';
+  // A run on a pinned or offset clock (the seed's back-dated clock, time travel) is simulated, not live.
+  // The seed's final cycle runs after its back-dated clock is released, but it still belongs to the seeded history.
+  return clock.hasOverride() || clock.getOffsetDays() !== 0 || meta.source?.startsWith('seed') ? 'SIMULATED' : 'LIVE_DEMO';
+}
+
+/** One full cycle, recorded as an EngineRun row. Callers hold the cycle lock (runCycleWithLock). */
 export async function runEngineCycle(meta: Record<string, string> = {}, opts: { flags?: boolean; digests?: boolean } = {}): Promise<CycleResult> {
   await clock.refresh().catch(() => undefined);
+  const today = clock.today();
+  const startedAt = clock.realNow(); // real time: a record of what happened; simulatedToday carries the simulated date
+  const t0 = performance.now();
+  // Fail loud by design: if the history table is unwritable the cycle does not run, rather than running unrecorded.
+  // Written with prisma directly (never a caller's tx), so the FAILED update below survives a rolled-back cycle.
+  const run = await prisma.engineRun.create({
+    data: { startedAt, instanceId: process.env.ENGINE_INSTANCE_ID ?? `${os.hostname()}:${process.pid}`, simulatedToday: today, provenance: runProvenance(meta), status: 'RUNNING' },
+  });
+  const finish = (data: Record<string, unknown>) => {
+    const durationMs = Math.round(performance.now() - t0);
+    return prisma.engineRun.update({ where: { id: run.id }, data: { ...data, durationMs, finishedAt: clock.realNow() } });
+  };
+  // Double fault: if the OK update itself throws, the catch marks FAILED although the body succeeded (rare, accepted).
+  try {
+    const result = await cycleBody(meta, opts, today);
+    await finish({
+      status: 'OK',
+      itemsChecked: Number(result.itemsChecked),
+      alertsCreated: Number(result.alertsCreated),
+      alertsSuppressed: Number(result.alertsSuppressed),
+      notifications: Number(result.notifications),
+      flagsRaised: Number(result.flagsRaised ?? 0),
+      escalations: Number(result.escalations),
+    });
+    return { ...result, engineRunId: run.id.toString() };
+  } catch (e) {
+    await finish({ status: 'FAILED', error: (e instanceof Error ? e.message : String(e)).slice(0, 2000) }).catch(() => undefined);
+    throw e;
+  }
+}
+
+async function cycleBody(meta: Record<string, string>, opts: { flags?: boolean; digests?: boolean }, today: Date): Promise<CycleResult> {
   // Fresh rules each cycle; versions scheduled for publication take effect first.
   await refreshPublished();
   const published = await publishScheduled();
   await loadHolidays(prisma);
-  const today = clock.today();
-  const c: Counters = { reminders: 0, lateReminders: 0, atRisk: 0, overdue: 0, escalations: 0, released: 0, digests: 0, notifications: 0 };
+  const c: Counters = { reminders: 0, lateReminders: 0, atRisk: 0, overdue: 0, escalations: 0, released: 0, digests: 0, notifications: 0, alertsSuppressed: 0 };
 
   const items = (await prisma.deadlineItem.findMany({
     where: { status: 'OPEN' },
@@ -261,6 +304,7 @@ export async function runEngineCycle(meta: Record<string, string> = {}, opts: { 
   const flags = opts.flags === false ? {} : await buildFlags(today);
   if (opts.digests !== false) await digests(today, c);
 
+  const { alertsSuppressed: _suppressed, ...counted } = c; // the audit row keeps its original shape
   const sent = c.reminders + c.atRisk + c.overdue + c.escalations + c.digests;
   if (sent > 0 || c.released > 0) {
     await prisma.$transaction((tx) =>
@@ -268,11 +312,11 @@ export async function runEngineCycle(meta: Record<string, string> = {}, opts: { 
         actorId: null,
         actorRole: 'SYSTEM',
         action: 'ALERTS_SENT',
-        meta: { ...c, ...meta, today: isoDate(today), itemsChecked: items.length },
+        meta: { ...counted, ...meta, today: isoDate(today), itemsChecked: items.length },
       }),
     );
   }
-  return { ...c, itemsChecked: items.length, rulesPublished: published, ...flags, today: isoDate(today) };
+  return { ...c, alertsCreated: sent, itemsChecked: items.length, rulesPublished: published, ...flags, today: isoDate(today) };
 }
 
 /**

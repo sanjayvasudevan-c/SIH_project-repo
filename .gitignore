@@ -11,3 +11,7 @@ __pycache__/
 .vite/
 coverage/
 .vercel
+*.tsbuildinfo
+
+# Written locally by `npm run evidence:record-tests`; describes one commit, so a committed copy would go stale on the next commit.
+docs/evidence/test-results.json

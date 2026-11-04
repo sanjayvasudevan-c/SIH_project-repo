@@ -27,6 +27,47 @@ export function loadJson(path, hint) {
   }
 }
 
+const BENCH_HINT = 'npm run load:test -- --out <path> (run in api/)';
+const METRICS_HINT = 'python3 -m training.evaluate (run in formcheck/)';
+const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+
+// loadJson proves the producer file exists; this proves it has the shape the charts read, so a
+// truncated or renamed-field file fails naming the field and the producer, not with a bare TypeError.
+export function validateBench(bench) {
+  const bad = (field, want) => {
+    throw new Error(`Bench JSON is missing ${field} (${want}). Produce it with: ${BENCH_HINT}`);
+  };
+  if (!bench || typeof bench !== 'object') bad('the whole object', 'expected a JSON object');
+  if (typeof bench.commit !== 'string' || !bench.commit) bad('commit', 'a string');
+  if (typeof bench.date !== 'string' || !bench.date) bad('date', 'an ISO date string');
+  if (!Array.isArray(bench.reads) || bench.reads.length === 0) bad('reads', 'a non-empty array');
+  bench.reads.forEach((r, i) => {
+    if (!r || typeof r.screen !== 'string') bad(`reads[${i}].screen`, 'a string');
+    if (!isNum(r.p95ms)) bad(`reads[${i}].p95ms`, 'a number');
+  });
+  if (!bench.data || typeof bench.data !== 'object') bad('data', 'an object');
+  for (const k of ['applications', 'deadlineItems', 'openDeadlineItems', 'assignments']) {
+    if (!isNum(bench.data[k])) bad(`data.${k}`, 'a number');
+  }
+  if (!bench.engine || typeof bench.engine !== 'object') bad('engine', 'an object');
+  for (const k of ['firstCycle', 'secondCycle']) {
+    if (!bench.engine[k] || !isNum(bench.engine[k].newAlerts)) bad(`engine.${k}.newAlerts`, 'a number');
+    // Optional (runs before 2026-11-04 did not measure it), but never a wrong type when present.
+    if (bench.engine[k].alertsSuppressed !== undefined && !isNum(bench.engine[k].alertsSuppressed)) bad(`engine.${k}.alertsSuppressed`, 'a number');
+  }
+}
+
+export function validateMetrics(metrics) {
+  const bad = (field, want) => {
+    throw new Error(`Metrics JSON is missing ${field} (${want}). Produce it with: ${METRICS_HINT}`);
+  };
+  if (!metrics || typeof metrics.generatedAt !== 'string' || !metrics.generatedAt) bad('generatedAt', 'an ISO timestamp; re-run the evaluation to stamp it');
+  if (!metrics || typeof metrics.modes !== 'object' || metrics.modes === null || Object.keys(metrics.modes).length === 0) bad('modes', 'a non-empty object');
+  for (const [name, m] of Object.entries(metrics.modes)) {
+    if (!m || !isNum(m.recall)) bad(`modes["${name}"].recall`, 'a number');
+  }
+}
+
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const num = (n) => Math.round(n * 10) / 10;
 
@@ -35,6 +76,10 @@ const num = (n) => Math.round(n * 10) / 10;
 export function barChart({ title, caption, series, max, unit }) {
   const top = 52;
   const height = top + series.length * ROW_H + 40;
+  if (!Array.isArray(series) || series.length === 0) throw new Error(`Chart "${title}" has no data points to draw`);
+  series.forEach((s, i) => {
+    if (!isNum(s.value)) throw new Error(`Chart "${title}": series[${i}] (${s.label}) has no numeric value`);
+  });
   const scale = max > 0 ? max : 1;
   const rows = series.map((s, i) => {
     const y = top + i * ROW_H;
@@ -58,6 +103,8 @@ export function barChart({ title, caption, series, max, unit }) {
 
 // One chart per output file. Each reads real producer output; nothing is typed in.
 export function buildCharts(bench, metrics) {
+  validateBench(bench);
+  validateMetrics(metrics);
   const caption = `commit ${bench.commit} · ${String(bench.date).slice(0, 10)} · synthetic data`;
   const peak = (series) => Math.max(...series.map((s) => s.value));
   const counts = (title, series, unit) => barChart({ title, caption, series, max: peak(series), unit });
@@ -80,11 +127,19 @@ export function buildCharts(bench, metrics) {
   // Recall is drawn and labelled exactly as stored in metrics.json (already 3 decimals).
   const modes = Object.entries(metrics.modes).map(([label, m]) => ({ label: short(label), value: m.recall, text: m.recall.toFixed(3) }));
 
+  // Drawn only when the run measured both counters (EngineRun.alertsSuppressed); older runs get no chart, not an inferred one.
+  const first = bench.engine.firstCycle;
+  const second = bench.engine.secondCycle;
+  const dup = isNum(first.alertsSuppressed) && isNum(second.alertsSuppressed)
+    ? { 'duplicate-prevention.svg': counts('Duplicate alert prevention', [{ label: 'Created (cycle 1)', value: first.newAlerts }, { label: 'Suppressed (cycle 2)', value: second.alertsSuppressed }], 'alerts') }
+    : {};
+
   return {
+    ...dup,
     'read-latency.svg': counts('Read latency, p95', reads, 'ms'),
     'engine-cycle.svg': counts('New alerts per cycle (alerts, not time)', engine, 'alerts'),
     'dataset-scale.svg': counts('Dataset scale', scale, ''),
-    'formcheck-modes.svg': barChart({ title: 'Form check recall by mode', caption: 'source: formcheck/metrics.json · synthetic data', series: modes, max: 1, unit: '' }),
+    'formcheck-modes.svg': barChart({ title: 'Form check recall by mode', caption: `formcheck/metrics.json · ${metrics.generatedAt.slice(0, 10)}${metrics.commit ? ' @ ' + metrics.commit : ''} · synthetic data`, series: modes, max: 1, unit: '' }),
   };
 }
 
@@ -94,8 +149,8 @@ function main() {
     console.error('Usage: node scripts/evidence-charts.mjs --bench <path> --metrics <path> --out <dir>');
     process.exit(2);
   }
-  const bench = loadJson(args.bench, 'npm run load:test -- --out <path> (run in api/)');
-  const metrics = loadJson(args.metrics, 'python3 -m training.evaluate (run in formcheck/)');
+  const bench = loadJson(args.bench, BENCH_HINT);
+  const metrics = loadJson(args.metrics, METRICS_HINT);
   mkdirSync(args.out, { recursive: true });
   for (const [name, svg] of Object.entries(buildCharts(bench, metrics))) {
     writeFileSync(join(args.out, name), svg);

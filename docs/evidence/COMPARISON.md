@@ -2,7 +2,7 @@
 
 Six design properties of this prototype, each tied to the file that implements it, and what a generic tool would have to add to match it. This page argues from the design only. It makes no claim about what any particular existing product does or does not do; where a kind of tool appears, it is a category ("a generic workflow or ticketing engine", "a hard-coded rules implementation"), and the reader can judge the gap against whatever they use. All data in the prototype is synthetic.
 
-Tests named below are in the 183-test API suite (Vitest, a real PostgreSQL 16.15), run on 3 November 2026; see [`ARCHITECTURE_VS_PROTOTYPE.md`](ARCHITECTURE_VS_PROTOTYPE.md) for the baseline and the per-feature status.
+Tests named below are in the API suite (Vitest, a real PostgreSQL 16.15): 183 tests when this page was written on 3 November 2026, 241 at the audited commit on 4 November; see [`ARCHITECTURE_VS_PROTOTYPE.md`](ARCHITECTURE_VS_PROTOTYPE.md) for the baseline and the per-feature status.
 
 ## 1. A filed case keeps its substantive rules when the handbook changes mid-cycle
 
@@ -11,7 +11,7 @@ Tests named below are in the 183-test API suite (Vitest, a real PostgreSQL 16.15
 Source: `Application.rulePackVersionId` (`api/prisma/schema.prisma`) is written at filing by `api/src/rules/filing.ts`. Reads go through `api/src/rules/service.ts`.
 
 Caveats:
-- Pinning is partial by design. Substantive rules (application types and eligibility, documents, fees, norms, programmes, form-check rules, letters, change notice) stay pinned to the version the case was filed under. Operational rules (schedule, reminders, escalation, assignment, committees, calendar) follow the cycle's current published version. `mergeSections` in `api/src/rules/resolved.ts` is the line between the two.
+- Pinning is partial by design. Substantive rules (programmes, application types and eligibility, documents, norms, form-check rules, timelines, fees, letters) stay pinned to the version the case was filed under, so stage deadlines are computed from the filed version's timelines. Operational rules (schedule, reminders, escalation, assignment, committees, calendar) follow the cycle's current published version. The line between the two is declared as `PINNED_SECTIONS` and `OPERATIONAL_SECTIONS` in `api/src/rules/schema.ts:14-15` and enforced by `mergeSections` in `api/src/rules/resolved.ts`.
 - The split is a judgement: what a college must supply should not change under it, while who gets reminded and when should follow the current handbook. Whether AICTE draws the line in the same place is for AICTE to confirm.
 - Open cases can additionally be moved onto a new version by a provably relaxing amendment (`rebaseAfterPublish`, within its `applyScope`); see property 2.
 - Tested: `rules-api.test.ts` (a new critical document applies to new filings only; "filed cases stay pinned"; a live relaxing SLA change rebases open cases) and `rules-a11.test.ts` ("a new-cases-only document leaves filed cases pinned").
