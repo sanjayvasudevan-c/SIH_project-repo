@@ -6,9 +6,9 @@ import { formatDate, formatDateTime } from '../../../../lib/format';
 import tokens from '../../../../lib/chartTokens';
 import { HorizontalBars, RunDurationBars, SegmentedBar, wrapLabel } from '../charts';
 import { DateRange, useRange, type Range } from '../DateRange';
-import { agoSeconds, fmtInt, fmtMs, fmtPct, RUN_STATUS_WORDS } from '../format';
+import { agoSeconds, fmtInt, fmtMs, fmtPct, list, RUN_STATUS_WORDS } from '../format';
 import { Kpi, Panel, panelState } from '../Panel';
-import { useEvidence } from '../useEvidence';
+import { useEnvelope, useEvidence } from '../useEvidence';
 
 const RETRY_MESSAGE = 'These figures could not be loaded.';
 const NO_RUNS = 'No engine run is dated in this range.';
@@ -19,16 +19,16 @@ export function SchedulerSection() {
   const { range, setRange, invalid } = useRange();
   const [pageNo, setPageNo] = useState(1);
   // Group 1 is current state: no dates, so it is never refetched when the range changes.
-  const comp = useEvidence<ComplianceEnvelope>('compliance');
+  const comp = useEnvelope<ComplianceEnvelope>('compliance');
   const runs = useEvidence<EngineRunsDetailResponse>('engine-runs', { from: range.from, to: range.to, page: pageNo > 1 ? String(pageNo) : undefined });
   const summary = useEvidence<EvidenceSummary>('summary');
   const retry = (q: { refetch: () => unknown }) => ({ message: RETRY_MESSAGE, onRetry: () => void q.refetch() });
 
   // ── Group 1
-  const d = comp.data?.data.deadlines;
-  const cdef = comp.data?.definition.deadlines ?? {};
-  const cprov = comp.data?.provenance.deadlines ?? null;
-  const asOf = comp.data?.data.asOf;
+  const d = comp.data?.data?.deadlines;
+  const cdef = comp.data?.definition?.deadlines ?? {};
+  const cprov = comp.data?.provenance?.deadlines ?? null;
+  const asOf = comp.data?.data?.asOf;
   const nowScope = `Current state · as of ${asOf ?? '…'}`;
   const sums = !!d && d.overdue + d.atRisk + d.dueSoon + d.onTrack === d.openTotal;
   const segments = d
@@ -46,21 +46,23 @@ export function SchedulerSection() {
   // ── Group 2
   const r = runs.data;
   const t = r?.totals;
-  const rows = r?.rows ?? [];
+  const rows = list(r?.rows);
   const none = !!t && t.runCount === 0;
   const rscope = `${rangeText(range)} · by the date the engine treated as today`;
   const rdef = r?.definition;
   const rprov = r?.provenance;
   const failedIds = rows.filter((x) => x.status === 'FAILED').map((x) => x.id);
-  const pages = r ? Math.max(1, Math.ceil(r.total / r.pageSize)) : 1;
+  const pages = r && r.pageSize > 0 && Number.isFinite(r.total) ? Math.max(1, Math.ceil(r.total / r.pageSize)) : 1;
   const rState = panelState(runs, false, none);
   const changeRange = (n: Range) => {
     setPageNo(1);
     setRange(n);
   };
 
-  const hb = summary.data?.scheduler.heartbeat;
-  const stuck = summary.data?.scheduler.stuckRuns ?? 0;
+  const hb = summary.data?.scheduler?.heartbeat;
+  // Missing is not zero: a stuck-run count the response does not carry reads Unavailable.
+  const stuckRaw = summary.data?.scheduler?.stuckRuns;
+  const stuck = typeof stuckRaw === 'number' ? stuckRaw : null;
 
   const columns: Column<EngineRunDetailRow>[] = [
     { key: 'id', header: 'Run', render: (x) => x.id },
@@ -133,15 +135,13 @@ export function SchedulerSection() {
             value={hb ? agoSeconds(hb.ageSeconds) : 'None reported'}
             hint={
               <>
-                <span className="block">{hb ? `Last process heartbeat ${agoSeconds(hb.ageSeconds)}` : 'No scheduler process has reported to this database'}</span>
-                <span className="block">
-                  {fmtInt(stuck)} stuck run{stuck === 1 ? '' : 's'}
-                </span>
+                <span className="block">{hb ? `Last process heartbeat ${agoSeconds(hb.ageSeconds)}` : 'No scheduler instance marked as leader has reported to this database'}</span>
+                <span className="block">{stuck === null ? 'Stuck runs: Unavailable' : `${fmtInt(stuck)} stuck run${stuck === 1 ? '' : 's'}`}</span>
               </>
             }
-            provenance={summary.data?.provenance.scheduler ?? null}
+            provenance={summary.data?.provenance?.scheduler ?? null}
             scope="Current state · not affected by the dates"
-            definition={[summary.data?.definition.scheduler, summary.data?.definition.stuckRuns].filter(Boolean).join('\n\n') || undefined}
+            definition={[summary.data?.definition?.scheduler, summary.data?.definition?.stuckRuns].filter(Boolean).join('\n\n') || undefined}
             state={panelState(summary, false)}
             error={retry(summary)}
           />

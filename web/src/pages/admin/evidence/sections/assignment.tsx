@@ -12,9 +12,9 @@ import { EmptyState, ErrorState, Skeleton, Table, type Column } from '../../../.
 import { formatDateTime } from '../../../../lib/format';
 import { fmtPts, UtilisationBars } from '../charts';
 import { DateRange, useRange, type Range } from '../DateRange';
-import { fmtInt, fmtPct } from '../format';
+import { fmtInt, fmtPct, list, UNAVAILABLE } from '../format';
 import { Kpi, Panel, panelState } from '../Panel';
-import { useEvidence } from '../useEvidence';
+import { useEnvelope, useEvidence } from '../useEvidence';
 
 const RETRY_MESSAGE = 'These figures could not be loaded.';
 const SPREAD_UNAVAILABLE = 'Unavailable (fewer than two officers)';
@@ -47,9 +47,9 @@ const rangeText = ({ from, to }: Range) => (from && to ? `${from} to ${to}` : fr
 export function AssignmentSection() {
   const { range, setRange, invalid } = useRange();
   // Group 1 is current state: its query carries no dates and so is never refetched when the range changes.
-  const now = useEvidence<EvidenceEnvelope<AssignmentData>>('assignment');
+  const now = useEnvelope<EvidenceEnvelope<AssignmentData>>('assignment');
   // Group 2 is windowed. With no range chosen it has the same key as Group 1 and shares its one request.
-  const period = useEvidence<EvidenceEnvelope<AssignmentData>>('assignment', { from: range.from, to: range.to });
+  const period = useEnvelope<EvidenceEnvelope<AssignmentData>>('assignment', { from: range.from, to: range.to });
   const retry = (q: { refetch: () => unknown }) => ({ message: RETRY_MESSAGE, onRetry: () => void q.refetch() });
 
   return (
@@ -60,7 +60,7 @@ export function AssignmentSection() {
   );
 }
 
-type Q = ReturnType<typeof useEvidence<EvidenceEnvelope<AssignmentData>>>;
+type Q = ReturnType<typeof useEnvelope<EvidenceEnvelope<AssignmentData>>>;
 type Retry = { message: string; onRetry: () => void };
 
 function CurrentWorkload({ q, retry }: { q: Q; retry: Retry }) {
@@ -70,7 +70,9 @@ function CurrentWorkload({ q, retry }: { q: Q; retry: Retry }) {
   const kpiState = panelState(q, false);
   const spread = d?.spread;
   const cov = d?.coverage;
-  const sorted = [...(d?.officers ?? [])].sort((a, b) => b.utilisation - a.utilisation || a.name.localeCompare(b.name));
+  const sorted = list(d?.officers)
+    .filter((o) => o && typeof o === 'object')
+    .sort((a, b) => (Number(b.utilisation) || 0) - (Number(a.utilisation) || 0) || String(a.name ?? '').localeCompare(String(b.name ?? '')));
   const over = d?.continuityOverrides;
   const common = { state: kpiState, error: retry };
   const nowScope = 'Current state · all officers now';
@@ -92,7 +94,7 @@ function CurrentWorkload({ q, retry }: { q: Q; retry: Retry }) {
         <Kpi label="Average utilisation" value={fmtPct(spread?.meanUtilisation)} hint="Open points over capacity points, averaged across the officers counted" provenance={prov?.utilisation ?? null} scope={nowScope} definition={def?.officers} {...common} />
         <Kpi
           label="Spread of utilisation"
-          value={spread?.stdDev === null || spread?.stdDev === undefined ? SPREAD_UNAVAILABLE : spread.stdDev.toFixed(2)}
+          value={typeof spread?.stdDev === 'number' && Number.isFinite(spread.stdDev) ? spread.stdDev.toFixed(2) : SPREAD_UNAVAILABLE}
           hint="Standard deviation of utilisation; it describes how load is spread, not whether it is right"
           provenance={prov?.spread ?? null}
           scope={nowScope}
@@ -138,12 +140,12 @@ function CurrentWorkload({ q, retry }: { q: Q; retry: Retry }) {
             <p className="text-sm text-secondary">
               Allowed ceilings in the current rule pack: continuity {over.continuityUtilCap}, urgent task {over.urgentMaxUtil}.
             </p>
-            {over.rows.length === 0 ? (
+            {list(over.rows).length === 0 ? (
               <p className="text-base">No officer is above their normal cap.</p>
             ) : (
               <Table
                 caption="Officers above their normal cap"
-                rows={over.rows}
+                rows={list(over.rows)}
                 rowKey={(r) => r.officerId}
                 emptyMessage="No officer is above their normal cap."
                 columns={[
@@ -167,9 +169,9 @@ function DecisionsInPeriod({ q, retry, range, setRange, invalid }: { q: Q; retry
   const def = q.data?.definition;
   const prov = q.data?.provenance;
   const scope = `Decisions recorded · ${rangeText(range)}`;
-  const recent = d?.recentDecisions ?? [];
+  const recent = list(d?.recentDecisions);
   const pick = recent.find((r) => r.traceId === selected) ?? null;
-  const noDecisions = !!d && d.outcomes.length === 0 && d.candidates.candidatesConsidered === 0;
+  const noDecisions = !!d && list(d.outcomes).length === 0 && !d.candidates?.candidatesConsidered;
 
   return (
     <section aria-labelledby="period-h" className="flex min-w-0 flex-col gap-4">
@@ -208,7 +210,7 @@ function DecisionsInPeriod({ q, retry, range, setRange, invalid }: { q: Q; retry
         {d ? (
           <div className="flex flex-col gap-4">
             <p className="text-sm text-secondary">
-              Explanations are recorded for automatic assignments only: {fmtInt(d.coverage.tracedCount)} of {fmtInt(d.coverage.assignmentTotal)} assignments made in this period have one. A manual assignment or reassignment has none.
+              Explanations are recorded for automatic assignments only: {fmtInt(d.coverage?.tracedCount)} of {fmtInt(d.coverage?.assignmentTotal)} assignments made in this period have one. A manual assignment or reassignment has none.
             </p>
             <DecisionList rows={recent} selected={pick?.traceId ?? null} onSelect={(r) => setSelected(r.traceId)} />
             {pick ? <Explanation decision={pick} /> : <p className="text-sm text-secondary">Select a decision to see every officer considered for it.</p>}
@@ -221,12 +223,15 @@ function DecisionsInPeriod({ q, retry, range, setRange, invalid }: { q: Q; retry
 
 function PeriodSummary({ d }: { d: AssignmentData }) {
   const c = d.candidates;
+  const outcomes = list(d.outcomes);
+  const excludedList = list(c?.excluded);
+  const versions = list(d.rulePackVersions);
   return (
     <div data-testid="period-summary" className="flex flex-col gap-4">
       <div>
         <h4 className="text-sm font-semibold text-secondary">Decisions by outcome</h4>
         <ul className="mt-1 flex flex-col gap-1">
-          {[...d.outcomes].sort((a, b) => OUTCOME_ORDER.indexOf(a.outcome) - OUTCOME_ORDER.indexOf(b.outcome)).map((o) => (
+          {[...outcomes].sort((a, b) => OUTCOME_ORDER.indexOf(a.outcome) - OUTCOME_ORDER.indexOf(b.outcome)).map((o) => (
             <li key={o.outcome} className="flex items-baseline gap-2">
               <span className="tnum text-xl font-semibold">{fmtInt(o.count)}</span>
               <span>{outcome(o.outcome)}</span>
@@ -235,11 +240,11 @@ function PeriodSummary({ d }: { d: AssignmentData }) {
         </ul>
       </div>
       <p>
-        Officers considered across these decisions: <span className="tnum font-semibold">{fmtInt(c.candidatesConsidered)}</span>, of which <span className="tnum font-semibold">{fmtInt(c.eligible)}</span> were eligible. Excluded:{' '}
-        {c.excluded.length === 0 ? 'none' : c.excluded.map((e) => `${fmtInt(e.count)} ${excluded(e.reason).toLowerCase()}`).join(', ')}.
+        Officers considered across these decisions: <span className="tnum font-semibold">{fmtInt(c?.candidatesConsidered)}</span>, of which <span className="tnum font-semibold">{fmtInt(c?.eligible)}</span> were eligible. Excluded:{' '}
+        {excludedList.length === 0 ? 'none' : excludedList.map((e) => `${fmtInt(e.count)} ${excluded(e.reason).toLowerCase()}`).join(', ')}.
       </p>
       <p className="text-sm text-secondary">
-        Assignments made in the period, by rule pack version: {d.rulePackVersions.length === 0 ? 'none' : d.rulePackVersions.map((v) => `${v.label}: ${fmtInt(v.assignments)}`).join(' · ')}.
+        Assignments made in the period, by rule pack version: {versions.length === 0 ? 'none' : versions.map((v) => `${v.label}: ${fmtInt(v.assignments)}`).join(' · ')}.
       </p>
     </div>
   );
@@ -275,7 +280,7 @@ function Explanation({ decision }: { decision: AssignmentDecision }) {
   if (t.isPending) return <Skeleton lines={3} />;
   if (t.isError) return <ErrorState message="This explanation could not be loaded." onRetry={() => void t.refetch()} />;
   // The endpoint returns every decision recorded for the application; show the one that was selected.
-  const row: AssignmentTraceRow | undefined = t.data.rows.find((r) => r.id === decision.traceId);
+  const row: AssignmentTraceRow | undefined = list(t.data?.rows).find((r) => r.id === decision.traceId);
   if (!row) return <EmptyState message="No decision table is stored for this decision." />;
   const blocked = row.outcome === 'BLOCKED';
   return (
@@ -294,6 +299,7 @@ function Explanation({ decision }: { decision: AssignmentDecision }) {
 }
 
 function CandidateTable({ row }: { row: AssignmentTraceRow }) {
+  const candidates = list(row.candidates);
   const heads = ['Officer', 'Tier', 'Eligible', 'Excluded by', 'Capacity', 'Open points', 'Utilisation after this task', 'Score', 'Chosen'];
   const num = new Set(['Tier', 'Capacity', 'Open points', 'Utilisation after this task', 'Score']);
   return (
@@ -310,8 +316,15 @@ function CandidateTable({ row }: { row: AssignmentTraceRow }) {
           </tr>
         </thead>
         <tbody>
-          {row.candidates.map((c) => (
-            <tr key={c.officerId} className={`border-t ${c.chosen ? 'bg-accent-soft font-semibold' : ''}`}>
+          {candidates.length === 0 ? (
+            <tr className="border-t">
+              <td colSpan={heads.length} className="px-3 py-2">
+                No candidates are stored for this decision.
+              </td>
+            </tr>
+          ) : null}
+          {candidates.map((c, i) => (
+            <tr key={c.officerId ?? i} className={`border-t ${c.chosen ? 'bg-accent-soft font-semibold' : ''}`}>
               <td className="px-3 py-2">{c.name}</td>
               <td className="tnum px-3 py-2 text-right">{c.tier}</td>
               <td className="px-3 py-2">{c.eligible ? 'Yes' : 'No'}</td>
@@ -319,7 +332,7 @@ function CandidateTable({ row }: { row: AssignmentTraceRow }) {
               <td className="tnum px-3 py-2 text-right">{fmtPts(c.capacity)}</td>
               <td className="tnum px-3 py-2 text-right">{fmtPts(c.openPoints)}</td>
               <td className="tnum px-3 py-2 text-right">{fmtPct(c.projectedUtil)}</td>
-              <td className="tnum px-3 py-2 text-right">{c.score.toFixed(3)}</td>
+              <td className="tnum px-3 py-2 text-right">{typeof c.score === 'number' && Number.isFinite(c.score) ? c.score.toFixed(3) : UNAVAILABLE}</td>
               <td className="px-3 py-2">{c.chosen ? 'Chosen' : 'Not chosen'}</td>
             </tr>
           ))}

@@ -22,6 +22,12 @@ export const fmtMs = (v: number | null | undefined): string => {
 
 export { UNAVAILABLE };
 
+/** A list from a response field that may be missing or not a list: anything else is an empty list, never a throw. */
+export const list = <T>(v: readonly T[] | null | undefined): T[] => (Array.isArray(v) ? (v as T[]) : []);
+
+/** One decimal when the value is not whole (a median of 5.5 is not 6); a whole value has none. */
+export const fmtMedian = (v: number | null | undefined): string => (isMissing(v) ? UNAVAILABLE : Number.isInteger(v) ? formatNumber(v) : formatNumber(Math.round(v * 10) / 10, true));
+
 /** "just now", "4 h ago", "3 days ago" for an age in seconds. */
 export function agoSeconds(s: number | null | undefined): string {
   if (s === null || s === undefined || !Number.isFinite(s)) return UNAVAILABLE;

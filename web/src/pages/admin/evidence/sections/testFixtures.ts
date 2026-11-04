@@ -211,7 +211,8 @@ export const ALERT_DEFS = {
   perDay: 'PERDAY DEF: only days with at least one alert; nothing is back-filled.',
   escalationsByLevel: 'ESCLEVEL DEF: only levels with at least one alert are listed.',
   notifications: 'NOTIF DEF: every notification ever created, not windowed.',
-  notRecorded: 'NOTRECORDED DEF: acknowledgement and resolution time are not recorded.',
+  notRecorded: 'NOTRECORDED DEF: acknowledgement is not recorded; a notification has a read flag and no timestamp.',
+  notComputed: 'NOTCOMPUTED DEF: time from an alert to its deadline item closing is recorded per item (closedAt) but not computed here.',
 };
 export const alertsData = (over: Partial<AlertsData> = {}): AlertsData => ({
   window: { from: null, to: null },
@@ -222,12 +223,13 @@ export const alertsData = (over: Partial<AlertsData> = {}): AlertsData => ({
   perDay: [{ day: '2026-09-14', count: 1 }, { day: '2026-10-05', count: 3 }, { day: '2026-10-19', count: 16 }, { day: '2026-11-02', count: 43 }],
   escalationsByLevel: [{ level: 1, count: 20 }, { level: 2, count: 8 }, { level: 3, count: 3 }],
   notifications: { total: 810, read: 0, unread: 810, informative: false },
-  notRecorded: ['acknowledgement', 'resolution time'],
+  notRecorded: ['acknowledgement'],
+  notComputed: ['time from alert to deadline item closing'],
   ...over,
 });
 export const alerts = (over: Partial<AlertsData> = {}): EvidenceEnvelope<AlertsData> => ({
   definition: ALERT_DEFS,
-  provenance: { total: 'MEASURED', byKind: 'MEASURED', reminderTiming: 'MEASURED', perDay: 'MEASURED', escalationsByLevel: 'MEASURED', notifications: 'MEASURED', notRecorded: null },
+  provenance: { total: 'MEASURED', byKind: 'MEASURED', reminderTiming: 'MEASURED', perDay: 'MEASURED', escalationsByLevel: 'MEASURED', notifications: 'MEASURED', notRecorded: null, notComputed: null },
   data: alertsData(over),
 });
 

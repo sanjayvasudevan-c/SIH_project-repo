@@ -573,5 +573,8 @@ export interface AlertsData {
   perDay: { day: string; count: number }[];
   escalationsByLevel: { level: number; count: number }[];
   notifications: { total: number; read: number; unread: number; informative: boolean };
+  /** Measures this system does not record at all (acknowledgement). */
   notRecorded: string[];
+  /** Measures that are recorded but that this endpoint does not compute (alert to deadline item closing). */
+  notComputed: string[];
 }

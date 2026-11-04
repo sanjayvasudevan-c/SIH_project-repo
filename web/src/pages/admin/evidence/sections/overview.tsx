@@ -2,9 +2,9 @@ import { Link } from 'react-router-dom';
 import type { AuditAnalyticsData, EngineRunsResponse, EngineRunStatus, EvidenceEnvelope, EvidenceSummary, TestStatus, WorkflowData } from '../../../../api/types';
 import { formatDate, formatDateTime } from '../../../../lib/format';
 import { daySpan, VolumeBars } from '../charts';
-import { ago, agoSeconds, fmtInt, fmtMs } from '../format';
+import { ago, agoSeconds, fmtInt, fmtMs, list } from '../format';
 import { Kpi, Panel, panelState } from '../Panel';
-import { useEvidence } from '../useEvidence';
+import { useEnvelope, useEvidence } from '../useEvidence';
 
 const TEST_WORDS: Record<TestStatus, string> = { PASS: 'Passed', FAIL: 'Failed', STALE: 'Out of date', NOT_VERIFIED: 'Not verified' };
 const TEST_EMPHASIS: Record<TestStatus, 'danger' | 'warning' | undefined> = { PASS: undefined, FAIL: 'danger', STALE: 'warning', NOT_VERIFIED: 'warning' };
@@ -24,13 +24,16 @@ function TileLink({ to, children }: { to: string; children: string }) {
 /** The four headline tiles and one trend. The tiles read the same queries the detail sections read. */
 export function OverviewSection() {
   const summary = useEvidence<EvidenceSummary>('summary');
-  const workflow = useEvidence<EvidenceEnvelope<WorkflowData>>('workflow');
+  const workflow = useEnvelope<EvidenceEnvelope<WorkflowData>>('workflow');
   const runs = useEvidence<EngineRunsResponse>('engine-runs', { pageSize: '1' });
-  const audit = useEvidence<EvidenceEnvelope<AuditAnalyticsData>>('audit-analytics');
+  const audit = useEnvelope<EvidenceEnvelope<AuditAnalyticsData>>('audit-analytics');
   const err = (q: { refetch: () => unknown }) => ({ message: RETRY_MESSAGE, onRetry: () => void q.refetch() });
 
-  // Test verification
+  // Test verification. A status this page has no word for is named, never shown as an empty value.
   const s = summary.data;
+  const knownStatus = !!s && Object.hasOwn(TEST_WORDS, s.status);
+  const testValue = !s ? '' : knownStatus ? TEST_WORDS[s.status] : `Unknown status: ${String(s.status)}`;
+  const testEmphasis = !s ? undefined : knownStatus ? TEST_EMPHASIS[s.status] : 'warning';
   const testHint = s ? (
     <>
       {s.status === 'STALE' ? `Recorded for ${short(s.artifactCommit)}; code now at ${short(s.commit)}` : s.headUnresolved ? 'Current code version could not be determined' : `Code version ${short(s.commit)}`}
@@ -40,31 +43,33 @@ export function OverviewSection() {
 
   // Applications in flight
   const w = workflow.data?.data;
+  const pt = w?.processingTime;
 
   // Scheduler: the latest recorded cycle, and whether anything has reported
   const sch = s?.scheduler;
-  const noCycle = !!sch && sch.lastRunAt === null;
-  const cycleRow = runs.data?.rows[0];
+  const noSchedulerBlock = !!s && !sch;
+  const noCycle = noSchedulerBlock || (!!sch && (sch.lastRunAt === null || sch.lastRunAt === undefined));
+  const cycleRow = list(runs.data?.rows)[0];
   const simulated = cycleRow && sch && cycleRow.startedAt === sch.lastRunAt ? cycleRow.simulatedToday : null;
-  const stuck = sch?.stuckRuns ?? 0;
+  // Missing is not zero: a stuck-run count the response does not carry reads Unavailable.
+  const stuck = typeof sch?.stuckRuns === 'number' ? sch.stuckRuns : null;
   const schedulerHint = sch && !noCycle ? (
     <>
       <span className="block">
         Started {formatDateTime(sch.lastRunAt)} IST ({ago(sch.lastRunAt)}) · took {fmtMs(sch.lastDurationMs)}
       </span>
       {simulated ? <span className="block">Simulated date {formatDate(simulated)}</span> : null}
-      <span className="block">{sch.heartbeat ? `Last process heartbeat ${agoSeconds(sch.heartbeat.ageSeconds)}` : 'No scheduler process has reported to this database'}</span>
-      <span className="block">
-        {fmtInt(stuck)} stuck run{stuck === 1 ? '' : 's'}
-      </span>
+      <span className="block">{sch.heartbeat ? `Last process heartbeat ${agoSeconds(sch.heartbeat.ageSeconds)}` : 'No scheduler instance marked as leader has reported to this database'}</span>
+      <span className="block">{stuck === null ? 'Stuck runs: Unavailable' : `${fmtInt(stuck)} stuck run${stuck === 1 ? '' : 's'}`}</span>
     </>
   ) : null;
 
   // Audit
-  const integrity = audit.data?.data.integrity;
+  const integrity = audit.data?.data?.integrity;
+  const emptyLog = !!integrity && integrity.rowsChecked === 0;
 
   // Trend
-  const points = w?.volumeOverTime ?? [];
+  const points = list(w?.volumeOverTime);
   const trendState = panelState(workflow, !!w && (w.submittedTotal === 0 || points.length === 0), !!w && w.submittedTotal > 0 && points.length === 1);
 
   return (
@@ -73,9 +78,9 @@ export function OverviewSection() {
         <div className="flex flex-col gap-1">
           <Kpi
             label="Test verification"
-            value={s ? TEST_WORDS[s.status] : ''}
+            value={testValue}
             hint={testHint}
-            emphasis={s ? TEST_EMPHASIS[s.status] : undefined}
+            emphasis={testEmphasis}
             provenance={s?.provenance?.status ?? null}
             scope="Whole system · latest recorded test result"
             definition={s?.definition?.status}
@@ -86,8 +91,8 @@ export function OverviewSection() {
         <div className="flex flex-col gap-1">
           <Kpi
             label="Applications in flight"
-            value={w ? fmtInt(w.processingTime.inFlightCount) : ''}
-            hint={w ? `of ${fmtInt(w.submittedTotal)} submitted · ${fmtInt(w.processingTime.decidedCount)} decided` : null}
+            value={w ? fmtInt(pt?.inFlightCount) : ''}
+            hint={w ? `of ${fmtInt(w.submittedTotal)} submitted · ${fmtInt(pt?.decidedCount)} decided` : null}
             provenance={workflow.data?.provenance?.processingTime ?? null}
             scope={`n = ${fmtInt(w?.submittedTotal)} applications · all dates`}
             definition={workflow.data?.definition?.processingTime}
@@ -99,14 +104,14 @@ export function OverviewSection() {
         <div className="flex flex-col gap-1">
           <Kpi
             label="Last recorded scheduler cycle"
-            value={sch?.lastStatus ? CYCLE_WORDS[sch.lastStatus] : ''}
+            value={sch?.lastStatus ? (CYCLE_WORDS[sch.lastStatus] ?? `Unknown status: ${String(sch.lastStatus)}`) : ''}
             hint={schedulerHint}
-            emphasis={sch?.lastStatus === 'FAILED' ? 'danger' : sch?.lastStatus === 'RUNNING' || stuck > 0 ? 'warning' : undefined}
+            emphasis={sch?.lastStatus === 'FAILED' ? 'danger' : sch?.lastStatus === 'RUNNING' || (stuck !== null && stuck > 0) ? 'warning' : undefined}
             provenance={s?.provenance?.scheduler ?? null}
             scope="Latest recorded cycle · all dates"
             definition={[s?.definition?.scheduler, s?.definition?.stuckRuns].filter(Boolean).join('\n\n') || undefined}
             state={panelState(summary, false, noCycle)}
-            insufficientMessage="No scheduler cycle has been recorded."
+            insufficientMessage={noSchedulerBlock ? "Unavailable: the response did not include scheduler information." : "No scheduler cycle has been recorded."}
             error={err(summary)}
           />
           <TileLink to="/admin/evidence/scheduler">See the scheduler detail</TileLink>
@@ -114,13 +119,14 @@ export function OverviewSection() {
         <div className="flex flex-col gap-1">
           <Kpi
             label="Audit log integrity"
-            value={integrity ? (integrity.ok ? 'Intact' : 'Broken') : ''}
-            hint={integrity ? `${fmtInt(integrity.chainsChecked)} chains · ${fmtInt(integrity.rowsChecked)} rows checked · whole log` : null}
-            emphasis={integrity && !integrity.ok ? 'danger' : undefined}
+            value={integrity ? (emptyLog ? 'Nothing to check' : integrity.ok === true ? 'Intact' : integrity.ok === false ? 'Broken' : 'Unavailable') : ''}
+            hint={integrity ? (emptyLog ? 'Nothing to check — the audit log is empty' : `${fmtInt(integrity.chainsChecked)} chains · ${fmtInt(integrity.rowsChecked)} rows checked · whole log`) : null}
+            emphasis={integrity && !emptyLog && !integrity.ok ? 'danger' : undefined}
             provenance={audit.data?.provenance?.integrity ?? null}
             scope="Whole audit log · all dates"
             definition={audit.data?.definition?.integrity}
-            state={panelState(audit, false)}
+            state={panelState(audit, false, !!audit.data?.data && !integrity)}
+            insufficientMessage="Unavailable: the response did not include the integrity check."
             error={err(audit)}
           />
           <TileLink to="/admin/evidence/audit">See the audit detail</TileLink>

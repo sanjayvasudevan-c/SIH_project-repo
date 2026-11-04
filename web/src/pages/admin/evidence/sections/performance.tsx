@@ -109,7 +109,7 @@ function slowerCount(prev: Run, latest: Run): Slower {
 
 export function PerformanceSection() {
   const q = useEvidence<ArtifactsResponse>('artifacts');
-  const { runs, unreadable } = readRuns(q.data?.artifacts ?? []);
+  const { runs, unreadable } = readRuns(Array.isArray(q.data?.artifacts) ? q.data.artifacts : []);
   const [picked, setPicked] = useState<string | null>(null);
   const run = runs.find((r) => r.commit === picked) ?? runs[runs.length - 1];
   const none = !!q.data && runs.length === 0;

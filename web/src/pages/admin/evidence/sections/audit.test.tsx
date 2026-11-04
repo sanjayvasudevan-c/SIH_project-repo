@@ -87,6 +87,25 @@ describe('Audit', () => {
     expect((screen.getByLabelText('Actor role') as HTMLSelectElement).value).toBe('');
   });
 
+  it('says so when a filter in the link is not present in this period and was ignored', async () => {
+    page('/admin/evidence/audit?actor=NOBODY');
+    await loaded();
+    expect(screen.getByRole('status')).toHaveTextContent('A filter in the link is not present in this period and was ignored.');
+  });
+
+  it('shows no such notice when every filter in the link is present', async () => {
+    page('/admin/evidence/audit?action=ASSIGN');
+    await loaded();
+    expect(screen.queryByText(/was ignored/)).toBeNull();
+  });
+
+  it('an empty audit log is neutral: nothing to check, no success badge', async () => {
+    respond = () => auditAnalytics({ total: 0, byActorRole: [], byAction: [], byEntity: [], integrity: { ok: true, chainsChecked: 0, rowsChecked: 0, brokenChainCount: 0, scope: 'WHOLE_LOG' } });
+    page();
+    await waitFor(() => expect(panel('Audit log integrity').textContent).toMatch(/Nothing to check — the audit log is empty/));
+    expect(panel('Audit log integrity').textContent).not.toMatch(/No broken chain found/);
+  });
+
   it('integrity card: verbatim definition visible, the whole-log line, honest limits, no tamper-proof claim', async () => {
     const { container } = page();
     await loaded();

@@ -86,7 +86,7 @@ describe('Overview', () => {
     const t = container.textContent!;
     expect(t).toMatch(/4 h ago/);
     expect(t).toContain('742 ms');
-    expect(t).toContain('No scheduler process has reported to this database');
+    expect(t).toContain('No scheduler instance marked as leader has reported to this database');
     expect(t).toContain('0 stuck runs');
     expect(t.toLowerCase()).not.toContain('healthy');
     expect(outsideDefinitions(container)).not.toMatch(/healthy|running|\bdown\b/);
@@ -166,6 +166,24 @@ describe('Overview', () => {
     fail = false;
     fireEvent.click(retry);
     expect(await screen.findByText('Not verified')).toBeInTheDocument();
+  });
+
+  it('an empty audit log reads Nothing to check in neutral emphasis, not Intact', async () => {
+    serve({ '/evidence/audit-analytics': async () => ({ ...audit(), data: { total: 0, integrity: { ok: true, chainsChecked: 0, rowsChecked: 0, brokenChainCount: 0, scope: 'WHOLE_LOG' } } }) });
+    const { container } = renderWithApp(<OverviewSection />);
+    const v = await screen.findByText('Nothing to check');
+    expect(v.className).not.toMatch(/success|danger|warning/);
+    expect(container.textContent).toContain('Nothing to check — the audit log is empty');
+    expect(screen.queryByText('Intact')).toBeNull();
+  });
+
+  it('a stuck-run count the summary does not carry reads Unavailable, not 0', async () => {
+    const s = summary();
+    serve({ '/evidence/summary': async () => ({ ...s, scheduler: { ...s.scheduler, stuckRuns: null } }) });
+    const { container } = renderWithApp(<OverviewSection />);
+    await screen.findByText('Finished');
+    expect(container.textContent).toContain('Stuck runs: Unavailable');
+    expect(container.textContent).not.toContain('0 stuck runs');
   });
 
   it('missing counts read Unavailable, never 0', async () => {

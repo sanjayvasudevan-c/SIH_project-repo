@@ -87,6 +87,12 @@ describe('Workflow', () => {
     expect(p).toHaveTextContent('45 decided · 146 still in progress (not counted)');
   });
 
+  it('time to decision: a median that is not whole keeps one decimal', async () => {
+    ok({ processingTime: { decidedCount: 4, inFlightCount: 1, medianWorkingDays: 5.5, unit: 'working days' } });
+    page();
+    expect(await within(panel('Time to decision')).findByText('5.5 working days (median)')).toBeInTheDocument();
+  });
+
   it('time to decision: a null median is the insufficient state, never 0', async () => {
     ok({ processingTime: { decidedCount: 0, inFlightCount: 191, medianWorkingDays: null, unit: 'working days' } });
     page();

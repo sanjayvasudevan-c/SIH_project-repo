@@ -1,6 +1,8 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { PageHeader, Select, Tabs } from '../../../components/ui';
 import { useTitle } from '../../../lib/useTitle';
+import { SectionBoundary } from './ErrorBoundary';
 import { isSectionId, SECTIONS, type SectionId } from './sections';
 
 const BASE = '/admin/evidence';
@@ -13,6 +15,7 @@ export function EvidenceCenterPage() {
   useTitle('Evidence Center');
   const { section } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   if (!isSectionId(section)) return <Navigate to={`${BASE}/overview`} replace />;
 
   const current = SECTIONS.find((s) => s.id === section)!;
@@ -50,7 +53,10 @@ export function EvidenceCenterPage() {
           </h2>
           <p className="text-base text-secondary">{current.description}</p>
         </div>
-        <Body key={section} />
+        {/* A section that cannot draw its response shows a message here; the header and tabs stay. */}
+        <SectionBoundary key={section} onRetry={() => queryClient.removeQueries({ queryKey: ['evidence'] })}>
+          <Body />
+        </SectionBoundary>
       </section>
     </div>
   );

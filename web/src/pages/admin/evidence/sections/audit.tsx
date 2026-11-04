@@ -4,9 +4,9 @@ import type { AuditAnalyticsData, EvidenceEnvelope } from '../../../../api/types
 import { Badge, Field, Select } from '../../../../components/ui';
 import { HorizontalBars, wrapLabel } from '../charts';
 import { DateRange, useRange, type Range } from '../DateRange';
-import { fmtInt } from '../format';
+import { fmtInt, list } from '../format';
 import { Panel, panelState } from '../Panel';
-import { useEvidence } from '../useEvidence';
+import { useEnvelope } from '../useEvidence';
 
 const RETRY_MESSAGE = 'These figures could not be loaded.';
 const NO_EVENTS = 'No audit events match this date range and these filters.';
@@ -31,14 +31,16 @@ const FILTERS: { key: FilterKey; label: string }[] = [
 function useFilters(options: AuditAnalyticsData | undefined) {
   const [params, setParams] = useSearchParams();
   const present: Record<FilterKey, string[]> = {
-    actor: (options?.byActorRole ?? []).map((r) => r.actorRole),
-    action: (options?.byAction ?? []).map((r) => r.action),
-    entity: (options?.byEntity ?? []).map((r) => r.entity),
+    actor: list(options?.byActorRole).map((r) => r.actorRole),
+    action: list(options?.byAction).map((r) => r.action),
+    entity: list(options?.byEntity).map((r) => r.entity),
   };
   const active: Partial<Record<FilterKey, string>> = {};
+  let ignored = false;
   for (const { key } of FILTERS) {
     const v = params.get(key);
     if (v && present[key].includes(v)) active[key] = v;
+    else if (v && options) ignored = true; // a link naming a value this period does not have: said so, not silently dropped
   }
   const set = (key: FilterKey, value: string) =>
     setParams(
@@ -50,17 +52,17 @@ function useFilters(options: AuditAnalyticsData | undefined) {
       },
       { replace: true },
     );
-  return { present, active, set };
+  return { present, active, set, ignored };
 }
 
 export function AuditSection() {
   const { range, setRange, invalid } = useRange();
   const rangeParams = { from: range.from, to: range.to };
   // The unfiltered answer for this range supplies the select options, so a filter can always be changed again.
-  const base = useEvidence<EvidenceEnvelope<AuditAnalyticsData>>('audit-analytics', rangeParams);
-  const { present, active, set } = useFilters(base.data?.data);
+  const base = useEnvelope<EvidenceEnvelope<AuditAnalyticsData>>('audit-analytics', rangeParams);
+  const { present, active, set, ignored } = useFilters(base.data?.data);
   const filtered = Object.keys(active).length > 0;
-  const narrowed = useEvidence<EvidenceEnvelope<AuditAnalyticsData>>('audit-analytics', { ...rangeParams, ...active }, { enabled: base.isSuccess && filtered });
+  const narrowed = useEnvelope<EvidenceEnvelope<AuditAnalyticsData>>('audit-analytics', { ...rangeParams, ...active }, { enabled: base.isSuccess && filtered });
   const q = filtered ? narrowed : base;
   const env = q.data;
   const a = env?.data;
@@ -70,7 +72,7 @@ export function AuditSection() {
   const scope = `n = ${fmtInt(a?.total)} audit events · ${rangeText(range)} · audit event dates${filtered ? ' · filtered' : ''}`;
   const empty = !!a && a.total === 0;
   const common = { scope, emptyMessage: NO_EVENTS, error };
-  const state = (rows: unknown[] | undefined) => panelState(q, empty || (!!a && (rows?.length ?? 0) === 0));
+  const state = (rows: unknown) => panelState(q, empty || (!!a && list(rows as unknown[]).length === 0));
   const integrity = a?.integrity;
   const labelOf = (key: FilterKey, v: string) => (key === 'entity' || key === 'action' || key === 'actor' ? words(v) : v);
 
@@ -106,6 +108,11 @@ export function AuditSection() {
             ))}
           </ul>
         ) : null}
+        {ignored ? (
+          <p role="status" className="text-sm text-warning">
+            A filter in the link is not present in this period and was ignored.
+          </p>
+        ) : null}
         <p className="text-xs text-secondary">The choices are the values present in the audit log for these dates. Only counts are shown; no case content is exposed here.</p>
       </div>
 
@@ -113,7 +120,7 @@ export function AuditSection() {
         <Panel title="Events by action (count of audit events)" provenance={prov?.events ?? null} definition={def?.events} {...common} state={state(a?.byAction)}>
           <HorizontalBars
             label="Number of audit events of each action"
-            rows={(a?.byAction ?? []).map((r) => ({ ...r, word: words(r.action) }))}
+            rows={list(a?.byAction).map((r) => ({ ...r, word: words(r.action) }))}
             categoryKey="word"
             categoryHeader="Action"
             valueKey="count"
@@ -126,7 +133,7 @@ export function AuditSection() {
           <Panel title="Events by actor role (count of audit events)" provenance={prov?.events ?? null} definition={def?.events} {...common} state={state(a?.byActorRole)}>
             <HorizontalBars
               label="Number of audit events by the role that acted"
-              rows={(a?.byActorRole ?? []).map((r) => ({ ...r, word: words(r.actorRole) }))}
+              rows={list(a?.byActorRole).map((r) => ({ ...r, word: words(r.actorRole) }))}
               categoryKey="word"
               categoryHeader="Actor role"
               valueKey="count"
@@ -138,7 +145,7 @@ export function AuditSection() {
           <Panel title="Events by entity (count of audit events)" provenance={prov?.events ?? null} definition={def?.events} {...common} state={state(a?.byEntity)}>
             <HorizontalBars
               label="Number of audit events on each kind of entity"
-              rows={(a?.byEntity ?? []).map((r) => ({ ...r, word: words(r.entity) }))}
+              rows={list(a?.byEntity).map((r) => ({ ...r, word: words(r.entity) }))}
               categoryKey="word"
               categoryHeader="Entity"
               valueKey="count"
@@ -162,7 +169,9 @@ export function AuditSection() {
         {integrity ? (
           <div className="flex max-w-prose flex-col gap-3 text-base">
             <p>
-              {integrity.ok ? (
+              {integrity.rowsChecked === 0 ? (
+                <Badge tone="neutral">Nothing to check — the audit log is empty</Badge>
+              ) : integrity.ok ? (
                 <Badge tone="success">No broken chain found</Badge>
               ) : (
                 <Badge tone="danger">{`${fmtInt(integrity.brokenChainCount)} ${integrity.brokenChainCount === 1 ? 'chain does' : 'chains do'} not verify`}</Badge>

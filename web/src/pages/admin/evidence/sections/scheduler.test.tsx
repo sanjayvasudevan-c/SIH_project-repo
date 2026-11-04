@@ -195,6 +195,14 @@ describe('Scheduler: engine run history', () => {
     expect(rows[0]![10]).toBe('—');
   });
 
+  it('a stuck-run count the summary does not carry reads Unavailable, not 0', async () => {
+    const s = summary();
+    sum = () => ({ ...s, scheduler: { ...s.scheduler, stuckRuns: undefined } });
+    page();
+    await waitFor(() => expect(kpi('Latest process check-in').textContent).toMatch(/Stuck runs: Unavailable/));
+    expect(kpi('Latest process check-in').textContent).not.toMatch(/0 stuck runs/);
+  });
+
   it('pages the run rows from the API and keeps the dates', async () => {
     runs = () => engineRunsDetail({ total: 60 });
     page('/admin/evidence/scheduler?from=2026-10-01');
@@ -208,7 +216,7 @@ describe('Scheduler: engine run history', () => {
     page();
     await waitFor(() => expect(kpi('Latest process check-in').textContent).toMatch(/stuck/));
     const k = kpi('Latest process check-in');
-    expect(k.textContent).toContain('No scheduler process has reported to this database');
+    expect(k.textContent).toContain('No scheduler instance marked as leader has reported to this database');
     expect(k.textContent).toContain('0 stuck runs');
     expect(k.querySelector('details')!.textContent).toContain(DEFS.scheduler);
     expect(k.querySelector('details')!.textContent).toContain(DEFS.stuckRuns);

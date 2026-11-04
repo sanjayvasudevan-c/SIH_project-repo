@@ -6,10 +6,10 @@ import type {
 } from "../../../../api/types";
 import { daySpan, HorizontalBars, VolumeBars, wrapLabel } from "../charts";
 import { DateRange, useRange, type Range } from "../DateRange";
-import { fmtInt, fmtPct } from "../format";
+import { fmtInt, fmtMedian, fmtPct, list } from "../format";
 import { Panel, panelState } from "../Panel";
 import { ProvenanceChip } from "../Provenance";
-import { useEvidence } from "../useEvidence";
+import { useEnvelope } from "../useEvidence";
 
 /** The words the rest of the app uses for these statuses (components/AppStatus.tsx, ui/Badge.tsx). */
 export const STATUS_WORDS: Record<Status, string> = {
@@ -35,7 +35,7 @@ const RETRY_MESSAGE = "These figures could not be loaded.";
 export function WorkflowSection() {
   const { range, setRange, invalid } = useRange();
   // One query for the whole group, and the same key the Overview tile reads when no range is chosen.
-  const q = useEvidence<EvidenceEnvelope<WorkflowData>>("workflow", {
+  const q = useEnvelope<EvidenceEnvelope<WorkflowData>>("workflow", {
     from: range.from,
     to: range.to,
   });
@@ -46,7 +46,9 @@ export function WorkflowSection() {
   const n = w?.submittedTotal ?? 0;
   const scope = `n = ${fmtInt(w?.submittedTotal)} applications · ${rangeText(range)}`;
   const none = !!w && n === 0;
-  const points = w?.volumeOverTime ?? [];
+  const points = list(w?.volumeOverTime);
+  const funnel = list(w?.funnel);
+  const statuses = list(w?.statusDistribution);
   const pt = w?.processingTime;
 
   return (
@@ -64,7 +66,7 @@ export function WorkflowSection() {
           provenance={prov?.funnel ?? null}
           scope={scope}
           definition={def?.funnel}
-          state={panelState(q, none || (!!w && w.funnel.length === 0))}
+          state={panelState(q, none || (!!w && funnel.length === 0))}
           emptyMessage={NONE_SUBMITTED}
           error={error}
         >
@@ -75,7 +77,7 @@ export function WorkflowSection() {
           </p>
           <HorizontalBars
             label="Applications that reached each stage, with the number whose route includes that stage"
-            rows={(w?.funnel ?? []) as unknown as Record<string, unknown>[]}
+            rows={funnel as unknown as Record<string, unknown>[]}
             categoryKey="label"
             categoryHeader="Stage"
             valueKey="reached"
@@ -113,7 +115,7 @@ export function WorkflowSection() {
             definition={def?.statusDistribution}
             state={panelState(
               q,
-              none || (!!w && w.statusDistribution.length === 0),
+              none || (!!w && statuses.length === 0),
             )}
             emptyMessage={NONE_SUBMITTED}
             error={error}
@@ -121,7 +123,7 @@ export function WorkflowSection() {
             <HorizontalBars
               label="Number of applications in each current status"
               rows={
-                (w?.statusDistribution ?? []).map((r) => ({
+                statuses.map((r) => ({
                   ...r,
                   word: STATUS_WORDS[r.status] ?? r.status,
                 })) as unknown as Record<string, unknown>[]
@@ -158,16 +160,16 @@ export function WorkflowSection() {
             provenance={prov?.processingTime ?? null}
             scope={scope}
             definition={def?.processingTime}
-            state={panelState(q, false, !!pt && pt.medianWorkingDays === null)}
+            state={panelState(q, false, !!pt && (pt.medianWorkingDays === null || pt.medianWorkingDays === undefined))}
             insufficientMessage="No application in this scope has been decided yet, so there is no median to show."
             error={error}
           >
             {pt ? (
               <>
                 <p className="tnum text-2xl font-semibold">
-                  {pt.medianWorkingDays === null
+                  {pt.medianWorkingDays === null || pt.medianWorkingDays === undefined
                     ? "Unavailable"
-                    : `${fmtInt(pt.medianWorkingDays)} ${pt.unit} (median)`}
+                    : `${fmtMedian(pt.medianWorkingDays)} ${pt.unit} (median)`}
                 </p>
                 <p className="mt-1 text-sm text-secondary">
                   {fmtInt(pt.decidedCount)} decided · {fmtInt(pt.inFlightCount)}{" "}

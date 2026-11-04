@@ -80,12 +80,16 @@ describe('Alerts', () => {
     expect(bodyOf(within(panel('Escalations by level')).getByRole('table', { hidden: true }) as HTMLElement)).toEqual([['Level 1', '20'], ['Level 2', '8'], ['Level 3', '3']]);
   });
 
-  it('alert status is an insufficient-data panel naming both unrecorded measures, with no chart', async () => {
+  it('alert status is an insufficient-data panel: acknowledgement not recorded, alert-to-close recorded but not computed, no chart', async () => {
     page();
     await loaded();
     const p = panel('Alert status');
     expect(p.textContent).toMatch(/acknowledgement/);
-    expect(p.textContent).toMatch(/resolution time/);
+    expect(p.textContent).not.toMatch(/resolution time/i);
+    expect(p.textContent).toMatch(/does not compute or chart it/);
+    expect(p.textContent).toMatch(/deadline item closing|followed by its deadline item closing/);
+    expect(p.textContent).toContain('NOTCOMPUTED DEF');
+    expect(document.body.textContent).not.toMatch(/\bfair/i);
     expect(p.querySelector('[role=img]')).toBeNull();
     expect(p.textContent).toContain('None of the 810 notifications has been opened');
     expect(p.textContent).toContain('says nothing about whether anyone responded');

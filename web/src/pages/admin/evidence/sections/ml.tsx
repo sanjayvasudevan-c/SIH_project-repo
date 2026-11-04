@@ -36,7 +36,7 @@ function Figure({ label, value, extra, badge, formula }: { label: string; value:
 
 export function MlSection() {
   const q = useEvidence<ArtifactsResponse>('artifacts');
-  const entry = q.data?.artifacts?.find((a) => a.name === FILE);
+  const entry = (Array.isArray(q.data?.artifacts) ? q.data.artifacts : []).find((a) => a.name === FILE);
   const m = entry && entry.status === 'READ' ? parseMetrics(entry.data) : null;
   const available = !!m;
   const missing = !!q.data && !available;
