@@ -235,9 +235,9 @@ export function Layout() {
         <UtilityBar />
         <div className="border-b bg-surface">
         <div className="flex h-16 items-center justify-between gap-4 px-4">
-          <Link to="/" className="flex min-w-0 items-center gap-3 no-underline">
+          <Link to="/" className="flex min-w-0 flex-1 items-center gap-3 no-underline">
             <Monogram size={36} />
-            <span className="hidden sm:block">
+            <span className="hidden min-w-0 max-w-[min(34vw,30rem)] sm:block">
               <NameBlock compact />
             </span>
           </Link>
