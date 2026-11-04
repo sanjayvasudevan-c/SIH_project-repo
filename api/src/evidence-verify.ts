@@ -1,8 +1,11 @@
 // Independent verification of the Evidence Center aggregates.
 //
-// Every headline number the /api/evidence endpoints return is recomputed here with FRESH raw SQL written directly against the
+// The counts and rates the /api/evidence endpoints return (workflow funnel, statuses and median, assignment totals, outcomes,
+// candidates considered / eligible / excluded by reason, and per-officer utilisation with its mean and spread, deadline states, alerts,
+// engine runs, audit counts, integrity linkage) are recomputed here with FRESH raw SQL written directly against the
 // tables (nothing in src/routes/evidence/* is imported, so a bug in an aggregate query cannot be repeated by its own check) and the
-// two are compared. It only ever READS: the caller hands in a read-only `sql` function and an HTTP `get`; this module never writes.
+// two are compared. NOT checked: the volumeOverTime series (per-day submitted / decided / overdue points), the split of open deadlines
+// into at-risk / due-soon / on-track (only their sum), the text of any definition, and audit hash recomputation. It only ever READS: the caller hands in a read-only `sql` function and an HTTP `get`; this module never writes.
 //
 // Used by scripts/verify-evidence.ts (the CLI, `npm run evidence:verify`) and by test/evidence-verify.test.ts.
 import { promises as fs } from 'node:fs';
@@ -250,6 +253,10 @@ export async function runVerification(io: VerifyIO, hooks: VerifyHooks = {}): Pr
         )[0]!;
         add(L, 'candidates considered', '/assignment', d.candidates.candidatesConsidered, cand.considered);
         add(L, 'candidates eligible', '/assignment', d.candidates.eligible, cand.eligible);
+        const exc = toMap(
+          await io.sql(`SELECT c->>'excludedBy' AS k, count(*)::int AS n FROM "AssignmentTrace" t, jsonb_array_elements(t.candidates) c WHERE ${inWin('t."decidedAt"')} AND c->>'excludedBy' IS NOT NULL GROUP BY 1`, P),
+        );
+        add(L, 'candidates excluded, by reason', '/assignment', mapStr(apiMap(d.candidates.excluded, (e: Json) => e.reason, (e: Json) => e.count)), mapStr(exc));
         const versions = Number((await io.sql(`SELECT count(*)::int AS n FROM "Assignment" a WHERE ${inWin('a."assignedAt"')} AND EXISTS (SELECT 1 FROM "RulePackVersion" v WHERE v.id = a."rulePackVersionId")`, P))[0]!.n);
         add(L, 'rule-pack versions: assignments add up to assignmentTotal', '/assignment', sum((d.rulePackVersions as Json[]).map((v) => v.assignments)), versions);
 
@@ -264,6 +271,8 @@ export async function runVerification(io: VerifyIO, hooks: VerifyHooks = {}): Pr
         const sd = utils.length >= 2 && mean !== null ? Math.sqrt(sum(utils.map((x) => (x - mean) ** 2)) / utils.length) : null;
         add(L, 'officer count (users with role OFFICER)', '/assignment', d.spread.officerCount, officerUsers);
         add(L, 'officers listed = OFFICER users with a capacity profile', '/assignment', (d.officers as Json[]).length, off.length);
+        const perOfficer = (rows: Json[]) => rows.map(([id, u]: Json) => `${id}=${Number(u).toFixed(6)}`).sort().join(' ');
+        add(L, 'utilisation per officer (id=open points / capacity)', '/assignment', perOfficer((d.officers as Json[]).map((o) => [o.officerId, o.utilisation])), perOfficer(off.map((o) => [o.id, o.util])));
         add(L, 'utilisation mean', '/assignment', d.spread.meanUtilisation, mean);
         add(L, 'utilisation stdDev (population; null under 2 officers)', '/assignment', d.spread.stdDev, sd);
         const over = off.filter((o) => Number(o.util) > Number(o.cap) + 1e-9).map((o) => String(o.id)).sort();
