@@ -8,6 +8,7 @@ import { HorizontalBars, RunDurationBars, SegmentedBar, wrapLabel } from '../cha
 import { DateRange, useRange, type Range } from '../DateRange';
 import { agoSeconds, fmtInt, fmtMs, fmtPct, list, RUN_STATUS_WORDS } from '../format';
 import { Kpi, Panel, panelState } from '../Panel';
+import { ScrollHint } from '../ScrollHint';
 import { useEnvelope, useEvidence } from '../useEvidence';
 
 const RETRY_MESSAGE = 'These figures could not be loaded.';
@@ -193,7 +194,8 @@ export function SchedulerSection() {
         </Panel>
 
         <Panel title="Recent engine runs" provenance={rprov?.rows ?? null} scope={`${fmtInt(r?.total)} runs · ${rscope} · newest first`} definition={rdef?.rows} state={rState} insufficientMessage={NO_RUNS} error={retry(runs)}>
-          <Table caption="Recent engine runs" rows={rows} rowKey={(x) => x.id} columns={columns} pageSize={200} emptyMessage={NO_RUNS} />
+          <Table caption="Recent engine runs" rows={rows} rowKey={(x) => x.id} columns={columns} pageSize={200} emptyMessage={NO_RUNS} dense />
+          <ScrollHint />
           {pages > 1 ? (
             <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
               <Button variant="secondary" disabled={pageNo <= 1} onClick={() => setPageNo(pageNo - 1)} aria-label="Previous page of runs">

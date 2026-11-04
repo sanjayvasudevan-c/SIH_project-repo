@@ -10,10 +10,11 @@ import type {
 } from '../../../../api/types';
 import { EmptyState, ErrorState, Skeleton, Table, type Column } from '../../../../components/ui';
 import { formatDateTime } from '../../../../lib/format';
-import { fmtPts, UtilisationBars } from '../charts';
+import { fmtPts, sharedCap, UtilisationBars } from '../charts';
 import { DateRange, useRange, type Range } from '../DateRange';
 import { fmtInt, fmtPct, list, UNAVAILABLE } from '../format';
 import { Kpi, Panel, panelState } from '../Panel';
+import { ScrollHint } from '../ScrollHint';
 import { useEnvelope, useEvidence } from '../useEvidence';
 
 const RETRY_MESSAGE = 'These figures could not be loaded.';
@@ -122,7 +123,7 @@ function CurrentWorkload({ q, retry }: { q: Q; retry: Retry }) {
         error={retry}
       >
         <p className="mb-2 text-sm text-secondary">
-          The dashed line is the normal cap. Red bars are above it. With this many officers the chart is wider than the screen: scroll sideways inside it, or open the data table to read every officer.
+          {sharedCap(sorted) !== null ? 'The dashed line is the normal cap. Red bars are above it.' : 'Officers do not all have the same normal cap, so no single cap line is drawn. Red bars are above that officer\'s own cap.'} With this many officers the chart is wider than the screen: scroll sideways inside it, or open the data table to read every officer.
         </p>
         <UtilisationBars label={`Utilisation of each of ${sorted.length} officers, with the normal cap`} officers={sorted} />
       </Panel>
@@ -143,18 +144,40 @@ function CurrentWorkload({ q, retry }: { q: Q; retry: Retry }) {
             {list(over.rows).length === 0 ? (
               <p className="text-base">No officer is above their normal cap.</p>
             ) : (
-              <Table
-                caption="Officers above their normal cap"
-                rows={list(over.rows)}
-                rowKey={(r) => r.officerId}
-                emptyMessage="No officer is above their normal cap."
-                columns={[
-                  { key: 'officer', header: 'Officer', render: (r) => r.officer, title: (r) => r.officer },
-                  { key: 'util', header: 'Utilisation', align: 'right', render: (r) => fmtPct(r.utilisation) },
-                  { key: 'cap', header: 'Normal cap', align: 'right', render: (r) => fmtPct(r.normalCap) },
-                  { key: 'text', header: 'What this means', wrap: true, className: 'min-w-[18rem]', render: (r) => r.text },
-                ]}
-              />
+              <>
+                {/* Below md each officer is a stacked card, so the explanation is read in full without scrolling sideways. */}
+                <ul aria-label="Officers above their normal cap (cards)" className="flex flex-col gap-3 md:hidden">
+                  {list(over.rows).map((r) => (
+                    <li key={r.officerId} className="rounded-lg border p-3">
+                      <p className="font-semibold">{r.officer}</p>
+                      <dl className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
+                        <dt className="text-secondary">Utilisation</dt>
+                        <dd className="tnum text-right">{fmtPct(r.utilisation)}</dd>
+                        <dt className="text-secondary">Normal cap</dt>
+                        <dd className="tnum text-right">{fmtPct(r.normalCap)}</dd>
+                      </dl>
+                      <p className="mt-2 text-sm">
+                        <span className="font-medium text-secondary">What this means: </span>
+                        {r.text}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+                <div className="hidden md:block">
+                  <Table
+                    caption="Officers above their normal cap"
+                    rows={list(over.rows)}
+                    rowKey={(r) => r.officerId}
+                    emptyMessage="No officer is above their normal cap."
+                    columns={[
+                      { key: 'officer', header: 'Officer', render: (r) => r.officer, title: (r) => r.officer },
+                      { key: 'util', header: 'Utilisation', align: 'right', render: (r) => fmtPct(r.utilisation) },
+                      { key: 'cap', header: 'Normal cap', align: 'right', render: (r) => fmtPct(r.normalCap) },
+                      { key: 'text', header: 'What this means', wrap: true, className: 'min-w-[18rem]', render: (r) => r.text },
+                    ]}
+                  />
+                </div>
+              </>
             )}
           </div>
         ) : null}
@@ -262,6 +285,7 @@ function DecisionList({ rows, selected, onSelect }: { rows: AssignmentDecision[]
     { key: 'open', header: 'Explanation', render: (r) => (r.traceId === selected ? 'Shown below' : 'Show candidates') },
   ];
   return (
+    <>
     <Table
       caption="Recent assignment decisions"
       rows={rows}
@@ -272,6 +296,8 @@ function DecisionList({ rows, selected, onSelect }: { rows: AssignmentDecision[]
       rowLabel={(r) => `Show how ${r.applicationNo ?? 'this application'} ${task(r.taskType)} was decided`}
       emptyMessage="No decisions."
     />
+    <ScrollHint />
+    </>
   );
 }
 
@@ -338,6 +364,7 @@ function CandidateTable({ row }: { row: AssignmentTraceRow }) {
           ))}
         </tbody>
       </table>
+      <ScrollHint />
     </div>
   );
 }

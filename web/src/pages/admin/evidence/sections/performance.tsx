@@ -5,6 +5,7 @@ import { formatDate } from '../../../../lib/format';
 import { CompareBars, CycleBars, fmtSec, LatencyBars } from '../chartsPerf';
 import { fmtInt } from '../format';
 import { Panel, panelState } from '../Panel';
+import { ScrollHint } from '../ScrollHint';
 import { useEvidence } from '../useEvidence';
 import { comparableRuns, FIELD_WORDS, readRuns, type Run } from './perfModel';
 
@@ -89,6 +90,7 @@ function ConfigTable({ runs }: { runs: Run[] }) {
           ))}
         </tbody>
       </table>
+      <ScrollHint />
     </div>
   );
 }

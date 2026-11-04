@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { Route, Routes } from 'react-router-dom';
 import { renderWithApp } from '../../../../test/render';
+import { sharedCap } from '../charts';
 import { AssignmentSection } from './assignment';
 import { assignment, BLOCKED_REASON, DEFS, OFFICER_UTILS, REASON, traceFor } from './testFixtures';
 
@@ -86,6 +87,46 @@ describe('Assignment: current workload', () => {
     expect(p.querySelector('details')!.textContent).toContain(DEFS.assignmentOfficers);
     expect(p).toHaveTextContent(/normal cap/i);
     expect(p).toHaveTextContent(/scroll/i);
+  });
+
+  it('below md the above-cap rows are stacked cards with the explanation in full; from md it is the table', async () => {
+    page();
+    await loaded();
+    const p = panel('Officers above their normal cap');
+    const cards = within(p).getByRole('list', { name: 'Officers above their normal cap (cards)' });
+    expect(cards.className).toMatch(/md:hidden/);
+    expect(cards.textContent).toContain('Officer 4 is at 1.30 of capacity against a normal cap of 1.00. FULL TEXT: capacity reduced after the work was assigned.');
+    expect(cards.textContent).toContain('130%');
+    expect(within(cards).getByText(/What this means/)).toBeInTheDocument();
+    expect(within(p).getByRole('region', { name: 'Officers above their normal cap' }).closest('.hidden')!.className).toMatch(/md:block/);
+  });
+
+  it('every wide table and the scrolling chart carry the scroll hint', async () => {
+    page();
+    await loaded();
+    expect(within(panel('Utilisation by officer')).getAllByText('Scroll sideways to see all columns').length).toBeGreaterThanOrEqual(2); // the chart and its data table
+    fireEvent.click(await screen.findByRole('row', { name: /W-2026-0025/ }));
+    const region = await screen.findByRole('region', { name: /Candidates considered/ });
+    expect(within(region).getByText('Scroll sideways to see all columns')).toBeInTheDocument();
+    expect(within(panel('Why this officer')).getAllByText('Scroll sideways to see all columns').length).toBeGreaterThanOrEqual(2); // decisions table and candidates
+  });
+
+  it('says the dashed line is the normal cap only when officers share one cap', async () => {
+    page();
+    await loaded();
+    expect(panel('Utilisation by officer')).toHaveTextContent('The dashed line is the normal cap.');
+    expect(sharedCap(assignment().data.officers)).toBe(1);
+  });
+
+  it('when caps differ no cap line is drawn and the sentence no longer mentions a dashed line', async () => {
+    const officers = assignment().data.officers.map((o, i) => (i === 0 ? { ...o, maxUtil: 1.2 } : o));
+    current = { officers };
+    page();
+    await loaded();
+    const p = panel('Utilisation by officer');
+    expect(sharedCap(officers)).toBeNull();
+    expect(p.textContent).not.toMatch(/dashed line/i);
+    expect(p.textContent).toContain('Officers do not all have the same normal cap, so no single cap line is drawn.');
   });
 
   it('officers above their cap: one row shows its text in full with the two ceilings and a Derived chip', async () => {

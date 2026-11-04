@@ -195,6 +195,12 @@ describe('Scheduler: engine run history', () => {
     expect(rows[0]![10]).toBe('—');
   });
 
+  it('the recent-runs table carries the scroll hint', async () => {
+    page();
+    await loaded();
+    expect(within(panel('Recent engine runs')).getByText('Scroll sideways to see all columns')).toBeInTheDocument();
+  });
+
   it('a stuck-run count the summary does not carry reads Unavailable, not 0', async () => {
     const s = summary();
     sum = () => ({ ...s, scheduler: { ...s.scheduler, stuckRuns: undefined } });

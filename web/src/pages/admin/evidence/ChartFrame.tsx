@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react';
 import { ResponsiveContainer } from 'recharts';
 import { UNAVAILABLE } from './format';
+import { ScrollHint } from './ScrollHint';
 
 export interface ChartColumn {
   key: string;
@@ -24,6 +25,7 @@ export function ChartFrame({ label, height = 240, minWidth, columns, rows, child
           </ResponsiveContainer>
         </div>
       </div>
+      {minWidth ? <ScrollHint /> : null}
       <details className="mt-2 text-sm">
         <summary className="hit cursor-pointer text-accent">Data table</summary>
         <div className="mt-2 overflow-x-auto">
@@ -50,6 +52,7 @@ export function ChartFrame({ label, height = 240, minWidth, columns, rows, child
               ))}
             </tbody>
           </table>
+          <ScrollHint />
         </div>
       </details>
     </div>

@@ -35,10 +35,12 @@ export interface TableProps<T> {
   selectedKey?: string | null;
   expandedKey?: string | null;
   renderExpanded?: (row: T) => ReactNode;
+  /** Tighter cell padding for tables with many columns. */
+  dense?: boolean;
 }
 
 /** Records are always tables: 44px rows, sticky header, numbers right-aligned, whole row clickable. */
-export function Table<T>({ caption, columns, rows, rowKey, onRowClick, rowLabel, loading, error, onRetry, emptyMessage, emptyAction, toolbar, pageSize = 25, selectedKey, expandedKey, renderExpanded }: TableProps<T>) {
+export function Table<T>({ caption, columns, rows, rowKey, onRowClick, rowLabel, loading, error, onRetry, emptyMessage, emptyAction, toolbar, pageSize = 25, selectedKey, expandedKey, renderExpanded, dense }: TableProps<T>) {
   const en = useT();
   const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' } | null>(null);
   const [page, setPage] = useState(1);
@@ -80,7 +82,7 @@ export function Table<T>({ caption, columns, rows, rowKey, onRowClick, rowLabel,
                     key={c.key}
                     scope="col"
                     aria-sort={c.sortValue ? ariaSort : undefined}
-                    className={cx('h-row whitespace-nowrap px-4 text-xs font-semibold text-secondary', c.align === 'right' ? 'text-right' : 'text-left')}
+                    className={cx('h-row whitespace-nowrap text-xs font-semibold text-secondary', dense ? 'px-2' : 'px-4', c.align === 'right' ? 'text-right' : 'text-left')}
                   >
                     {c.srOnlyHeader ? (
                       <span className="sr-only">{c.header}</span>
@@ -138,7 +140,7 @@ export function Table<T>({ caption, columns, rows, rowKey, onRowClick, rowLabel,
                           <td
                             key={c.key}
                             title={c.title ? c.title(row) : undefined}
-                            className={cx('h-row px-4', c.wrap ? 'max-w-md py-2' : 'max-w-xs truncate', c.align === 'right' ? 'tnum text-right' : 'text-left', c.className)}
+                            className={cx('h-row', dense ? 'px-2' : 'px-4', c.wrap ? 'max-w-md py-2' : 'max-w-xs truncate', c.align === 'right' ? 'tnum text-right' : 'text-left', c.className)}
                           >
                             {c.render(row)}
                           </td>

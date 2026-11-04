@@ -119,13 +119,18 @@ function OfficerTick({ x, y, payload }: { x?: number; y?: number; payload?: { va
 
 const PX_PER_OFFICER = 26;
 
+/** The one normal cap every officer shares, or null when there is none or they differ (then no cap line is drawn). */
+export function sharedCap(officers: { maxUtil: number }[]): number | null {
+  const caps = [...new Set(officers.map((o) => o.maxUtil))];
+  return caps.length === 1 ? caps[0]! : null;
+}
+
 /**
  * One vertical bar per officer, highest utilisation first, with the normal cap as a reference line. Wider than its card when
  * there are many officers: it scrolls sideways inside the card, and the data table lists every officer.
  */
 export function UtilisationBars({ label, officers }: { label: string; officers: AssignmentOfficer[] }) {
-  const caps = [...new Set(officers.map((o) => o.maxUtil))];
-  const cap = caps.length === 1 ? caps[0]! : null; // officers share one cap in practice; if they ever differ, no single line is honest
+  const cap = sharedCap(officers); // officers share one cap in practice; if they ever differ, no single line is honest
   const top = Math.max(1, ...officers.map((o) => o.utilisation), ...officers.map((o) => o.maxUtil));
   const ceil = Math.ceil(top * 4) / 4; // quarter steps: 0%, 25% ... never an uneven axis
   const ticks = Array.from({ length: Math.round(ceil * 4) + 1 }, (_, i) => i / 4);
@@ -199,7 +204,7 @@ export function SegmentedBar({ label, total, segments }: { label: string; total:
         <YAxis type="category" hide />
         <Tooltip cursor={false} />
         {segments.map((g) => (
-          <Bar key={g.key} dataKey={g.key} name={g.word} stackId="open" fill={g.fill} stroke="#fff" isAnimationActive={false} />
+          <Bar key={g.key} dataKey={g.key} name={g.word} stackId="open" fill={g.fill} stroke={tokens.surface} isAnimationActive={false} />
         ))}
       </BarChart>
     </ChartFrame>

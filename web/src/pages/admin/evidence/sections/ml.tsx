@@ -5,6 +5,7 @@ import { formatDate } from '../../../../lib/format';
 import { FaultRecallBars, ModeBars } from '../chartsMl';
 import { fmtInt } from '../format';
 import { Panel, panelState } from '../Panel';
+import { ScrollHint } from '../ScrollHint';
 import { useEvidence } from '../useEvidence';
 import { deriveConfusion, f1, faultName, HYBRID, parseMetrics, round3 } from './mlModel';
 
@@ -107,6 +108,7 @@ export function MlSection() {
                   </tbody>
                 </table>
               </div>
+              <ScrollHint />
               <p><Derived /></p>
               <ul className="tnum flex flex-col gap-1 text-sm">
                 <li>TP = recall × faulty forms = {h!.recall} × {fmtInt(m.datasets.testFaulty)}</li>

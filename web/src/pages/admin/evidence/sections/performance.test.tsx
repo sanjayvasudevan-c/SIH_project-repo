@@ -154,7 +154,7 @@ describe('Performance', () => {
     await loaded();
     expect(panel('Test configuration').textContent).toMatch(/Each run is a single run \(repeat count 1\)/);
     cleanup();
-    body = artifacts(runEntry({ ...OLD_RUN, repeats: 3 } as typeof OLD_RUN), runEntry({ ...NEW_RUN, repeats: 3 }));
+    body = artifacts(runEntry({ ...OLD_RUN, repeats: 3 } as typeof OLD_RUN), runEntry({ ...NEW_RUN, repeats: 3 } as typeof NEW_RUN));
     page();
     await loaded();
     const t = panel('Test configuration').textContent!;
