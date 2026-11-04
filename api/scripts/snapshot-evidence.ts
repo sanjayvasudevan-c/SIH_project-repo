@@ -22,6 +22,48 @@ const outDir = path.join(repoRoot, 'docs/evidence/visualizations/data');
 const git = (...args: string[]): string => execFileSync('git', args, { cwd: repoRoot, encoding: 'utf8' }).trim();
 const write = (name: string, body: unknown): void => writeFileSync(path.join(outDir, name), JSON.stringify(body, null, 2) + '\n');
 
+type Get = (p: string) => Promise<{ status: number; body: any }>;
+type Sql = (text: string, params?: unknown[]) => Promise<any[]>;
+
+/**
+ * The single place that obtains the aggregate JSON. Everything else in this script (verification, writing, manifest) is independent of
+ * HOW the aggregates are produced, so swapping the in-process HTTP call for a direct library call only changes this function.
+ * Returns the responses unmodified ({definition, provenance, data}), keyed by file name without ".json".
+ */
+async function fetchAggregates(get: Get, sql: Sql): Promise<{ fetched: Record<string, unknown>; traces: Record<string, unknown>; assignedApp: string | null; blockedApp: string | null }> {
+  // The responses, unmodified. All dates (no window), engine runs with a page large enough for every run.
+  const fetched: Record<string, unknown> = {};
+  for (const [name, p] of [
+    ['workflow', '/api/evidence/workflow'],
+    ['assignment', '/api/evidence/assignment'],
+    ['compliance', '/api/evidence/compliance'],
+    ['alerts', '/api/evidence/alerts'],
+    ['audit-analytics', '/api/evidence/audit-analytics'],
+    ['engine-runs', '/api/evidence/engine-runs?pageSize=200'],
+    ['summary', '/api/evidence/summary'],
+  ] as const) {
+    const r = await get(p);
+    if (r.status !== 200) throw new Error(`GET ${p} returned ${r.status}`);
+    fetched[name] = r.body;
+  }
+  const runs = fetched['engine-runs'] as { total: number; rows: unknown[] };
+  if (runs.total !== runs.rows.length) throw new Error(`engine-runs: ${runs.total} runs but ${runs.rows.length} returned; raise the page size (max 200) or page the snapshot`);
+
+  // 3. Two example applications for the worked example: the ASSIGNED decision with the most candidates, and the BLOCKED decision if present.
+  const pick = async (outcome: string, order: string): Promise<string | null> =>
+    ((await sql(`SELECT "applicationId" AS id FROM "AssignmentTrace" WHERE outcome = $1 ORDER BY ${order} LIMIT 1`, [outcome]))[0]?.id as string | undefined) ?? null;
+  const assignedApp = await pick('ASSIGNED', 'jsonb_array_length(candidates) DESC, id ASC');
+  const blockedApp = await pick('BLOCKED', 'id ASC');
+  const traces: Record<string, unknown> = {};
+  for (const [file, id] of [['assignment-trace-assigned', assignedApp], ['assignment-trace-blocked', blockedApp]] as const) {
+    if (!id) continue; // absent is absent: the generator draws "Not available", never a made-up example
+    const r = await get(`/api/evidence/assignment-trace/${id}`);
+    if (r.status !== 200) throw new Error(`GET assignment-trace/${id} returned ${r.status}`);
+    traces[file] = r.body;
+  }
+  return { fetched, traces, assignedApp, blockedApp };
+}
+
 async function main(): Promise<number> {
   const url = process.env.DATABASE_URL;
   if (!url || !process.env.JWT_SECRET) {
@@ -57,36 +99,8 @@ async function main(): Promise<number> {
       return 1;
     }
 
-    // 2. The responses, unmodified. All dates (no window), engine runs with a page large enough for every run.
-    const fetched: Record<string, unknown> = {};
-    for (const [name, p] of [
-      ['workflow', '/api/evidence/workflow'],
-      ['assignment', '/api/evidence/assignment'],
-      ['compliance', '/api/evidence/compliance'],
-      ['alerts', '/api/evidence/alerts'],
-      ['audit-analytics', '/api/evidence/audit-analytics'],
-      ['engine-runs', '/api/evidence/engine-runs?pageSize=200'],
-      ['summary', '/api/evidence/summary'],
-    ] as const) {
-      const r = await get(p);
-      if (r.status !== 200) throw new Error(`GET ${p} returned ${r.status}`);
-      fetched[name] = r.body;
-    }
-    const runs = fetched['engine-runs'] as { total: number; rows: unknown[] };
-    if (runs.total !== runs.rows.length) throw new Error(`engine-runs: ${runs.total} runs but ${runs.rows.length} returned; raise the page size (max 200) or page the snapshot`);
-
-    // 3. Two example applications for the worked example: the ASSIGNED decision with the most candidates, and the BLOCKED decision if present.
-    const pick = async (outcome: string, order: string): Promise<string | null> =>
-      ((await sql(`SELECT "applicationId" AS id FROM "AssignmentTrace" WHERE outcome = $1 ORDER BY ${order} LIMIT 1`, [outcome]))[0]?.id as string | undefined) ?? null;
-    const assignedApp = await pick('ASSIGNED', 'jsonb_array_length(candidates) DESC, id ASC');
-    const blockedApp = await pick('BLOCKED', 'id ASC');
-    const traces: Record<string, unknown> = {};
-    for (const [file, id] of [['assignment-trace-assigned', assignedApp], ['assignment-trace-blocked', blockedApp]] as const) {
-      if (!id) continue; // absent is absent: the generator draws "Not available", never a made-up example
-      const r = await get(`/api/evidence/assignment-trace/${id}`);
-      if (r.status !== 200) throw new Error(`GET assignment-trace/${id} returned ${r.status}`);
-      traces[file] = r.body;
-    }
+    // 2-3. The aggregate responses, unmodified (the ONLY part that knows how they are obtained; see fetchAggregates).
+    const { fetched, traces, assignedApp, blockedApp } = await fetchAggregates(get, sql);
 
     // 4. Write.
     mkdirSync(outDir, { recursive: true });
