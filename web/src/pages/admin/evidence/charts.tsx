@@ -22,7 +22,7 @@ export function wrapLabel(text: string, max = 16): string[] {
 }
 
 /** A category-axis label of several short lines, right-aligned against the bars. */
-function LinesTick({ x, y, lines }: { x?: number; y?: number; lines: string[] }) {
+export function LinesTick({ x, y, lines }: { x?: number; y?: number; lines: string[] }) {
   const lh = 13;
   const top = (y ?? 0) - ((lines.length - 1) * lh) / 2;
   return (
