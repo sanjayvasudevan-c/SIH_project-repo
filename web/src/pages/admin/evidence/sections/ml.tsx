@@ -116,7 +116,7 @@ export function MlSection() {
                 <li>Check: TP / (TP + FP) = {fmtInt(c.tp)} / {fmtInt(c.tp + c.fp)} = {round3(c.precision)}, the stored precision {h!.precision}</li>
               </ul>
               <p className="text-sm text-secondary">
-                The counts are exact, not estimates: the stored rates are given to three decimals and each test set has {fmtInt(m.datasets.testFaulty)} forms, so rate × size is a whole number and nothing is lost in rounding.
+                The counts are exact, not estimates: the stored rates are given to three decimals, and recall × {fmtInt(m.datasets.testFaulty)} faulty forms and false-alarm rate × {fmtInt(m.datasets.testNormal)} normal forms are both whole numbers, so nothing is lost in rounding.
               </p>
             </div>
           ) : null}

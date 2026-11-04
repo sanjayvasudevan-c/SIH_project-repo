@@ -55,6 +55,15 @@ describe('derived confusion matrix', () => {
 });
 
 describe('ML evaluation', () => {
+  it('names the two test-set sizes separately, never "each test set has N forms"', async () => {
+    body = artifacts(metricsEntry({ ...METRICS, datasets: { ...METRICS.datasets, testNormal: 1000, testFaulty: 2000 } }));
+    page();
+    await loaded();
+    const t = panelBody('Confusion matrix').textContent!;
+    expect(t).toContain('recall × 2,000 faulty forms and false-alarm rate × 1,000 normal forms are both whole numbers');
+    expect(t).not.toMatch(/each test set/);
+  });
+
   it('reads the live artifacts response', async () => {
     page();
     await loaded();

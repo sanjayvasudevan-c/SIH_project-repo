@@ -15,6 +15,22 @@ const when = (r: Run) => `${formatDate(r.date)} (UTC)`;
 const or = <T,>(v: T | undefined, f: (x: T) => string) => (v === undefined ? NOT_RECORDED : f(v));
 const uniform = (r: Run, k: 'requests' | 'concurrency') => (new Set(r.reads.map((x) => x[k])).size === 1 ? fmtInt(r.reads[0]![k]) : 'varies by screen');
 
+const repeatsWord = (r: Run) => (r.repeats === undefined ? 'repeat count not recorded' : r.repeats === 1 ? 'a single run (repeat count 1)' : `repeated ${r.repeats} times`);
+
+/** What the files say about CPU and memory use, run by run. The sentence stays the same when no run measured it. */
+function resourceNote(runs: Run[]): string {
+  if (runs.length > 0 && runs.every((r) => r.resourceUseMeasured === false)) return `CPU and memory use during the run${runs.length === 1 ? ' was' : 's were'} not measured.`;
+  if (runs.length > 0 && runs.every((r) => r.resourceUseMeasured === true)) return 'CPU and memory use during the runs is recorded in the benchmark files; this page does not chart it.';
+  return `CPU and memory use: ${runs.map((r) => `${r.commit} ${r.resourceUseMeasured === undefined ? 'not recorded' : r.resourceUseMeasured ? 'recorded in the file' : 'not measured'}`).join('; ')}.`;
+}
+
+/** What the files say about repeats, run by run. Variance is only ever claimed absent when no run repeated. */
+function repeatNote(runs: Run[]): string {
+  if (runs.length > 0 && runs.every((r) => r.repeats === 1)) return `${runs.length === 1 ? 'The run is' : 'Each run is'} a single run (repeat count 1): there is no repeat, so no variance can be stated.`;
+  const per = runs.map((r) => `${r.commit} ${repeatsWord(r)}`).join('; ');
+  return runs.some((r) => (r.repeats ?? 0) > 1) ? `Repeats: ${per}. This page shows one figure per measure and does not compute variance.` : `Repeats: ${per}. Where a run was not repeated or does not record repeats, no variance can be stated.`;
+}
+
 function environment(r: Run): string {
   const m = r.machine;
   return [
@@ -158,8 +174,8 @@ export function PerformanceSection() {
             <div className="flex flex-col gap-3">
               <ConfigTable runs={runs} />
               <ul className="flex max-w-prose list-disc flex-col gap-1 pl-5 text-sm text-secondary">
-                <li>CPU and memory use during the run were not measured.</li>
-                <li>Each run is a single run (repeat count 1): there is no repeat, so no variance can be stated.</li>
+                <li>{resourceNote(runs)}</li>
+                <li>{repeatNote(runs)}</li>
                 <li>
                   The data is synthetic: {run ? fmtInt(run.applications) : '15,000'} applications{run?.seeded ? `, made by copying the ${fmtInt(run.seeded)} seeded ones` : ''}, not real AICTE caseload.
                 </li>
@@ -173,7 +189,7 @@ export function PerformanceSection() {
           <Panel
             title="Read latency per screen (milliseconds)"
             scope={runScope}
-            definition="Time to answer 400 requests for each screen, 20 at a time. p50 is the median request, p95 and p99 are the times 95% and 99% of the requests finished within. Errors are failed requests; requests/s is the throughput."
+            definition={`${run ? `Time to answer ${uniform(run, 'requests') === 'varies by screen' ? 'the requests made for each screen (the number varies by screen)' : `${uniform(run, 'requests')} requests for each screen`}${uniform(run, 'concurrency') === 'varies by screen' ? '' : `, ${uniform(run, 'concurrency')} at a time`}` : 'Time to answer the requests made for each screen'}. p50 is the median request, p95 and p99 are the times 95% and 99% of the requests finished within. Errors are failed requests; requests/s is the throughput.`}
             {...common}
           >
             {run ? <LatencyBars run={run} /> : null}
@@ -253,8 +269,13 @@ export function PerformanceSection() {
                   </ul>
                   <ul className="flex max-w-prose list-disc flex-col gap-1 pl-5 text-sm text-secondary">
                     <li>The runs match on {cmp.fields.map((f) => FIELD_WORDS[f] ?? f).join(', ')}. Fields only one run records (operating system, total memory in bytes, PostgreSQL build) could not be compared.</li>
-                    <li>The runs are not like-for-like: the simulated date and the seed state differed between them (see "Second run" in docs/evidence/BENCHMARKS.md), and the cause of the difference was not isolated.</li>
-                    <li>With one run on each side no variance can be stated, so the size of the difference cannot be told apart from run-to-run variation. Results from different runs are never combined.</li>
+                    <li>Whether the two runs used the same simulated date and seed state is not recorded in the benchmark files, so it is not known whether the runs are like-for-like (see "Second run" in docs/evidence/BENCHMARKS.md for what is known), and the cause of any difference was not isolated.</li>
+                    <li>
+                      {(prev.repeats ?? 0) > 1 && (latest.repeats ?? 0) > 1
+                        ? 'Both runs were repeated, but this page shows one figure per measure and does not compute variance, so the size of the difference cannot be judged against run-to-run variation here.'
+                        : `No variance can be stated: ${prev.commit} is ${repeatsWord(prev)} and ${latest.commit} is ${repeatsWord(latest)}, so the size of the difference cannot be told apart from run-to-run variation.`}{' '}
+                      Results from different runs are never combined.
+                    </li>
                     <li>Synthetic data at demo scale, one shared machine, no CPU or memory measurement. Limits and method: docs/evidence/BENCHMARKS.md.</li>
                   </ul>
                 </div>

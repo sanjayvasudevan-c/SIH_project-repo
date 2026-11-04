@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { Route, Routes } from 'react-router-dom';
 import { renderWithApp } from '../../../../test/render';
 import { PerformanceSection } from './performance';
@@ -73,7 +73,7 @@ describe('Performance', () => {
     page();
     await loaded();
     const p = panel('Test configuration').textContent!;
-    expect(p).toMatch(/CPU and memory use during the run were not measured/);
+    expect(p).toContain('CPU and memory use: 565c210 not recorded; f78d82e not measured.');
     expect(p).toMatch(/one run|single run/i);
     expect(p).toMatch(/synthetic/i);
     expect(p).toMatch(/15,000 applications/);
@@ -128,6 +128,41 @@ describe('Performance', () => {
     expect(p).not.toContain('6,490');
   });
 
+  it('the latency definition and scope take requests and concurrency from the run, not from the page', async () => {
+    const small = { ...NEW_RUN, reads: NEW_RUN.reads.map((r) => ({ ...r, requests: 100, concurrency: 5 })) };
+    body = artifacts(runEntry(OLD_RUN), runEntry(small));
+    page();
+    await loaded();
+    const p = panel('Read latency per screen').textContent!;
+    expect(p).toContain('Time to answer 100 requests for each screen, 5 at a time');
+    expect(p).not.toContain('400 requests');
+    expect(p).not.toContain('20 at a time');
+  });
+
+  it('repeats are stated per run from the files; a run without the field is not called a single run', async () => {
+    page();
+    await loaded();
+    const t = panel('Test configuration').textContent!;
+    expect(t).toContain('565c210 repeat count not recorded');
+    expect(t).toContain('f78d82e a single run (repeat count 1)');
+    expect(t).not.toMatch(/Each run is a single run/);
+  });
+
+  it('two runs that both record repeat count 1 are called single runs, and a repeated run is not', async () => {
+    body = artifacts(runEntry({ ...OLD_RUN, repeats: 1 } as typeof OLD_RUN), runEntry(NEW_RUN));
+    page();
+    await loaded();
+    expect(panel('Test configuration').textContent).toMatch(/Each run is a single run \(repeat count 1\)/);
+    cleanup();
+    body = artifacts(runEntry({ ...OLD_RUN, repeats: 3 } as typeof OLD_RUN), runEntry({ ...NEW_RUN, repeats: 3 }));
+    page();
+    await loaded();
+    const t = panel('Test configuration').textContent!;
+    expect(t).toContain('repeated 3 times');
+    expect(t).not.toMatch(/single run/);
+    expect(t).not.toMatch(/no variance can be stated/);
+  });
+
   it('two runs on the same machine are compared: p95 side by side with commit and date, no averages', async () => {
     const { container } = page();
     await loaded();
@@ -140,9 +175,10 @@ describe('Performance', () => {
     expect(p.textContent).toContain('4 Nov 2026');
     expect(p.textContent).toMatch(/slower on every measure compared: all 5 p95 values and both engine cycles/);
     expect(p.textContent).toMatch(/slower on 16 of 17 measures; not slower: Action Center \(officer\) p99/);
-    expect(p.textContent).toMatch(/not like-for-like/);
+    expect(p.textContent).toMatch(/whether the runs are like-for-like/);
     expect(p.textContent).toMatch(/simulated date/);
-    expect(p.textContent).toMatch(/no variance can be stated/);
+    expect(p.textContent).not.toMatch(/state differed between them/);
+    expect(p.textContent).toMatch(/no variance can be stated/i);
     expect(p.textContent).toContain('docs/evidence/BENCHMARKS.md');
     expect(container.textContent).not.toMatch(/average|mean\b/i);
   });
