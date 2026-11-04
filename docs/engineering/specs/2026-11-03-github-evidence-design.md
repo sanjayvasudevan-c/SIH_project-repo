@@ -1,5 +1,7 @@
 # GitHub-facing evidence pack — design
 
+> Historical design record. The repo-native evidence narrative is retained; the in-app Evidence Center UI is intentionally not exposed in the current application.
+
 Date: 2026-11-03 · Repo: `sanjayvasudevan-c/SIH_project-repo` · Branch: `claude/new-session-35imia`
 
 ## Intent and the why

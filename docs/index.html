@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>SIH evaluation evidence | GeoLogics</title>
+  <style>
+    :root { color-scheme: light dark; --ink: #172b3a; --muted: #526574; --line: #d4dde3; --panel: #fff; --wash: #f3f7f9; --accent: #087e8b; --focus: #b45309; }
+    @media (prefers-color-scheme: dark) { :root { --ink: #e5edf2; --muted: #a8bbc7; --line: #40515d; --panel: #18232b; --wash: #202e37; --accent: #43c4c8; --focus: #fbbf24; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--wash); color: var(--ink); font: 16px/1.55 system-ui, sans-serif; }
+    main { max-width: 980px; margin: auto; padding: 28px 20px 64px; }
+    a { color: var(--accent); }
+    header { border-bottom: 1px solid var(--line); padding-bottom: 22px; margin-bottom: 24px; }
+    .eyebrow { color: var(--muted); font-size: .85rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { font-size: clamp(1.8rem, 5vw, 2.8rem); line-height: 1.15; margin: .35rem 0 .6rem; }
+    h2 { font-size: 1.35rem; margin: 0 0 8px; }
+    p { margin: .45rem 0 .9rem; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin: 18px 0; }
+    .controls { display: flex; flex-wrap: wrap; align-items: end; gap: 14px; }
+    label { display: grid; gap: 5px; font-weight: 650; }
+    select, button { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 7px; padding: 8px 11px; }
+    button { cursor: pointer; }
+    button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+    :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 4px; }
+    .meta, .note { color: var(--muted); font-size: .93rem; }
+    .callout { border-left: 4px solid var(--accent); padding: 9px 13px; background: var(--wash); }
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 16px 0; }
+    .metric { background: var(--wash); border-radius: 8px; padding: 13px; }
+    .metric strong { display: block; font-size: 1.35rem; }
+    .metric span { color: var(--muted); font-size: .9rem; }
+    .chart { width: 100%; height: auto; display: block; overflow: visible; }
+    .chart text { fill: currentColor; font-family: system-ui, sans-serif; }
+    .chart .bar { fill: var(--accent); }
+    .chart .axis { stroke: var(--line); }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+    th, td { border-bottom: 1px solid var(--line); padding: 9px 8px; text-align: left; vertical-align: top; }
+    th { font-size: .88rem; }
+    .table-wrap { overflow-x: auto; }
+    .status { padding: 10px 12px; border-radius: 7px; background: var(--wash); color: var(--muted); }
+    [hidden] { display: none !important; }
+    details { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 14px; }
+    summary { cursor: pointer; font-weight: 700; }
+    footer { margin-top: 28px; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 600px) { main { padding: 20px 13px 40px; } .panel { padding: 15px; } th, td { padding: 7px 5px; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">Smart India Hackathon 2026 · SIH26262 · Team GeoLogics</div>
+    <h1>What this prototype demonstrates</h1>
+    <p>Approval cases need clear ownership, visible deadlines, explainable assignment, and a human decision record. This prototype models those workflow controls. It does not make approval decisions, and its people, applications, and benchmark records are synthetic.</p>
+    <p><a href="https://github.com/sanjayvasudevan-c/SIH_project-repo/blob/main/docs/evaluation/README.md">Read the complete evaluation guide</a> · <a href="https://github.com/sanjayvasudevan-c/SIH_project-repo/blob/main/docs/README.md">Browse all project documentation</a></p>
+  </header>
+
+  <section class="panel" aria-labelledby="benchmark-title">
+    <h2 id="benchmark-title">Explore a measured benchmark run</h2>
+    <p>Select one recorded run to inspect. Values always come from that run’s JSON artifact; runs are not averaged or combined.</p>
+    <div class="controls">
+      <label for="run-select">Benchmark run
+        <select id="run-select">
+          <option value="evidence/benchmark-results/f78d82e.json">4 Nov 2026 · f78d82e</option>
+          <option value="evidence/benchmark-results/565c210.json">3 Nov 2026 · 565c210</option>
+        </select>
+      </label>
+      <div id="run-meta" class="meta" aria-live="polite">Loading run data…</div>
+    </div>
+    <div class="tabs" role="group" aria-label="Benchmark question">
+      <button type="button" data-view="engine" aria-pressed="true">Engine and alerts</button>
+      <button type="button" data-view="reads" aria-pressed="false">Read-screen latency</button>
+    </div>
+    <div id="status" class="status" role="status" hidden></div>
+    <div id="engine-view">
+      <h3>Did the second cycle repeat alert creation?</h3>
+      <div id="engine-metrics" class="metrics"></div>
+      <svg id="engine-chart" class="chart" role="img" aria-label="New alerts and duplicate attempts suppressed by engine cycle"></svg>
+      <p id="engine-note" class="callout"></p>
+      <p class="note">“Suppressed” counts duplicate alert attempts prevented by the idempotency check. It does not count alerts delivered to people.</p>
+    </div>
+    <div id="reads-view" hidden>
+      <h3>How long did the five read screens take?</h3>
+      <p>Each screen received 400 requests at concurrency 20. Bars show p95 response time in milliseconds; the table includes the request and error counts.</p>
+      <svg id="reads-chart" class="chart" role="img" aria-label="95th percentile response latency for five read screens"></svg>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">Screen</th><th scope="col">Requests</th><th scope="col">Errors</th><th scope="col">p50</th><th scope="col">p95</th><th scope="col">p99</th></tr></thead>
+        <tbody id="reads-table"></tbody>
+      </table></div>
+      <p class="note">A zero reported error count applies only to this synthetic run and request sample; it does not establish reliability under production traffic.</p>
+    </div>
+    <details>
+      <summary>Method and limits</summary>
+      <p>The benchmark seeds 15,000 synthetic applications, runs the deadline engine twice, then sends 400 requests to each read screen at concurrency 20. The first cycle has setup work; the second cycle checks repeat behavior. Runs were made at different commits on the same reported four-core host and are available separately for inspection.</p>
+      <p>Both engine cycles in the 4 November run took longer than the demo’s one-minute interval. The two runs are not a controlled before/after experiment. They do not establish production, multi-region, or real AICTE workload performance.</p>
+      <p>Source artifact: <a id="artifact-link" href="evidence/benchmark-results/f78d82e.json">benchmark JSON</a>. See the <a href="https://github.com/sanjayvasudevan-c/SIH_project-repo/blob/main/docs/evidence/BENCHMARKS.md">full methodology and results</a> and <a href="https://github.com/sanjayvasudevan-c/SIH_project-repo/blob/main/docs/evaluation/README.md">claim-by-claim evaluation</a>.</p>
+    </details>
+  </section>
+
+  <section class="panel">
+    <h2>From workflow problem to evidence</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th scope="col">Problem</th><th scope="col">Prototype capability</th><th scope="col">Inspect and evaluate</th><th scope="col">Limit</th></tr></thead>
+      <tbody>
+        <tr><td>Rule changes can make filed cases ambiguous.</td><td>Cases pin substantive rule sections to their filing version.</td><td><a href="https://github.com/sanjayvasudevan-c/SIH_project-repo/blob/main/docs/evaluation/README.md">Rule-version evidence</a> · <a href="https://github.com/sanjayvasudevan-c/SIH_project-repo/blob/main/api/src/rules/resolved.ts">Implementation</a></td><td>Rule values and pinning choices need AICTE validation.</td></tr>
+        <tr><td>Handoffs and deadlines can obscure the current owner.</td><td>Role queues, transitions, paused clocks, reminders, and escalations.</td><td><a href="https://github.com/sanjayvasudevan-c/SIH_project-repo/blob/main/docs/evaluation/README.md">Workflow evidence</a> · <a href="https://github.com/sanjayvasudevan-c/SIH_project-repo/blob/main/docs/evidence/WORKFLOW.md">Diagrams</a></td><td>Calendars and thresholds are placeholders; external messaging is absent.</td></tr>
+        <tr><td>Assignments need an explanation, including when no one is eligible.</td><td>Eligibility-based assignment stores a reason and candidate trace.</td><td><a href="https://github.com/sanjayvasudevan-c/SIH_project-repo/blob/main/docs/evaluation/README.md">Assignment evidence</a> · <a href="https://github.com/sanjayvasudevan-c/SIH_project-repo/blob/main/api/src/assignment/engine.ts">Implementation</a></td><td>Seeded workload is synthetic and does not establish real-world fairness.</td></tr>
+        <tr><td>Reviewers need to detect possible form inconsistencies.</td><td>Rules-plus-model form check flags issues for human review.</td><td><a href="https://github.com/sanjayvasudevan-c/SIH_project-repo/blob/main/formcheck/EVALUATION.md">Evaluation results</a></td><td>Synthetic data only; unit-error recall is 0.315.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+  <footer>Prototype evidence is retained for evaluator review. <a href="https://github.com/sanjayvasudevan-c/SIH_project-repo/blob/main/docs/evidence/README.md">Evidence Center implementation record</a> · <a href="https://github.com/sanjayvasudevan-c/SIH_project-repo/blob/main/README.md">Repository overview</a></footer>
+</main>
+<script>
+  const number = (n) => new Intl.NumberFormat('en-US').format(n);
+  const duration = (ms) => `${(ms / 1000).toFixed(1)} s`;
+  const svgEl = (name, attrs = {}) => {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', name);
+    for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, String(value));
+    return el;
+  };
+  function drawBars(svg, rows, unit, maxValue) {
+    svg.replaceChildren();
+    const width = 820, left = 245, top = 18, rowHeight = 42, barWidth = width - left - 115;
+    const height = Math.max(100, top + rows.length * rowHeight + 12);
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    const axis = svgEl('line', { x1: left, y1: top - 5, x2: left, y2: height - 5, class: 'axis' });
+    svg.append(axis);
+    rows.forEach((row, index) => {
+      const y = top + index * rowHeight;
+      const label = svgEl('text', { x: left - 10, y: y + 18, 'text-anchor': 'end', 'font-size': 14 });
+      label.textContent = row.label;
+      const bar = svgEl('rect', { x: left, y: y + 3, width: Math.max(0, barWidth * row.value / maxValue), height: 22, rx: 3, class: 'bar' });
+      const value = svgEl('text', { x: left + Math.max(0, barWidth * row.value / maxValue) + 8, y: y + 20, 'font-size': 14 });
+      value.textContent = `${number(row.value)} ${unit}`.trim();
+      svg.append(label, bar, value);
+    });
+  }
+  function metric(label, value, detail) {
+    const card = document.createElement('div'); card.className = 'metric';
+    const strong = document.createElement('strong'); strong.textContent = value;
+    const title = document.createElement('span'); title.textContent = label;
+    const note = document.createElement('span'); note.textContent = detail;
+    card.append(strong, title, document.createElement('br'), note); return card;
+  }
+  async function loadRun(path) {
+    const status = document.querySelector('#status'); status.hidden = true;
+    try {
+      const response = await fetch(path);
+      if (!response.ok) throw new Error(`Could not load the recorded run (${response.status}).`);
+      const run = await response.json();
+      document.querySelector('#run-meta').textContent = `${new Date(run.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} · commit ${run.commit} · ${number(run.data.applications)} synthetic applications · ${run.machine.cpus} reported CPUs`;
+      document.querySelector('#artifact-link').href = path;
+      document.querySelector('#artifact-link').textContent = `${run.commit}.json`;
+      const cycles = [run.engine.firstCycle, run.engine.secondCycle];
+      const cards = document.querySelector('#engine-metrics'); cards.replaceChildren(
+        metric('First cycle duration', duration(cycles[0].ms), `${number(cycles[0].newAlerts)} new alerts`),
+        metric('Second cycle duration', duration(cycles[1].ms), `${number(cycles[1].newAlerts)} new alerts`),
+        metric('Duplicate attempts suppressed', number(cycles[0].alertsSuppressed ?? 0), 'cycle 1'),
+        metric('Duplicate attempts suppressed', number(cycles[1].alertsSuppressed ?? 0), 'cycle 2'),
+      );
+      drawBars(document.querySelector('#engine-chart'), [
+        { label: 'New alerts · cycle 1', value: cycles[0].newAlerts },
+        { label: 'Suppressed attempts · cycle 1', value: cycles[0].alertsSuppressed ?? 0 },
+        { label: 'New alerts · cycle 2', value: cycles[1].newAlerts },
+        { label: 'Suppressed attempts · cycle 2', value: cycles[1].alertsSuppressed ?? 0 },
+      ], 'alerts', Math.max(...cycles.flatMap(c => [c.newAlerts, c.alertsSuppressed ?? 0]), 1));
+      document.querySelector('#engine-note').textContent = cycles.some(c => c.ms > 60000)
+        ? `At least one cycle exceeded the demo’s one-minute scheduler interval; the measured cycle duration is a limitation to address.`
+        : `Both measured engine cycles completed within the demo’s one-minute interval in this run only.`;
+      const reads = run.reads;
+      drawBars(document.querySelector('#reads-chart'), reads.map(r => ({ label: r.screen, value: r.p95ms })), 'ms', Math.max(...reads.map(r => r.p95ms), 1));
+      const tbody = document.querySelector('#reads-table'); tbody.replaceChildren();
+      reads.forEach(r => {
+        const tr = document.createElement('tr');
+        [r.screen, number(r.requests), number(r.errors), `${number(r.p50ms)} ms`, `${number(r.p95ms)} ms`, `${number(r.p99ms)} ms`].forEach((value, i) => {
+          const cell = document.createElement(i === 0 ? 'th' : 'td');
+          if (i === 0) cell.scope = 'row'; cell.textContent = value; tr.append(cell);
+        });
+        tbody.append(tr);
+      });
+    } catch (error) {
+      status.textContent = `${error.message} The Markdown reports and JSON files remain available in the repository.`;
+      status.hidden = false;
+      document.querySelector('#run-meta').textContent = 'Run data unavailable';
+    }
+  }
+  document.querySelector('#run-select').addEventListener('change', event => loadRun(event.target.value));
+  document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => {
+    document.querySelectorAll('[data-view]').forEach(tab => tab.setAttribute('aria-pressed', String(tab === button)));
+    document.querySelector('#engine-view').hidden = button.dataset.view !== 'engine';
+    document.querySelector('#reads-view').hidden = button.dataset.view !== 'reads';
+  }));
+  loadRun(document.querySelector('#run-select').value);
+</script>
+</body>
+</html>

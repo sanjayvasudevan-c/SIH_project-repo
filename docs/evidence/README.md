@@ -1,9 +1,14 @@
-# Evidence and Validation System
+# Evidence Center implementation record
 
-The Evidence Center is **built**: an administrator-only screen at `/admin/evidence` (Administration, then Evidence
-Center) with eight sections, backed by a read-only API at `/api/evidence/*`. Audit findings that led to it are in
-[`INITIAL_AUDIT.md`](INITIAL_AUDIT.md). It is a prototype screen over synthetic and demo data, not a production
-monitoring tool.
+This directory documents and supports the Evidence Center implementation retained in the repository. Its UI is
+intentionally **not exposed in the current application**: the admin navigation has no entry and direct visits to
+`/admin/evidence` return to Administration. The source, read-only ADMIN API, database models, migrations, tests,
+screenshots, and benchmark artifacts remain available for technical review. This is a prototype over synthetic and
+demo data, not a production monitoring tool.
+
+For the evaluator-facing summary of problem, implementation, results, and limitations, see
+[`../evaluation/README.md`](../evaluation/README.md). This document describes the preserved Evidence Center data
+contract and implementation for code reviewers; its archived screenshots show the former in-app presentation.
 
 ## The one rule this system exists to enforce
 

@@ -1,5 +1,7 @@
 # GitHub Evidence Pack Implementation Plan
 
+> Historical implementation plan retained for its design rationale and audit trail. Current evaluator documentation is in [`docs/evaluation/README.md`](../../evaluation/README.md).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make this repository's already-measured engineering legible to an SIH evaluator in about two minutes, from the landing page, without cloning or signing in.
@@ -8,7 +10,7 @@
 
 **Tech Stack:** Node 22 (plain ESM scripts, no chart library — hand-rolled SVG strings), TypeScript for the `load-test.ts` change, Python 3.13 for `evaluate.py`, Markdown + Mermaid, PostgreSQL 16 locally for the benchmark run.
 
-**Spec:** `docs/superpowers/specs/2026-11-03-github-evidence-design.md`
+**Spec:** `docs/engineering/specs/2026-11-03-github-evidence-design.md`
 
 ## Global Constraints
 
@@ -248,7 +250,7 @@ Its header cites commit `d0f97d9`. Update to the current commit and today's date
 - [ ] **Step 3: Fix the two references and prove none remain**
 
 Run: `grep -rn 'FEATURE_INVENTORY' . --exclude-dir=node_modules --exclude-dir=.git`
-Expected: only `docs/superpowers/specs/...` (the design doc's own prose) — no live links in `demo-production/`.
+Expected: only `docs/engineering/specs/...` (the design doc's own prose) — no live links in `demo-production/`.
 
 - [ ] **Step 4: Commit**
 

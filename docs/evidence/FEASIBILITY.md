@@ -38,7 +38,7 @@ Related limits already stated elsewhere: audit is not tamper-proof against a pri
 
 ## Scale
 
-At 15,000 applications on a single 4-core machine, a full deadline-engine cycle took 93.8 s the first time (9,321 alerts) and 47.1 s the second (0 alerts), both longer than the demo's one-minute schedule. Details and the command to reproduce: [`BENCHMARKS.md`](BENCHMARKS.md). One run, synthetic data, not a production benchmark.
+At 15,000 applications on a single 4-core machine, the 4 November run took 131.5 s on the first deadline-engine cycle and 68.1 s on the second; the second cycle created no new alerts and recorded 6,490 duplicate attempts suppressed. Both cycles exceed the demo's one-minute schedule. Details and the command to reproduce: [`BENCHMARKS.md`](BENCHMARKS.md). One run, synthetic data, not a production benchmark.
 
 ## What needs real AICTE validation
 

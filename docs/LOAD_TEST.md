@@ -1,4 +1,6 @@
-# Load test: the demo at 15,000 applications
+# Historical load test: the demo at 15,000 applications
+
+> This is the 26 October 2026 benchmark record. It is retained as historical evidence; use [`evidence/BENCHMARKS.md`](evidence/BENCHMARKS.md) for the later machine-readable runs, their commits, duplicate-prevention counters, and current methodology. The runs used different commits and should not be pooled as one result.
 
 Run with `npm --workspace api run load:test` (script: `api/scripts/load-test.ts`). It resets the demo database, copies the seeded applications with their deadline items and assignments until there are 15,000 applications (due dates spread ±20 days around today), times two full deadline-engine cycles, then times the main read screens under 20 concurrent requests. It resets the demo database again at the end.
 

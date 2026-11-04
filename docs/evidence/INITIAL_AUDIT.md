@@ -3,6 +3,10 @@
 Everything below was measured by running the code in this repository, not read off the README. Where a claim
 could not be checked in this environment it is marked `NOT VERIFIED` and the reason is given.
 
+This is a dated baseline, not a statement of current behavior. Later updates record the Evidence Center source and
+API as implemented; the UI was subsequently removed from normal app navigation and its direct route now returns to
+Administration. The implementation and archived evidence remain in the repository.
+
 ## Run provenance
 
 | | |
@@ -172,7 +176,7 @@ I watched it pass.
 | Latency percentiles | PARTIALLY IMPLEMENTED | p50 and p95 are reported | no p99, no throughput figure, no error-rate field, one concurrency level (20) and one dataset size. **Update, 4 Nov 2026:** the JSON now has p50, p95, p99, max, requests per second and an error count per screen. Still one concurrency level (20) and one dataset size (15,000). |
 | Demo reset | IMPLEMENTED AND TESTED | `api/src/lib/demoReset.ts` | `reset.test.ts` ("restores the seed in seconds and every demo user can log in") |
 | Hosted (Vercel + Neon) mode | IMPLEMENTED BUT NOT VERIFIED **here** | `api/src/serverless.ts`, `lib/hosted.ts` | works per earlier sessions; **not tested in this audit** — no network calls were made to the live site |
-| Evidence Center UI | **MISSING at the audited commit; BUILT since (see update)** | — | no such screen exists. The `evidence` hits in `web/src` are undertaking evidence and the compliance verify panel, which are unrelated. **Update, 4 Nov 2026:** built. `/admin/evidence` has eight sections; see [`README.md`](README.md) and `docs/screens/evidence/`. `npm run evidence:verify` cross-checks its numbers against raw SQL. It is a prototype screen; CI has never run on GitHub, so the stored test verdict reads Not verified. |
+| Evidence Center UI | **MISSING at the audited commit; BUILT later, then hidden from app routes** | — | no such screen existed at the baseline. The `evidence` hits in `web/src` were undertaking evidence and the compliance verify panel. **Update, 4 Nov 2026:** the eight-section UI, read-only API, and SQL verifier were implemented; see [`README.md`](README.md) and `docs/screens/evidence/`. The current app intentionally does not expose the UI. CI status is not asserted here. |
 | Official SIH problem statement in the repository | **MISSING — blocker for Phase 2** | only prose mentions in `README.md` and `CONTRIBUTORS.md` | see below |
 
 ### Frontend

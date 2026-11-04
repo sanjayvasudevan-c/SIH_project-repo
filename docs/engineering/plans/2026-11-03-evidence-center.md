@@ -1,5 +1,7 @@
 # Evidence Center Implementation Plan
 
+> Historical implementation plan. The implementation, API, tests, and evidence artifacts remain in the repository. The UI was later removed from the normal application routes and navigation; see [`docs/evidence/README.md`](../../evidence/README.md) for the retained implementation record and [`docs/evaluation/README.md`](../../evaluation/README.md) for the current evaluator guide.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Give a judge an in-app Evidence Center whose every panel is drawn from real stored data — scheduler run history, assignment decisions, audit integrity and committed evidence artifacts — with provenance declared per panel and no status that a real check did not produce.
@@ -8,7 +10,7 @@
 
 **Tech Stack:** Prisma 5 / PostgreSQL 16, Express 4 + zod, React 18 + TanStack Query 5 + react-router-dom 6, recharts 2.15.0 with `web/src/lib/chartTokens.ts`, Tailwind, lucide-react, vitest against a real database.
 
-**Spec:** `docs/superpowers/specs/2026-11-03-github-evidence-design.md` (its "Architecture" and "Database additions" sections) and `docs/evidence/README.md` (the Evidence Center design, sections A–I).
+**Spec:** `docs/engineering/specs/2026-11-03-github-evidence-design.md` (its "Architecture" and "Database additions" sections) and `docs/evidence/README.md` (the Evidence Center design, sections A–I).
 
 ## Scope note — this is one plan of five
 
