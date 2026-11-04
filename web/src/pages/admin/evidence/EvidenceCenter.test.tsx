@@ -61,6 +61,11 @@ describe('EvidenceCenter shell', () => {
     expect(panel).toHaveAttribute('aria-labelledby', tab.id);
     expect(tab).toHaveAttribute('aria-controls', panel.id);
   });
+  it.each(LABELS.map((l, i) => [IDS[i]!, l]))('the %s section renders under its own heading', (id, label) => {
+    renderWithApp(app(), { route: `/admin/evidence/${id}` });
+    expect(screen.getByRole('heading', { level: 2, name: label })).toBeInTheDocument();
+    expect(screen.getByRole('tabpanel').textContent).toContain(SECTIONS.find((s) => s.id === id)!.description);
+  });
   it('arrow-key tab changes replace history rather than push', () => {
     renderWithApp(app(), { route: '/admin/evidence/overview' });
     fireEvent.keyDown(screen.getByRole('tab', { name: 'Overview' }), { key: 'ArrowRight' });

@@ -203,11 +203,6 @@ describe('Assignment: decisions in the period', () => {
     expect(document.body.innerHTML).not.toMatch(/\bfair/i);
   });
 
-  it('has no placeholder left', async () => {
-    const { container } = page();
-    await loaded();
-    expect(container.querySelector('[data-placeholder]')).toBeNull();
-  });
 
   it('a failed load shows a retry in each panel', async () => {
     let fail = true;

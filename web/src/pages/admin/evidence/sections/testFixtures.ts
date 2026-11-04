@@ -287,7 +287,7 @@ export const METRICS = {
   generatedAt: '2026-11-03T13:35:09+00:00',
   commit: '6f6e7cd',
 };
-export const metricsEntry = (data: unknown = METRICS, status: 'READ' | 'NOT_VERIFIED' = 'READ') => ({ name: 'formcheck/metrics.json', status, provenance: 'SYNTHETIC', commit: '6f6e7cd', data });
+export const metricsEntry = (data: unknown = METRICS, status: 'READ' | 'NOT_VERIFIED' = 'READ') => ({ name: 'formcheck/metrics.json', status, provenance: 'SYNTHETIC' as const, commit: '6f6e7cd', data });
 
 const reads = (p95: number[], p50: number[] = [100, 100, 100, 100, 100], p99: number[] = [900, 900, 900, 900, 900]) =>
   ['Action Center (officer)', 'Action Center summary (senior)', 'Applications list (officer)', 'Team report (senior)', 'Authority queue'].map((screen, i) => ({
@@ -307,5 +307,5 @@ export const NEW_RUN = {
   engine: { firstCycle: { ms: 131493, newAlerts: 10282, alertsSuppressed: 47 }, secondCycle: { ms: 68084, newAlerts: 0, alertsSuppressed: 6490 } },
   reads: reads([508, 259, 1022, 2296, 471], [358, 189, 904, 2087, 409], [526, 302, 1046, 2365, 486]),
 };
-export const runEntry = (run: { commit: string }, status: 'READ' | 'NOT_VERIFIED' = 'READ') => ({ name: `benchmark-results/${run.commit}.json`, status, provenance: 'BENCHMARK', commit: run.commit, data: status === 'READ' ? run : null });
+export const runEntry = (run: { commit: string }, status: 'READ' | 'NOT_VERIFIED' = 'READ') => ({ name: `benchmark-results/${run.commit}.json`, status, provenance: 'BENCHMARK' as const, commit: run.commit, data: status === 'READ' ? run : null });
 export const artifacts = (...entries: unknown[]) => ({ artifacts: entries });
