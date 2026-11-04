@@ -1,5 +1,5 @@
 // Test data shaped like the live /evidence responses (read from the dev API), trimmed.
-import type { AlertsData, AssignmentData, AssignmentTraceResponse, ComplianceData, ComplianceEnvelope, EngineRunDetailRow, EngineRunsDetailResponse, EngineRunsResponse, EvidenceEnvelope, EvidenceSummary, TraceCandidate, WorkflowData } from '../../../../api/types';
+import type { AlertsData, AuditAnalyticsData, AssignmentData, AssignmentTraceResponse, ComplianceData, ComplianceEnvelope, EngineRunDetailRow, EngineRunsDetailResponse, EngineRunsResponse, EvidenceEnvelope, EvidenceSummary, TraceCandidate, WorkflowData } from '../../../../api/types';
 
 const STARTED = new Date(Date.now() - 4 * 3600_000).toISOString();
 
@@ -230,3 +230,82 @@ export const alerts = (over: Partial<AlertsData> = {}): EvidenceEnvelope<AlertsD
   provenance: { total: 'MEASURED', byKind: 'MEASURED', reminderTiming: 'MEASURED', perDay: 'MEASURED', escalationsByLevel: 'MEASURED', notifications: 'MEASURED', notRecorded: null },
   data: alertsData(over),
 });
+
+// ── Audit analytics (the live /evidence/audit-analytics shape, trimmed) ──────
+export const AUDIT_DEFS = {
+  events: 'EVENTS DEF: number of audit-log events matching the filters.',
+  integrity: 'INTEGRITY LIVE DEF: recomputed now over the WHOLE audit log. It reports damage after the fact; it does not prevent anyone with database access from changing rows.',
+};
+export const auditAnalytics = (over: Partial<AuditAnalyticsData> = {}): EvidenceEnvelope<AuditAnalyticsData> => ({
+  definition: { scope: 'SCOPE', events: AUDIT_DEFS.events, integrity: AUDIT_DEFS.integrity },
+  provenance: { events: 'MEASURED', integrity: 'LIVE_DEMO' },
+  data: {
+    window: { from: null, to: null },
+    filters: { actor: null, action: null, entity: null },
+    total: 772,
+    byActorRole: [
+      { actorRole: 'COLLEGE', count: 428 },
+      { actorRole: 'OFFICER', count: 189 },
+      { actorRole: 'AUTHORITY', count: 45 },
+      { actorRole: 'SYSTEM', count: 40 },
+      { actorRole: 'ADMIN', count: 70 },
+    ],
+    byAction: [
+      { action: 'ASSIGN', count: 220 },
+      { action: 'SUBMIT', count: 191 },
+      { action: 'RELEASE', count: 83 },
+      { action: 'FORM_CHECK_JUSTIFIED', count: 18 },
+      { action: 'LOGIN', count: 3 },
+    ],
+    byEntity: [
+      { entity: 'APPLICATION', count: 724 },
+      { entity: 'SYSTEM', count: 28 },
+      { entity: 'RULE_PACK', count: 20 },
+    ],
+    integrity: { ok: true, chainsChecked: 193, rowsChecked: 772, brokenChainCount: 0, scope: 'WHOLE_LOG' },
+    ...over,
+  },
+});
+
+// ── Artifacts (the live /evidence/artifacts shape) ───────────────────────────
+export const METRICS = {
+  model: 'application_form_v1',
+  threshold: 0.5794,
+  datasets: { train: 4000, testNormal: 1000, testFaulty: 1000, synthetic: true },
+  modes: {
+    'Rules only': { precision: 1, recall: 0.859, false_alarm_rate: 0 },
+    'Model only': { precision: 0.842, recall: 0.117, false_alarm_rate: 0.022 },
+    'Hybrid (rules or model)': { precision: 0.975, recall: 0.863, false_alarm_rate: 0.022 },
+  },
+  perFault: {
+    unit_error: { 'Rules only': 0.295, 'Model only': 0.07, 'Hybrid (rules or model)': 0.315 },
+    builtup_over: { 'Rules only': 1, 'Model only': 0.28, 'Hybrid (rules or model)': 1 },
+    faculty_short: { 'Rules only': 1, 'Model only': 0.09, 'Hybrid (rules or model)': 1 },
+    expired_lease: { 'Rules only': 1, 'Model only': 0.06, 'Hybrid (rules or model)': 1 },
+    bulk_missing: { 'Rules only': 1, 'Model only': 0.085, 'Hybrid (rules or model)': 1 },
+  },
+  generatedAt: '2026-11-03T13:35:09+00:00',
+  commit: '6f6e7cd',
+};
+export const metricsEntry = (data: unknown = METRICS, status: 'READ' | 'NOT_VERIFIED' = 'READ') => ({ name: 'formcheck/metrics.json', status, provenance: 'SYNTHETIC', commit: '6f6e7cd', data });
+
+const reads = (p95: number[], p50: number[] = [100, 100, 100, 100, 100], p99: number[] = [900, 900, 900, 900, 900]) =>
+  ['Action Center (officer)', 'Action Center summary (senior)', 'Applications list (officer)', 'Team report (senior)', 'Authority queue'].map((screen, i) => ({
+    screen, requests: 400, concurrency: 20, errors: i === 3 ? 2 : 0, p50ms: p50[i], p95ms: p95[i], p99ms: p99[i], maxMs: p99[i]! + 10, perSecond: 50 - i,
+  }));
+const OLD_MACHINE = { cpus: 4, cpuModel: 'Intel(R) Xeon(R) Processor @ 2.10GHz', memoryGb: 16, node: 'v22.22.0' };
+export const OLD_RUN = {
+  commit: '565c210', datasetSize: 15000, pgVersion: '16.15', date: '2026-11-03T08:26:18.480Z', machine: OLD_MACHINE,
+  data: { seededApplications: 191, applications: 15000, deadlineItems: 27412, openDeadlineItems: 13982, assignments: 17279, bulkLoadMs: 1742 },
+  engine: { firstCycle: { ms: 93800, newAlerts: 9321 }, secondCycle: { ms: 47100, newAlerts: 0 } },
+  reads: reads([461, 199, 815, 1851, 348], [276, 146, 756, 1648, 298], [572, 234, 849, 1946, 398]),
+};
+export const NEW_RUN = {
+  provenance: 'BENCHMARK', repeats: 1, resourceUse: null, commit: 'f78d82e', datasetSize: 15000, pgVersion: '16.15', date: '2026-11-04T00:32:35.329Z',
+  machine: { ...OLD_MACHINE, totalMemoryBytes: 16872804352, os: 'Linux 6.18.44-fc-v230 x64', postgres: '16.15' },
+  data: { seededApplications: 191, applications: 15000, deadlineItems: 27409, openDeadlineItems: 13974, assignments: 17275, bulkLoadMs: 1854 },
+  engine: { firstCycle: { ms: 131493, newAlerts: 10282, alertsSuppressed: 47 }, secondCycle: { ms: 68084, newAlerts: 0, alertsSuppressed: 6490 } },
+  reads: reads([508, 259, 1022, 2296, 471], [358, 189, 904, 2087, 409], [526, 302, 1046, 2365, 486]),
+};
+export const runEntry = (run: { commit: string }, status: 'READ' | 'NOT_VERIFIED' = 'READ') => ({ name: `benchmark-results/${run.commit}.json`, status, provenance: 'BENCHMARK', commit: run.commit, data: status === 'READ' ? run : null });
+export const artifacts = (...entries: unknown[]) => ({ artifacts: entries });

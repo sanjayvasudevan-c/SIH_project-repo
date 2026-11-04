@@ -408,10 +408,27 @@ export interface EngineRunsResponse {
   provenance: Record<string, Provenance | null>;
 }
 
-/** GET /evidence/audit-analytics `data` (integrity only; the breakdowns belong to the Audit section). */
+/** GET /evidence/audit-analytics `data`: counts only, never case content. */
 export interface AuditAnalyticsData {
+  window?: { from: string | null; to: string | null };
+  filters?: { actor: string | null; action: string | null; entity: string | null };
   total: number;
+  byActorRole?: { actorRole: string; count: number }[];
+  byAction?: { action: string; count: number }[];
+  byEntity?: { entity: string; count: number }[];
   integrity: { ok: boolean; chainsChecked: number; rowsChecked: number; brokenChainCount: number; scope: string };
+}
+
+/** GET /evidence/artifacts: one entry per stored evidence file. `data` is the parsed JSON, null when it could not be read. */
+export interface ArtifactEntry {
+  name: string;
+  status: 'READ' | 'NOT_VERIFIED';
+  provenance: Provenance | null;
+  commit: string | null;
+  data: unknown;
+}
+export interface ArtifactsResponse {
+  artifacts: ArtifactEntry[];
 }
 
 // ── Evidence Center: assignment (read from the live responses) ───────────────

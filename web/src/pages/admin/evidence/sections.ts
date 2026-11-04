@@ -23,7 +23,7 @@ export const SECTIONS: SectionDef[] = [
   { id: 'assignment', label: 'Assignment', description: 'How cases are assigned to officers, with the stored reason for each decision.', Component: AssignmentSection },
   { id: 'scheduler', label: 'Scheduler & compliance', description: 'What the deadline engine ran, what it created and suppressed, and what colleges owe.', Component: SchedulerSection },
   { id: 'alerts', label: 'Alerts', description: 'The alerts the system raised and what is and is not recorded about them.', Component: AlertsSection },
-  { id: 'audit', label: 'Audit', description: 'The tamper-evident audit log, its integrity check and what it records.', Component: AuditSection },
+  { id: 'audit', label: 'Audit', description: 'What the audit log records, in counts, and its integrity check.', Component: AuditSection },
   { id: 'ml', label: 'ML evaluation', description: 'How the form-check model performs on its synthetic evaluation data.', Component: MlSection },
   { id: 'performance', label: 'Performance', description: 'Benchmark timings and the machine they were measured on.', Component: PerformanceSection },
 ];

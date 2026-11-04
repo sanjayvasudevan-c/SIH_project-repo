@@ -61,10 +61,6 @@ describe('EvidenceCenter shell', () => {
     expect(panel).toHaveAttribute('aria-labelledby', tab.id);
     expect(tab).toHaveAttribute('aria-controls', panel.id);
   });
-  it('an unbuilt section is marked as a placeholder (audit)', () => {
-    const { container } = renderWithApp(app(), { route: '/admin/evidence/audit' });
-    expect(container.querySelector('[data-placeholder]')).not.toBeNull();
-  });
   it('arrow-key tab changes replace history rather than push', () => {
     renderWithApp(app(), { route: '/admin/evidence/overview' });
     fireEvent.keyDown(screen.getByRole('tab', { name: 'Overview' }), { key: 'ArrowRight' });
@@ -74,6 +70,11 @@ describe('EvidenceCenter shell', () => {
     renderWithApp(app(), { route: '/admin/evidence/overview?from=2026-09-01&to=2026-09-30' });
     fireEvent.change(screen.getByLabelText('Section'), { target: { value: 'audit' } });
     expect(screen.getByTestId('where').textContent).toBe('/admin/evidence/audit');
+  });
+  it('moving to another section drops the audit filters as well as the range', () => {
+    renderWithApp(app(), { route: '/admin/evidence/audit?from=2026-09-01&actor=ADMIN&action=LOGIN&entity=SYSTEM' });
+    fireEvent.click(screen.getByRole('tab', { name: 'Alerts' }));
+    expect(screen.getByTestId('where').textContent).toBe('/admin/evidence/alerts');
   });
   it('clicking a tab navigates and drops the date range', () => {
     renderWithApp(app(), { route: '/admin/evidence/overview?from=2026-09-01' });
