@@ -1,6 +1,7 @@
 // Stored evidence on disk. Everything here READS a recorded artifact; nothing computes a verdict.
 //
-// test-results.json (in EVIDENCE_DIR), written by CI:
+// test-results.json (in EVIDENCE_DIR), written only by `npm run evidence:record-tests` (scripts/record-test-results.mjs),
+// run locally against the dev database. CI does not write it (ci.yml uploads JUnit XML and commit.txt only):
 //   { commit: full 40-char sha (7..40 hex accepted), status: 'PASS' | 'FAIL', passed: int, failed: int,
 //     notVerified?: int, runAt?: ISO date string }
 // It reads as NOT_VERIFIED when absent, malformed, PASS with failed > 0, PASS with passed === 0 (nothing was

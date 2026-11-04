@@ -167,6 +167,8 @@ describe('/api/evidence', () => {
     expect(Object.keys(runs.definition).sort()).toEqual(['abandoned', 'alertsCreated', 'alertsSuppressed', 'rows', 'totals', 'window']);
     for (const w of ['PASS', 'FAIL', 'STALE', 'NOT_VERIFIED']) expect(sum.definition.status).toContain(w);
     expect(sum.definition.status).toMatch(/never runs tests|does not run tests|never run/i);
+    expect(sum.definition.status).toMatch(/npm run evidence:record-tests/);
+    expect(sum.definition.status).toMatch(/CI does not write it/);
     expect(sum.definition.scheduler).not.toMatch(/no heartbeat/i);
     expect(sum.definition.scheduler).toMatch(/most recent check-in of the instance marked as leader/i);
     expect(sum.definition.scheduler).toMatch(/does not by itself mean/i);

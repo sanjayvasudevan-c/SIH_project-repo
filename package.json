@@ -41,6 +41,7 @@
     "demo:reset": "npm --workspace api run demo:reset",
     "demo:tamper": "npm --workspace api run demo:tamper",
     "evidence:verify": "npm --workspace api run evidence:verify",
+    "evidence:record-tests": "node scripts/record-test-results.mjs",
     "build": "npm --workspace api run build && npm --workspace web run build",
     "screens": "node scripts/screens.mjs"
   }

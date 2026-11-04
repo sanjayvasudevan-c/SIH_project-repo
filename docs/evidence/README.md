@@ -60,7 +60,7 @@ All eight sections at 1280 px and 390 px, taken against the dev database on 4 No
 [`docs/screens/evidence/`](../screens/evidence/): `overview`, `workflow`, `assignment`, `scheduler`, `alerts`,
 `audit`, `ml`, `performance`, each as `-desktop-1280.png` and `-mobile-390.png`. `assignment-why-*` shows the
 candidate table open. On the dev database the Overview test-verification card reads **Not verified**, because no
-`test-results.json` is committed: that file is written by CI and CI has never run on GitHub.
+`test-results.json` exists: that file is produced only by `npm run evidence:record-tests`, run locally (CI does not write it), and it has not been run on this checkout.
 
 ## Where the data comes from
 
@@ -71,8 +71,10 @@ Two stores, on purpose.
   prevention) and `AssignmentTrace` (the candidate list the engine already computed, stored instead of discarded).
 * **Files under `docs/evidence/`** for what a run produces once: `benchmark-results/*.json` (from
   `npm run load:test`, each carrying its commit hash, machine, `provenance` and repeat count) and the ML figures
-  in `formcheck/metrics.json`. `test-results.json` (CI writes it: `{commit, status, passed, failed}`) is read by the Overview card, which
-  shows `NOT_VERIFIED` when it is absent or malformed, and `STALE` when its commit is not the current HEAD. The
+  in `formcheck/metrics.json`. `test-results.json` (`{commit, status, passed, failed, notVerified, runAt}`) is written only by `npm run evidence:record-tests`,
+  which runs the API suite locally against the dev database and records the result for the current HEAD. It is gitignored (a committed
+  copy would describe an older commit after the next commit) and CI does not write it. The Overview card reads it and
+  shows `Not verified` until the command has been run (and when the file is absent or malformed), and `STALE` when its commit is not the current HEAD. The
   API never computes a pass itself.
 
 API (all `ADMIN` only, all read-only): `/api/evidence/summary`, `engine-runs`, `assignment-trace/:applicationId`,
@@ -96,8 +98,8 @@ Chart generator tests          node --test scripts/*.test.mjs
 and never commits. No lint job exists because the repository has no linter configured.
 
 **CI has never run on GitHub.** The workflows are written and read back against the repository's commands, but
-nothing here has been observed executing on GitHub's runners, and `test-results.json` has never been produced by
-it. Until it does, the CI badge and the Overview test card are expected to show no result.
+nothing here has been observed executing on GitHub's runners. CI uploads JUnit XML and `commit.txt` as workflow artifacts and does
+not write `test-results.json`; the Overview test card changes only when `npm run evidence:record-tests` is run locally.
 
 ## What this system deliberately does not claim
 
