@@ -1,10 +1,8 @@
 # Evidence Center implementation record
 
-This directory documents and supports the Evidence Center implementation retained in the repository. Its UI is
-intentionally **not exposed in the current application**: the admin navigation has no entry and direct visits to
-`/admin/evidence` return to Administration. The source, read-only ADMIN API, database models, migrations, tests,
-screenshots, and benchmark artifacts remain available for technical review. This is a prototype over synthetic and
-demo data, not a production monitoring tool.
+This directory documents and supports the in-app Evidence Center available to ADMIN users at `/admin/evidence/overview`.
+The source, read-only ADMIN API, database models, migrations, tests, screenshots, and benchmark artifacts are available
+for technical review. This is a prototype over synthetic and demo data, not a production monitoring tool.
 
 For the evaluator-facing summary of problem, implementation, results, and limitations, see
 [`../evaluation/README.md`](../evaluation/README.md). This document describes the preserved Evidence Center data
@@ -102,9 +100,7 @@ Chart generator tests          node --test scripts/*.test.mjs
 `benchmark.yml` is separate, manual and weekly, never per pull request; it uploads results as a workflow artifact
 and never commits. No lint job exists because the repository has no linter configured.
 
-**CI has never run on GitHub.** The workflows are written and read back against the repository's commands, but
-nothing here has been observed executing on GitHub's runners. CI uploads JUnit XML and `commit.txt` as workflow artifacts and does
-not write `test-results.json`; the Overview test card changes only when `npm run evidence:record-tests` is run locally.
+**CI has run on GitHub.** On baseline `d898896`, API typecheck and form-check jobs passed, API and web jobs were cancelled, and the chart-generator job failed because the evidence-scripts job did not install dependencies before importing `jsdom`. On this revision (`73eb610`), all five CI jobs passed in [run 41788372958](https://github.com/sanjayvasudevan-c/SIH_project-repo/actions/runs/41788372958), including the chart tests, and the Vercel preview completed. The branch also synchronizes `package-lock.json` with the Vite 8.3.5 upgrade on `main`. A separate Dependabot PR for Vitest 5.1.0 failed clean install because it changed `web/package.json` without updating `package-lock.json`; the current `main` still uses Vitest 2.1.9. CI uploads JUnit XML and `commit.txt` as workflow artifacts and does not write `test-results.json`; the Overview test card changes only when `npm run evidence:record-tests` is run locally.
 
 ## What this system deliberately does not claim
 
@@ -126,7 +122,7 @@ not write `test-results.json`; the Overview test card changes only when `npm run
 
 ## The original plan, in value order
 
-Historical: written before the build, kept for the record, so its test counts and sizes are those of that time. Status today: items 2 and 3 are built and item 4 is partly built (commit hash, p99, throughput, error count and a JSON file per run exist; there is no CSV and only one dataset size and one concurrency level); item 1 is written but has never run on GitHub; item 6 (decision trace) is not built. Items 0, 5 and 7 were not re-checked for this update.
+Historical: written before the build, kept for the record, so its test counts and sizes are those of that time. Status today: items 2 and 3 are built and item 4 is partly built (commit hash, p99, throughput, error count and a JSON file per run exist; there is no CSV and only one dataset size and one concurrency level); item 1 runs on GitHub; this revision passed all five CI jobs, while the separate Vitest Dependabot PR remains unresolved as described above; item 6 (decision trace) is not built. Items 0, 5 and 7 were not re-checked for this update.
 
 | # | Work | Why it ranks here | Size |
 |---|---|---|---|

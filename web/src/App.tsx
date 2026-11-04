@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { lazy, Suspense, type ReactNode } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import type { Role } from './api/types';
 import { useAuth } from './auth/AuthContext';
@@ -57,6 +57,7 @@ const PUBLIC_ELEMENTS: Record<string, ReactNode> = {
 const MANAGERS: Role[] = ['SENIOR', 'SUPER_SENIOR', 'HOD'];
 // Rules Center: editors and approvers work there; admin, HoD and Bureau read it.
 const RULES: Role[] = ['RULE_EDITOR', 'RULE_APPROVER', 'ADMIN', 'HOD', 'BUREAU'];
+const EvidenceCenterPage = lazy(() => import('./pages/admin/evidence/EvidenceCenter').then((m) => ({ default: m.EvidenceCenterPage })));
 
 function RequireRole({ roles, children }: { roles: Role[]; children: ReactNode }) {
   const { user } = useAuth();
@@ -108,7 +109,8 @@ export function App() {
         <Route path="/rules/versions/:id/impact" element={<RequireRole roles={RULES}><ImpactPage /></RequireRole>} />
         <Route path="/rules/versions/:id/review" element={<RequireRole roles={['RULE_APPROVER']}><ReviewPage /></RequireRole>} />
         <Route path="/admin" element={<RequireRole roles={['ADMIN']}><AdminPage /></RequireRole>} />
-        <Route path="/admin/evidence/*" element={<RequireRole roles={['ADMIN']}><Navigate to="/admin" replace /></RequireRole>} />
+        <Route path="/admin/evidence" element={<RequireRole roles={['ADMIN']}><Suspense fallback={<div className="p-6"><Skeleton lines={4} /></div>}><EvidenceCenterPage /></Suspense></RequireRole>} />
+        <Route path="/admin/evidence/:section" element={<RequireRole roles={['ADMIN']}><Suspense fallback={<div className="p-6"><Skeleton lines={4} /></div>}><EvidenceCenterPage /></Suspense></RequireRole>} />
         <Route path="/styleguide" element={<RequireRole roles={['ADMIN']}><StyleguidePage /></RequireRole>} />
         <Route path="*" element={<NoAccessPage />} />
       </Route>

@@ -9,7 +9,7 @@ Use this page to find the project overview, implementation evidence, and develop
 - [Architecture versus prototype scope](evidence/ARCHITECTURE_VS_PROTOTYPE.md): what is built and what remains outside the prototype.
 - [Workflow diagrams](evidence/WORKFLOW.md): case lifecycle, assignment, escalation, and rule publication.
 - [Benchmark methodology and results](evidence/BENCHMARKS.md): machine-readable runs, measurements, and caveats.
-- [Evidence Center implementation record](evidence/README.md): preserved data contract and source map. Its UI is not exposed in the running app.
+- [Evidence Center implementation record](evidence/README.md): in-app ADMIN feature, data contract, provenance rules, and source map.
 
 ## Technical reference
 

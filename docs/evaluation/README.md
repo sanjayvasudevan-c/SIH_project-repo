@@ -53,7 +53,7 @@ The architecture and phase scope are described in [Architecture versus prototype
 
 **Capability and implementation:** [`assignment/engine.ts`](../../api/src/assignment/engine.ts) applies eligibility rules and stores an assignment reason. `AssignmentTrace` stores the candidate list and exclusions for automatic decisions, including the `BLOCKED` path.
 
-**Evaluation:** [`assignment-trace.test.ts`](../../api/test/assignment-trace.test.ts) and [`assignment.test.ts`](../../api/test/assignment.test.ts) cover trace data and assignment selection. The retained Evidence Center implementation reads these traces; the UI route is intentionally hidden from the running application. See the [implementation record](../evidence/README.md).
+**Evaluation:** [`assignment-trace.test.ts`](../../api/test/assignment-trace.test.ts) and [`assignment.test.ts`](../../api/test/assignment.test.ts) cover trace data and assignment selection. ADMIN users can inspect persisted automatic-assignment traces in the in-app Evidence Center. Manual assignments do not write candidate traces. See the [implementation record](../evidence/README.md).
 
 **What the evidence establishes:** Automatic assignment decisions can be inspected from persisted source records.
 
@@ -97,8 +97,8 @@ The architecture and phase scope are described in [Architecture versus prototype
 
 - This is a prototype covering phases 0–4 plus yearly rule packs and the interface add-on; phases 5–8 and production hardening are not built. See [scope by phase](../evidence/ARCHITECTURE_VS_PROTOTYPE.md).
 - The seeded people, institutions, workflows, and benchmark data are fictional or synthetic.
-- The Evidence Center UI source, API, tests, migrations, and archived screenshots remain in GitHub, but the application does not link to or render it as a feature.
-- CI is configured in [GitHub Actions](../../.github/workflows/ci.yml). This guide does not assert a hosted CI result; check the Actions page for current status.
+- The Evidence Center is an ADMIN-only app feature. Its API and panels are read-only; it is a prototype over synthetic and demo data, not a production monitoring service.
+- CI is configured in [GitHub Actions](../../.github/workflows/ci.yml). All five jobs passed for revision `73eb610` in [run 41788372958](https://github.com/sanjayvasudevan-c/SIH_project-repo/actions/runs/41788372958); check the Actions page for newer results.
 - Deployment and operational readiness have not been established by this repository review.
 
 ## Continue reading

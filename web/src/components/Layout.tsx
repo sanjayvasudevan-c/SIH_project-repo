@@ -18,6 +18,7 @@ import {
   Briefcase,
   BookOpen,
   Megaphone,
+  ClipboardList,
 } from 'lucide-react';
 import { api } from '../api/client';
 import type { ClockInfo, Me, NotificationItem } from '../api/types';
@@ -81,6 +82,7 @@ export function navFor(user: Me, en: Strings): NavItem[] {
     case 'ADMIN':
       return [
         { to: '/admin', label: en.nav.admin, icon: I(Settings) },
+        { to: '/admin/evidence/overview', label: en.nav.evidence, icon: I(ClipboardList) },
         { to: '/rules', label: en.nav.rules, icon: I(BookOpen) },
         { to: '/styleguide', label: en.nav.styleguide, icon: I(Palette) },
       ];
@@ -233,9 +235,9 @@ export function Layout() {
         <UtilityBar />
         <div className="border-b bg-surface">
         <div className="flex h-16 items-center justify-between gap-4 px-4">
-          <Link to="/" className="flex min-w-0 items-center gap-3 no-underline">
+          <Link to="/" className="flex min-w-0 flex-1 items-center gap-3 no-underline">
             <Monogram size={36} />
-            <span className="hidden sm:block">
+            <span className="hidden min-w-0 max-w-[min(34vw,30rem)] sm:block">
               <NameBlock compact />
             </span>
           </Link>
@@ -253,9 +255,9 @@ export function Layout() {
         </div>
         </div>
       </header>
-      <div className="flex flex-1">
-        <nav aria-label={en.gov.mainNav} className="w-12 shrink-0 border-r bg-surface pt-4 lg:w-sidebar">
-          <ul className="sticky top-28 flex flex-col gap-1">
+      <div className="flex flex-1 flex-col lg:flex-row">
+        <nav aria-label={en.gov.mainNav} className="w-full min-w-0 border-b bg-surface lg:w-sidebar lg:shrink-0 lg:border-b-0 lg:border-r lg:pt-4">
+          <ul className="flex gap-1 overflow-x-auto px-2 py-2 lg:sticky lg:top-28 lg:flex-col lg:overflow-visible lg:px-0 lg:py-0">
             {items.map((it) => (
               <li key={it.to}>
                 <NavLink
@@ -264,13 +266,13 @@ export function Layout() {
                   title={it.label}
                   className={({ isActive }) =>
                     cx(
-                      'hit flex h-control items-center gap-3 border-l-[3px] px-2 text-base transition-colors duration-150 ease-out lg:px-4',
+                      'hit flex h-control shrink-0 items-center gap-2 whitespace-nowrap border-b-[3px] px-3 text-sm transition-colors duration-150 ease-out lg:gap-3 lg:border-b-0 lg:border-l-[3px] lg:px-4 lg:text-base',
                       isActive ? 'border-accent bg-accent-soft font-semibold text-accent' : 'border-transparent font-medium text-secondary hover:bg-subtle hover:text-primary',
                     )
                   }
                 >
                   {it.icon}
-                  <span className="sr-only lg:not-sr-only">{it.label}</span>
+                  <span>{it.label}</span>
                 </NavLink>
               </li>
             ))}

@@ -31,6 +31,7 @@ export const en = {
     team: 'Team',
     workforce: 'Workforce',
     admin: 'Administration',
+    evidence: 'Evidence Center',
     styleguide: 'Style guide',
     rules: 'Rules Center',
     notices: 'What changed',

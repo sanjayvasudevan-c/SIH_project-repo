@@ -32,7 +32,7 @@ Planned: NIC or MeghRaj (per the submitted abstract). Not tested. The prototype 
 
 ## Security and production work that is absent
 
-Phase 8 is not built. Specifically missing: PgBouncer, a read replica, audit partitions, backups with point-in-time recovery, monitoring, two-factor sign-in, AICTE single sign-on, encryption at rest, virus scanning, row-level security, SMS and e-mail gateways, security and accessibility audits, a DPDP Act review, and an AICTE portal adapter. There is no lint configuration. CI exists (`.github/workflows/ci.yml`), though its first GitHub run has not been observed. Until these exist the system should not hold real applicant data.
+Phase 8 is not built. Specifically missing: PgBouncer, a read replica, audit partitions, backups with point-in-time recovery, monitoring, two-factor sign-in, AICTE single sign-on, encryption at rest, virus scanning, row-level security, SMS and e-mail gateways, security and accessibility audits, a DPDP Act review, and an AICTE portal adapter. There is no lint configuration. GitHub Actions has run: all five jobs passed on revision `73eb610` in [run 41788372958](https://github.com/sanjayvasudevan-c/SIH_project-repo/actions/runs/41788372958), including API integration tests against PostgreSQL 16, web tests and build, form-check/ML evaluation, and chart-generator tests. This does not close the production gaps; the system should not hold real applicant data until they are addressed.
 
 Related limits already stated elsewhere: audit is not tamper-proof against a privileged database administrator, and there is no external notification channel, so no external delivery exists to be exactly-once. The decision to alert is exactly-once (`AlertLog` unique key).
 

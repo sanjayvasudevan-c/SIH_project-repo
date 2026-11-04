@@ -153,5 +153,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+      - run: npm ci
       # The glob matters: `node --test scripts/` runs nothing on Node 22.
       - run: node --test scripts/*.test.mjs

@@ -1,12 +1,11 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import { useLocation } from 'react-router-dom';
 import { renderWithApp } from './test/render';
 import { App } from './App';
 
-vi.mock('./auth/AuthContext', () => ({
-  useAuth: () => ({ user: { id: 'admin-test', role: 'ADMIN' }, loading: false }),
-}));
+const { auth } = vi.hoisted(() => ({ auth: { user: { id: 'admin-test', role: 'ADMIN' }, loading: false } }));
+vi.mock('./auth/AuthContext', () => ({ useAuth: () => auth }));
 vi.mock('./components/Layout', async () => {
   const { Outlet } = await import('react-router-dom');
   return { Layout: () => <Outlet /> };
@@ -20,11 +19,23 @@ function CurrentPath() {
 }
 
 describe('Evidence Center application route', () => {
-  it.each(['/admin/evidence', '/admin/evidence/overview'])('redirects %s to Administration', (route) => {
+  beforeEach(() => {
+    auth.user.role = 'ADMIN';
+  });
+
+  it.each(['/admin/evidence', '/admin/evidence/overview'])('renders the Evidence Center at %s', async (route) => {
     renderWithApp(<><App /><CurrentPath /></>, { route });
 
-    expect(screen.getByRole('heading', { name: 'Administration test page' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Evidence Center test page' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Administration test page' })).not.toBeInTheDocument();
+    expect(screen.getByTestId('current-path')).toHaveTextContent(route);
+  });
+
+  it('keeps the Evidence Center behind the admin role check', async () => {
+    auth.user.role = 'OFFICER';
+    renderWithApp(<><App /><CurrentPath /></>, { route: '/admin/evidence/overview' });
+
+    expect(screen.getByRole('heading', { name: 'No access test page' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Evidence Center test page' })).not.toBeInTheDocument();
-    expect(screen.getByTestId('current-path')).toHaveTextContent('/admin');
   });
 });
