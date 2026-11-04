@@ -8,6 +8,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import * as clock from './lib/clock.js';
 
 // The API bodies are untyped JSON on purpose: this module judges what the endpoints actually return, not what their types promise.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -342,7 +343,7 @@ export async function runVerification(io: VerifyIO, hooks: VerifyHooks = {}): Pr
     if (er) {
       await guard(L, 'engine-runs', async () => {
         const t = er.totals;
-        const cutoff = new Date(Date.now() - 15 * 60_000).toISOString();
+        const cutoff = new Date(clock.realNow().getTime() - 15 * 60_000).toISOString();
         const r = (
           await io.sql(
             `SELECT count(*)::int AS n, (count(*) FILTER (WHERE status = 'FAILED'))::int AS failed,
@@ -409,7 +410,7 @@ export async function runVerification(io: VerifyIO, hooks: VerifyHooks = {}): Pr
     add(A, 'latest engine run: status', '/summary', s.scheduler.lastStatus, last?.status ?? null);
     add(A, 'latest engine run: startedAt', '/summary', s.scheduler.lastRunAt, last?.at ?? null);
     add(A, 'latest engine run: durationMs', '/summary', s.scheduler.lastDurationMs, last ? (last.ms === null ? null : Number(last.ms)) : null);
-    const stuck = Number((await io.sql(`SELECT count(*)::int AS n FROM "EngineRun" WHERE status = 'RUNNING' AND "startedAt" < $1::timestamp`, [new Date(Date.now() - 15 * 60_000).toISOString()]))[0]!.n);
+    const stuck = Number((await io.sql(`SELECT count(*)::int AS n FROM "EngineRun" WHERE status = 'RUNNING' AND "startedAt" < $1::timestamp`, [new Date(clock.realNow().getTime() - 15 * 60_000).toISOString()]))[0]!.n);
     add(A, 'stuck runs (RUNNING > 15 min, all dates)', '/summary', s.scheduler.stuckRuns, stuck);
     const hb = (await io.sql(`SELECT "instanceId" AS i FROM "SchedulerHeartbeat" WHERE "isLeader" ORDER BY "lastRunAt" DESC LIMIT 1`))[0];
     add(A, 'scheduler heartbeat leader (null when none)', '/summary', s.scheduler.heartbeat?.instanceId ?? null, hb?.i ?? null);
