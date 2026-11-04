@@ -127,7 +127,7 @@ export async function workflow(q: Q) {
     processingTime:
       'Median working days from submission to decision (weekends and holidays excluded), over DECIDED applications only. Applications still in progress are not finished, so their processing time is not yet known (a censored sample): they are excluded from the median and reported separately as inFlightCount. decidedCount + inFlightCount = applications submitted in the window. No mean is given because averaging only the finished cases would understate the time cases take. Blank when no application in the window has been decided.',
     volumeOverTime:
-      'Per calendar day, for applications submitted in the window: how many were submitted that day, how many were decided that day, and how many deadline items of those applications fell overdue that day (the engine\'s overdue alerts, by the item\'s due date). Starts at the first recorded event; days with no event are left out rather than shown as zero, and nothing is back-filled or interpolated. Overdue counts only items the deadline engine has raised an alert for. The overdue points are placed on the item\'s due date, which can fall outside the From/To dates (those dates select the applications, not the plotted days), so do not label the day axis with the From/To range.',
+      'Per calendar day, for applications submitted in the window: how many were submitted that day, how many were decided that day, and how many deadline items of those applications the engine raised an overdue alert for, plotted on the item\'s due date (not on the date the alert was raised or the date the item became overdue). Starts at the first recorded event; days with no event are left out rather than shown as zero, and nothing is back-filled or interpolated. The overdue points are placed on the item\'s due date, which can fall outside the From/To dates (those dates select the applications, not the plotted days), so do not label the day axis with the From/To range.',
   };
   return {
     definition,
@@ -307,16 +307,17 @@ export async function compliance(q: Q) {
         onTrack: 'Open items that are none of the above.',
         met: 'Items closed as met on time. Shown for items due in the window; not part of openTotal. missed, paused and closed are likewise counted but outside the open total.',
       },
-      escalations: `Escalation alerts raised in the window, by level. Level 1, 2 and 3 are raised when an item is ${rules.escalation.thresholds.join(" / ")} days overdue (working days for stage deadlines, calendar days for undertakings and document expiries). Each level is raised once per item.`,
+      escalations: `Escalation alerts raised in the window, by level; empty (not zero at each level) when the engine has never run and no alert has ever been recorded. Level 1, 2 and 3 are raised when an item is ${rules.escalation.thresholds.join(" / ")} days overdue (working days for stage deadlines, calendar days for undertakings and document expiries). Each level is raised once per item.`,
       alerts:
-        'total = alerts logged in the window (by kind); blank (null), with reminderTiming, when no engine run and no alert has ever been recorded (none recorded, not a measured zero). reminderTiming covers REMINDER alerts only: late = a reminder raised more than one day after its reminder date because the engine had not run in time, onTime = the other reminders, so onTime + late = reminders (not total); the other alert kinds have no timeliness measure in this system and are counted neither way. suppressed = duplicate alerts the engine declined to create, summed from engine run records in the window. The log\'s unique key (item, kind, level) is why a repeated cycle creates no second alert; this build has no external delivery channel. ' + ZERO_ALERTS + ' Suppressed is blank (not 0) when no engine run is dated in the window (engineRunCount 0): then no run reported anything for the window, which is a different question from how many alerts were logged.',
+        'total = alerts logged in the window (by kind); blank (null), with reminderTiming, when no engine run and no alert has ever been recorded (none recorded, not a measured zero). reminderTiming covers REMINDER alerts only: late = a reminder raised more than one day after its reminder date (the engine had not run in time, or the deadline item was created after that reminder date had already passed, and the log cannot tell the two apart), onTime = the other reminders, so onTime + late = reminders (not total); the other alert kinds have no timeliness measure in this system and are counted neither way. suppressed = duplicate alerts the engine declined to create, summed from engine run records in the window. The log\'s unique key (item, kind, level) is why a repeated cycle creates no second alert; this build has no external delivery channel. ' + ZERO_ALERTS + ' Suppressed is blank (not 0) when no engine run is dated in the window (engineRunCount 0): then no run reported anything for the window, which is a different question from how many alerts were logged.',
     },
     provenance: { deadlines: 'DERIVED', escalations: 'MEASURED', alerts: 'MEASURED', suppressed: 'MEASURED' } as Record<string, Provenance>,
     data: {
       window: b.window,
       asOf: isoDate(today),
       deadlines: { openTotal: items.length, ...c, met: status('MET'), missed: status('MISSED'), paused: status('PAUSED'), closed: status('CLOSED') },
-      escalations: [1, 2, 3].map((level) => ({ level, count: byLevel.find((x) => x.level === level)?.n ?? 0 })),
+      // Never-ran means none recorded, not a measured zero at each level: empty, like /alerts byKind and escalationsByLevel.
+      escalations: engineEverRan ? [1, 2, 3].map((level) => ({ level, count: byLevel.find((x) => x.level === level)?.n ?? 0 })) : [],
       alerts: {
         total,
         byKind: byKind.map((k) => ({ kind: k.k, count: k.n })),

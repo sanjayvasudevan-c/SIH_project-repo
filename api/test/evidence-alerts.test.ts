@@ -128,8 +128,14 @@ describe('/api/evidence/alerts and engine-run totals', () => {
   it('7. states what is not recorded and invents no status field; no "fair" anywhere', async () => {
     await raiseAlerts();
     const body = (await get('/api/evidence/alerts')).body;
-    expect(body.data.notRecorded).toEqual(['acknowledgement', 'resolution time']);
-    expect(body.definition.notRecorded).toMatch(/not recorded/i);
+    expect(body.data.notRecorded).toEqual(['acknowledgement']);
+    expect(body.data.notComputed).toEqual(['time from alert to deadline item closing']);
+    expect(body.definition.notRecorded).toMatch(/acknowledgement/i);
+    expect(body.definition.notRecorded).toMatch(/no timestamp/i);
+    expect(body.definition.notRecorded).not.toMatch(/resolution time is not recorded|resolution time.*not recorded/i);
+    expect(body.definition.notComputed).toMatch(/closedAt/);
+    expect(body.definition.notComputed).toMatch(/does not compute or chart/i);
+    expect(body.definition.notComputed).toMatch(/AlertLog\.itemId/);
     const keys: string[] = [];
     const walk = (v: unknown) => {
       if (Array.isArray(v)) v.forEach(walk);
@@ -139,6 +145,8 @@ describe('/api/evidence/alerts and engine-run totals', () => {
     for (const bad of ['acknowledged', 'resolved', 'status']) expect(keys).not.toContain(bad);
     expect(JSON.stringify(body)).not.toMatch(/\bfair/i);
     expect(JSON.stringify(body)).not.toMatch(/tamper-proof|exactly-once|exactly once|production-ready/i);
+    expect(body.definition.reminderTiming).toMatch(/engine had not run in time/i);
+    expect(body.definition.reminderTiming).toMatch(/created after that reminder date had already passed/i);
     expect(body.definition.perDay).toMatch(/not an operational trend/i);
     expect(body.definition.perDay).toMatch(/simulated/i);
   });

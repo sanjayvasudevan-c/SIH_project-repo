@@ -332,7 +332,7 @@ export async function runVerification(io: VerifyIO, hooks: VerifyHooks = {}): Pr
         add(L, 'alerts total', '/compliance', d.alerts.total, ever ? s.total : null);
         add(L, 'alerts by kind', '/compliance', mapStr(apiMap(d.alerts.byKind, (k: Json) => k.kind, (k: Json) => k.count)), mapStr(s.kinds));
         add(L, 'reminderTiming (late reminders): reminders / late / onTime', '/compliance', d.alerts.reminderTiming ? `${d.alerts.reminderTiming.reminders}/${d.alerts.reminderTiming.late}/${d.alerts.reminderTiming.onTime}` : null, ever ? `${s.rem}/${s.late}/${s.rem - s.late}` : null);
-        add(L, 'escalations by level (1,2,3 zero-filled)', '/compliance', (d.escalations as Json[]).map((e) => `${e.level}=${e.count}`).join(' '), [1, 2, 3].map((l) => `${l}=${s.esc[String(l)] ?? 0}`).join(' '));
+        add(L, 'escalations by level (1,2,3 zero-filled; empty if the engine never ran)', '/compliance', (d.escalations as Json[]).map((e) => `${e.level}=${e.count}`).join(' '), ever ? [1, 2, 3].map((l) => `${l}=${s.esc[String(l)] ?? 0}`).join(' ') : '');
         const runs = (await io.sql(`SELECT count(*)::int AS n, sum("alertsSuppressed")::int AS sup FROM "EngineRun" r WHERE ${inWin('r."simulatedToday"')}`, P))[0]!;
         add(L, 'engine runs in window (engineRunCount)', '/compliance', d.alerts.engineRunCount, runs.n);
         add(L, 'alerts suppressed (null when no run in window)', '/compliance', d.alerts.suppressed, Number(runs.n) > 0 ? Number(runs.sup ?? 0) : null);

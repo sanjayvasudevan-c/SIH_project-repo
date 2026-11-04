@@ -75,6 +75,8 @@ describe('/api/evidence aggregates', () => {
     expect(r.body.data.processingTime.medianWorkingDays).toBeNull();
     expect(r.body.data.processingTime.decidedCount).toBe(0);
     expect(r.body.data.funnel.every((s: Row) => s.share === null)).toBe(true); // 0 / 0 is absent, not 0%
+    expect(r.body.definition.volumeOverTime).toMatch(/plotted on the item's due date/);
+    expect(r.body.definition.volumeOverTime).not.toMatch(/fell overdue that day/);
   });
 
   it('lists recentDecisions: an independent trace page, newest first, windowed, with BLOCKED as no officer', async () => {
@@ -211,6 +213,8 @@ describe('/api/evidence aggregates', () => {
     const rem = await prisma.alertLog.count({ where: { kind: 'REMINDER' } });
     expect(c.alerts.reminderTiming).toEqual({ reminders: rem, late: await prisma.alertLog.count({ where: { kind: 'REMINDER', late: true } }), onTime: rem - (await prisma.alertLog.count({ where: { kind: 'REMINDER', late: true } })) });
     expect(r.body.definition.alerts).toMatch(/REMINDER alerts only/i);
+    expect(r.body.definition.alerts).toMatch(/engine had not run in time/i);
+    expect(r.body.definition.alerts).toMatch(/created after that reminder date had already passed/i);
     const sup = await prisma.engineRun.aggregate({ _sum: { alertsSuppressed: true } });
     expect(c.alerts.suppressed).toBe(sup._sum.alertsSuppressed);
     expect(c.alerts.suppressed).toBeGreaterThan(0);
@@ -219,6 +223,15 @@ describe('/api/evidence aggregates', () => {
     expect(c.deadlines.overdue).toBe(1);
     expect(c.deadlines.overdue + c.deadlines.atRisk + c.deadlines.dueSoon + c.deadlines.onTrack).toBe(c.deadlines.openTotal);
     expect(r.body.definition.deadlines.overdue).toMatch(/working/i);
+  });
+
+  it('compliance escalations are empty, not zero at each level, when the engine never ran', async () => {
+    await prisma.engineRun.deleteMany();
+    await prisma.alertLog.deleteMany();
+    const c = (await get('/api/evidence/compliance')).body.data;
+    expect(c.alerts.total).toBeNull();
+    expect(c.alerts.reminderTiming).toBeNull();
+    expect(c.escalations).toEqual([]);
   });
 
   it('the funnel and the status distribution agree on the application total', async () => {
