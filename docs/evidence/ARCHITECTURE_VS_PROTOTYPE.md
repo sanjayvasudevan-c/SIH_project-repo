@@ -103,7 +103,7 @@ COLLEGE (`college.abc@demo.in`), OFFICER (`priya@`, `arjun@`, `meena@`, `ravi@` 
 | Phases 5 to 8 | Not built; see the phase table above. |
 | Docker compose stack | Defined, but never exercised: the audit ran the services natively (a PostgreSQL service, `tsx` API, Vite dev server, schedulers via npm scripts). |
 | Hosted mode (Vercel and Neon) | Implemented per earlier sessions; not tested in the 2026-11-03 audit, which made no network calls to the live site. |
-| CI, lint | CI runs (`.github/workflows/ci.yml`: typecheck, API tests, form-check tests, web build, chart tests); the first observed run had unresolved failures/cancellations, and this revision adds the missing install step for chart tests. Lint is absent: no ESLint, Prettier or Ruff configuration, so `tsc --noEmit` and `tsc -b` are the only static gates. |
+| CI, lint | CI runs (`.github/workflows/ci.yml`: typecheck, API tests, form-check tests, web build, chart tests); all five jobs passed on revision `73eb610` in [run 41788372958](https://github.com/sanjayvasudevan-c/SIH_project-repo/actions/runs/41788372958). This revision adds the missing install step for chart tests and synchronizes the lockfile with the Vite 8 upgrade on `main`. Lint is absent: no ESLint, Prettier or Ruff configuration, so `tsc --noEmit` and `tsc -b` are the only static gates. |
 | Scheduler run history and assignment decision trace | Implemented in `EngineRun` and `AssignmentTrace`; viewable by ADMIN in the Evidence Center. |
 
 ## Known issues

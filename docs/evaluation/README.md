@@ -98,7 +98,7 @@ The architecture and phase scope are described in [Architecture versus prototype
 - This is a prototype covering phases 0–4 plus yearly rule packs and the interface add-on; phases 5–8 and production hardening are not built. See [scope by phase](../evidence/ARCHITECTURE_VS_PROTOTYPE.md).
 - The seeded people, institutions, workflows, and benchmark data are fictional or synthetic.
 - The Evidence Center is an ADMIN-only app feature. Its API and panels are read-only; it is a prototype over synthetic and demo data, not a production monitoring service.
-- CI is configured in [GitHub Actions](../../.github/workflows/ci.yml). This guide does not assert a hosted CI result; check the Actions page for current status.
+- CI is configured in [GitHub Actions](../../.github/workflows/ci.yml). All five jobs passed for revision `73eb610` in [run 41788372958](https://github.com/sanjayvasudevan-c/SIH_project-repo/actions/runs/41788372958); check the Actions page for newer results.
 - Deployment and operational readiness have not been established by this repository review.
 
 ## Continue reading
