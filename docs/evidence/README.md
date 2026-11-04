@@ -1,90 +1,73 @@
-# Evidence and Validation System
+# Evidence index
 
-The Evidence Center is **built**: an administrator-only screen at `/admin/evidence` (Administration, then Evidence
-Center) with eight sections, backed by a read-only API at `/api/evidence/*`. Audit findings that led to it are in
-[`INITIAL_AUDIT.md`](INITIAL_AUDIT.md). It is a prototype screen over synthetic and demo data, not a production
-monitoring tool.
+Every number here is traceable to a command you can run, and every chart can be read on GitHub without running anything. The core of the evidence is the [**visualization package**](visualizations/README.md): 33 charts and 5 architecture diagrams, generated from committed data, each with its source, provenance and the commit it was taken at, and each explained in four parts (what it shows, how it was measured, what you can reasonably conclude, what you cannot).
 
-## The one rule this system exists to enforce
+**All data is a synthetic demo dataset** (a seed script plus a simulated clock). Nothing here is real AICTE data, and nothing claims production readiness.
 
-Every number a judge sees must be traceable to a command they can run. Nothing in the Evidence Center is written
-by hand, and no status is hardcoded. If a check has not run, it reads `NOT VERIFIED`, never green. The UI is a
-viewer, never a source: the API computes each figure from stored rows or committed files, and the page only
-draws it.
+## Key charts
 
-## The eight sections
+![Read latency per screen](visualizations/benchmarks/read-latency.svg)
 
-Each section is a tab (a labelled select on a phone). "Date filter" means the section has a From/To range;
-"current state" means that figure is read as of now and the dates do not change it.
+**Speed.** Response times of five screens at a large synthetic scale, from a recorded load test. [Benchmarks](visualizations/benchmarks/README.md) · [method and tables](BENCHMARKS.md)
 
-| Section | What it shows | Date filter | Data provenance |
-|---|---|---|---|
-| Overview | Four headline cards (stored test verdict, applications in flight, last recorded scheduler cycle, audit integrity) each linking to its section, and a submitted/decided-per-day chart | none (all dates) | Test verdict from `test-results.json` (see below); the rest `LIVE_DEMO` / measured / derived from the database |
-| Workflow | Stage funnel, current status of every submitted application, median working days to decision, applications over time | yes, by application submission date | Measured and derived from `Application`, deadline items and the audit log |
-| Assignment | Officer utilisation against capacity, officers above their cap, decisions by outcome, and a "Show candidates" table of every officer considered for a decision with the stored reason | the workload panels are current state; the decisions panels filter by decision date | Measured and derived from `AssignmentTrace`, written by the assignment engine when it decides. Traces exist for automatic assignment only; manual assignment writes none, and the section says so |
-| Scheduler & compliance | Overdue and at-risk deadline items now, engine run history (count, failures, abandoned runs, duration), duplicate alerts prevented | open-deadline panels are current state (as of the app's simulated today); run panels filter by the date the engine treated as today | `EngineRun` rows (one per engine cycle) and `AlertLog`; the simulated clock is labelled as such |
-| Alerts | Alerts raised by kind and level, escalations, reminders raised late, alerts per day | yes, by alert date (the system's simulated calendar); notification counts are never windowed | Measured from `AlertLog` and `Notification`. Acknowledgement is not recorded (a notification has a read flag, no timestamp) and is shown as "insufficient data", not zero. Time from an alert to its deadline item closing is recorded per item (`DeadlineItem.closedAt`, linked by `AlertLog.itemId`) but this page does not compute or chart it; on the dev database on 4 November 2026, 0 of the 32 alerted items had a `closedAt` |
-| Audit | Events by action, actor role and entity (counts only, no case content) and a live integrity check | yes for the three breakdowns (real-clock event time), plus role/action/entity selects; the integrity check always covers the whole log | Measured from `AuditLog`; integrity is recomputed on request over the whole log |
-| ML evaluation | Precision, recall, false-alarm rate, F1, derived confusion matrix, rules-only vs model-only vs hybrid, recall per fault type | none (a stored evaluation) | `formcheck/metrics.json`, labelled **synthetic data** throughout |
-| Performance | Test machine, read latency per screen (p50 / p95 / p99), deadline engine cycle times, duplicate alert prevention, comparison of the two recorded runs | none; a select chooses which recorded run to show | `docs/evidence/benchmark-results/*.json`, labelled benchmark on a synthetic dataset, one shared machine |
+![Stage funnel](visualizations/workflow/stage-funnel.svg)
 
-## The data-quality contract
+**Workflow.** Where applications are, against the stages on their route. [Workflow charts](visualizations/workflow/README.md) · [diagrams](WORKFLOW.md)
 
-Every panel follows the same rules, enforced in code (`web/src/pages/admin/evidence/Panel.tsx`) and tested:
+![Utilisation by officer](visualizations/assignment/utilisation-by-officer.svg)
 
-* A figure is shown only with a **definition** ("How this is measured"), a **scope** line (what rows and which dates it
-  covers) and a **provenance chip** (Measured, Derived, Synthetic data, Live demo data, Benchmark, Simulated clock,
-  or "Source not declared"). If the API sends a figure without a definition or scope, the panel refuses to show it.
-* Loading, error, empty and "insufficient data" are four different states. Missing data is never drawn as zero.
-* Derived figures show how they were derived (for example the confusion matrix and its arithmetic check).
-* Colour is never the only signal, and charts have a data table beside them.
+**Assignment.** Officer load against capacity; the officer above the cap is highlighted, and a [worked example](visualizations/assignment/WORKED_EXAMPLE.md) quotes the stored decisions. [Assignment charts](visualizations/assignment/README.md)
 
-## Verify it: `npm run evidence:verify`
+![Deadline states](visualizations/scheduler-compliance/deadline-states.svg)
 
-Run from the repository root with the demo database up. It calls every Evidence Center API aggregate, then
-recomputes each headline number with separate raw SQL written against the tables (it imports nothing from the
-route code), on four date windows (all dates, last 30 days of the data, the busiest day, an empty range), and
-compares them. Exit code 0 means every number agrees, 1 means a disagreement, 2 a configuration error. On the
-dev database on 4 November 2026 it printed `250 checks, 250 agree, 0 disagree`.
+**Deadlines.** Open deadline items by state, adding up to the open total. [Scheduler and compliance charts](visualizations/scheduler-compliance/README.md)
 
-What it proves: the API's aggregates match an independent query of the same database, so a bug in the aggregate
-code (a wrong join, a double count) would show as a disagreement. What it does not prove: that the stored data is
-true; that the SQL is right (two queries by the same team can share a misunderstanding); the individual
-at-risk/due-soon/on-track split (only their sum is checked); the `volumeOverTime` series; the wording of definitions; recomputation of audit hashes (linkage and counts
-only; the integrity card itself recomputes hashes); or that it is safe against a concurrent writer between the
-two reads. Its database session is read-only and it writes no audit row.
+![Alerts created vs suppressed per run](visualizations/scheduler-compliance/alerts-per-run.svg)
 
-## Screenshots
+**Duplicate prevention.** Repeat alerts refused by the database's unique key, run by run. [Alerts and audit charts](visualizations/alerts-audit/README.md)
 
-All eight sections at 1280 px and 390 px, taken against the dev database on 4 November 2026, are in
-[`docs/screens/evidence/`](../screens/evidence/): `overview`, `workflow`, `assignment`, `scheduler`, `alerts`,
-`audit`, `ml`, `performance`, each as `-desktop-1280.png` and `-mobile-390.png`. `assignment-why-*` shows the
-candidate table open. On the dev database the Overview test-verification card reads **Not verified**, because no
-`test-results.json` exists: that file is produced only by `npm run evidence:record-tests`, run locally (CI does not write it), and it has not been run on this checkout.
+![Audit integrity](visualizations/alerts-audit/audit-integrity.svg)
 
-## Where the data comes from
+**Audit.** What the integrity check detects, and why it is not tamper-proof. [Alerts and audit charts](visualizations/alerts-audit/README.md)
 
-Two stores, on purpose.
+![Recall by fault type](visualizations/ml/recall-by-fault.svg)
 
-* **Database tables** for what the running system produces: `EngineRun` (one row per deadline-engine cycle, including
-  `alertsSuppressed`, the count of `ON CONFLICT DO NOTHING` collisions, which directly measures duplicate-alert
-  prevention) and `AssignmentTrace` (the candidate list the engine already computed, stored instead of discarded).
-* **Files under `docs/evidence/`** for what a run produces once: `benchmark-results/*.json` (from
-  `npm run load:test`, each carrying its commit hash, machine, `provenance` and repeat count) and the ML figures
-  in `formcheck/metrics.json`. `test-results.json` (`{commit, status, passed, failed, notVerified, runAt}`) is written only by `npm run evidence:record-tests`,
-  which runs the API suite locally against the dev database and records the result for the current HEAD. It is gitignored (a committed
-  copy would describe an older commit after the next commit) and CI does not write it. The Overview card reads it and
-  shows `Not verified` until the command has been run (and when the file is absent or malformed), and `STALE` when its commit is not the current HEAD. The
-  API never computes a pass itself.
+**Form-check model.** Strong on the faults its rules describe, weak on unit errors, on synthetic data only. [ML charts](visualizations/ml/README.md)
 
-API (all `ADMIN` only, all read-only): `/api/evidence/summary`, `engine-runs`, `assignment-trace/:applicationId`,
-`audit-integrity`, `artifacts`, and the section aggregates `workflow`, `assignment`, `compliance`, `alerts`,
-`audit-analytics`.
+## Browse
+
+| | |
+|---|---|
+| [Visualization index](visualizations/README.md) | All charts by category, with the four-part explanation under each |
+| [Architecture diagrams](visualizations/architecture/README.md) | System, workflow state machine, assignment flow, deadline engine, evidence pipeline (Mermaid) |
+| [Methodology](visualizations/METHODOLOGY.md) | Provenance classes, how each figure is produced, how to regenerate, limitations |
+| [Inventory](visualizations/INVENTORY.md) | Every visualization, its file and its source data |
+| [Initial audit](INITIAL_AUDIT.md) | What was measured in this repository before anything was added, including the one failing test it found |
+| [Architecture vs prototype](ARCHITECTURE_VS_PROTOTYPE.md) | Phases 0 to 8 against what is built, each feature marked Tested, Recorded demo or Not built |
+| [Workflow diagrams](WORKFLOW.md) | Case lifecycle, assignment, escalation ladder, rule-pack publish, each tied to its source file |
+| [Benchmarks](BENCHMARKS.md) | Two recorded runs at 15,000 applications, one command to reproduce |
+| [Design comparison](COMPARISON.md) | Six design properties, each with the file that implements it |
+| [Feasibility](FEASIBILITY.md) | Licence cost, rollout, hosting, what is absent and what needs AICTE validation |
+
+## Verify it
+
+Run from the repository root with the demo database up (see the root README for setup).
+
+```bash
+npm run evidence:verify      # every headline number recomputed with separate raw SQL; exit 0 = all agree
+npm run evidence:snapshot    # runs that comparison first, then writes visualizations/data/ (refuses on any disagreement)
+npm run evidence:visualize   # regenerates every chart and README from the committed data
+npm run evidence:links       # every relative link in the evidence documents resolves
+node --test scripts/*.test.mjs
+```
+
+`npm run demo:reset` rebuilds the local demo database; never run it against a shared or hosted database.
+
+What `evidence:verify` proves: the aggregate code's numbers match an independent query of the same database on four date windows (all dates, the last 30 days of the data, the busiest day, an empty range), so a wrong join or a double count would show as a disagreement. What it does not prove: that the stored data is true; that the SQL is right (two queries by the same team can share a misunderstanding); the individual at-risk, due-soon and on-track split (only their sum is checked); the wording of definitions; recomputation of audit hashes (linkage and counts only; the integrity card itself recomputes hashes); or safety against a concurrent writer between the two reads. Its database session is read-only and it writes no audit row. The result recorded with the committed data is in [`visualizations/data/manifest.json`](visualizations/data/manifest.json).
 
 ## CI
 
-`.github/workflows/ci.yml` runs on pushes to `main`, every pull request, a daily schedule and manual dispatch,
-as five independent jobs (no `needs:`), so one can fail alone:
+`.github/workflows/ci.yml` runs on pushes to `main`, every pull request, a daily schedule and manual dispatch, as independent jobs (no `needs:`), so one can fail alone:
 
 ```
 API typecheck                  prisma generate, then tsc --noEmit
@@ -94,43 +77,15 @@ Form-check tests and ML        generate, train, pytest; the reproducibility chec
 Chart generator tests          node --test scripts/*.test.mjs
 ```
 
-`benchmark.yml` is separate, manual and weekly, never per pull request; it uploads results as a workflow artifact
-and never commits. No lint job exists because the repository has no linter configured.
+`benchmark.yml` is separate, manual and weekly, never per pull request; it uploads results and the regenerated benchmark charts as a workflow artifact and never commits. No lint job exists because the repository has no linter configured.
 
-**CI has never run on GitHub.** The workflows are written and read back against the repository's commands, but
-nothing here has been observed executing on GitHub's runners. CI uploads JUnit XML and `commit.txt` as workflow artifacts and does
-not write `test-results.json`; the Overview test card changes only when `npm run evidence:record-tests` is run locally.
+**CI has never run on GitHub.** The workflows are written and read back against the repository's commands, but nothing here has been observed executing on GitHub's runners.
 
-## What this system deliberately does not claim
+## What this evidence deliberately does not claim
 
-* **No "production-ready" claim.** Phase 8 hardening (2FA, SSO, row-level security, DPDP review, audit shipping)
-  is not in this build.
-* **No tamper-proof-against-a-DBA claim.** The audit guard stops the *application* role, and the integrity check
-  detects any edit that does not recompute the forward chain. The table owner can disable the trigger. The UI states this.
-* **No exactly-once external delivery claim.** `AlertLog`'s unique key makes the *decision* to alert
-  exactly-once. There is no external channel in this build, so there is nothing to deliver and nothing to claim.
-  An outbox belongs with the real gateways in phase 8.
-* **No real-AICTE accuracy claim.** Every ML figure is synthetic: 0.975 precision, 0.863 overall recall, 0.315
-  recall on unit errors, 2.2% false alarms. The unit-error weakness is shown, not buried. The submission text's earlier
-  "0.89" recall and "2.9%" false-alarm figures were wrong and are the claim being corrected.
-* **No requirement coverage matrix.** It needs the official SIH26262 problem statement text, which is not in the
-  repository. Paste it into `docs/evidence/PROBLEM_STATEMENT.md` and the matrix can be built against it. Writing it from a
-  reading of the README would put a paraphrase in the "official requirement" column.
-* Acknowledgement of alerts is not recorded, the time from an alert to its deadline item closing is recorded per item but not computed here, and the benchmark has two single runs on one
-  shared machine, so no variance is claimed.
-
-## The original plan, in value order
-
-Historical: written before the build, kept for the record, so its test counts and sizes are those of that time. Status today: items 2 and 3 are built and item 4 is partly built (commit hash, p99, throughput, error count and a JSON file per run exist; there is no CSV and only one dataset size and one concurrency level); item 1 is written but has never run on GitHub; item 6 (decision trace) is not built. Items 0, 5 and 7 were not re-checked for this update.
-
-| # | Work | Why it ranks here | Size |
-|---|---|---|---|
-| **0** | **Correct the ML recall claim** (0.89 → 0.863, 2.9% → 2.2%) in the description, abstract and deck | The only item that can actively *lose* marks. Costs minutes. | XS |
-| **1** | **CI pipeline** (typecheck, API suite + 99 form-check tests; 183 API tests when this plan was written, 241 now; a lint stage is not built and would need a linter configured first) | Turns "the tests pass" into a verifiable badge, and stops the next date bomb. Nothing to build — the tests exist. | S |
-| **2** | **`EngineRun` + scheduler history** | Closes the one MISSING item in an otherwise fully tested subsystem, and `alertsSuppressed` measures duplicate prevention directly. | M |
-| **3** | **`AssignmentTrace` + Evidence Center tabs A–E** | The judge-facing core: workflow, assignment fairness, scheduler, audit integrity. Answers "is it explainable and fair" with live data. | L |
-| **4** | **Benchmark provenance** — commit hash, p99, throughput, error rate, JSON + CSV artifacts, more than one dataset size and concurrency level | Makes the strongest existing claim reproducible instead of a dated note. | M |
-| **5** | **Failure-recovery tests** (DB unavailable, scheduler killed mid-cycle, duplicate request, unauthorised access, bad upload, invalid rule) | New ground, genuinely strengthens the reliability story. | M |
-| **6** | **Decision trace** — store per-condition pass/fail at evaluation, surface on the case | The remaining PARTIAL in rules; highest effort, and the engine is already correct, so it buys inspectability only. | L |
-| **7** | **Judge technical guide + 5-minute demo plan** | Needs 1–6 to describe. | S |
-| — | **Requirement coverage matrix** | **Blocked** — see the limits above. | — |
+* **No "production-ready" claim.** Phase 8 hardening (2FA, SSO, row-level security, DPDP review, audit shipping) is not in this build.
+* **No tamper-proof-against-a-DBA claim.** The audit guard stops the *application* role, and the integrity check detects any edit that does not recompute the forward chain. The table owner can disable the trigger.
+* **No exactly-once external delivery claim.** `AlertLog`'s unique key makes the *decision* to alert exactly-once. There is no external channel in this build, so there is nothing to deliver and nothing to claim. An outbox belongs with the real gateways in phase 8.
+* **No real-AICTE accuracy claim.** Every ML figure is synthetic: 0.975 precision, 0.863 overall recall, 0.315 recall on unit errors, 2.2% false alarms. The unit-error weakness is shown, not buried. The submission text's earlier "0.89" recall and "2.9%" false-alarm figures were wrong and are the claim being corrected.
+* **No requirement coverage matrix.** It needs the official SIH26262 problem statement text, which is not in the repository. Paste it into `docs/evidence/PROBLEM_STATEMENT.md` and the matrix can be built against it. Writing it from a reading of the README would put a paraphrase in the "official requirement" column.
+* Acknowledgement of alerts is not recorded; the time from an alert to its deadline item closing is recorded per item but not computed; and the benchmark has two single runs on one shared machine, so no variance is claimed.
