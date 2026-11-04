@@ -154,18 +154,21 @@
       document.querySelector('#artifact-link').href = path;
       document.querySelector('#artifact-link').textContent = `${run.commit}.json`;
       const cycles = [run.engine.firstCycle, run.engine.secondCycle];
+      const hasSuppressionCount = cycle => Number.isFinite(cycle.alertsSuppressed);
       const cards = document.querySelector('#engine-metrics'); cards.replaceChildren(
         metric('First cycle duration', duration(cycles[0].ms), `${number(cycles[0].newAlerts)} new alerts`),
         metric('Second cycle duration', duration(cycles[1].ms), `${number(cycles[1].newAlerts)} new alerts`),
-        metric('Duplicate attempts suppressed', number(cycles[0].alertsSuppressed ?? 0), 'cycle 1'),
-        metric('Duplicate attempts suppressed', number(cycles[1].alertsSuppressed ?? 0), 'cycle 2'),
+        metric('Duplicate attempts suppressed', hasSuppressionCount(cycles[0]) ? number(cycles[0].alertsSuppressed) : 'Not recorded', hasSuppressionCount(cycles[0]) ? 'cycle 1' : 'not measured in this run'),
+        metric('Duplicate attempts suppressed', hasSuppressionCount(cycles[1]) ? number(cycles[1].alertsSuppressed) : 'Not recorded', hasSuppressionCount(cycles[1]) ? 'cycle 2' : 'not measured in this run'),
       );
-      drawBars(document.querySelector('#engine-chart'), [
+      const engineRows = [
         { label: 'New alerts · cycle 1', value: cycles[0].newAlerts },
-        { label: 'Suppressed attempts · cycle 1', value: cycles[0].alertsSuppressed ?? 0 },
         { label: 'New alerts · cycle 2', value: cycles[1].newAlerts },
-        { label: 'Suppressed attempts · cycle 2', value: cycles[1].alertsSuppressed ?? 0 },
-      ], 'alerts', Math.max(...cycles.flatMap(c => [c.newAlerts, c.alertsSuppressed ?? 0]), 1));
+      ];
+      cycles.forEach((cycle, index) => {
+        if (hasSuppressionCount(cycle)) engineRows.push({ label: `Suppressed attempts · cycle ${index + 1}`, value: cycle.alertsSuppressed });
+      });
+      drawBars(document.querySelector('#engine-chart'), engineRows, 'alerts', Math.max(...engineRows.map(row => row.value), 1));
       document.querySelector('#engine-note').textContent = cycles.some(c => c.ms > 60000)
         ? `At least one cycle exceeded the demo’s one-minute scheduler interval; the measured cycle duration is a limitation to address.`
         : `Both measured engine cycles completed within the demo’s one-minute interval in this run only.`;
