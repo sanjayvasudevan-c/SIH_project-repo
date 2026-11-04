@@ -40,7 +40,7 @@ export function NameBlock({ compact }: { compact?: boolean }) {
   const t = useT();
   if (compact) {
     return (
-      <span className="truncate text-lg font-semibold text-primary">
+      <span className="block truncate text-lg font-semibold text-primary">
         {t.gov.name} <span className="font-normal text-muted">|</span> <span lang="hi">{t.gov.nameHi}</span>
       </span>
     );
