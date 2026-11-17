@@ -28,7 +28,7 @@ The CI workflow (`.github/workflows/ci.yml`) has five jobs: API typecheck, the A
 
 | Document | What it shows |
 |---|---|
-| [Evidence Center](docs/evidence/README.md) | The built admin screen at `/admin/evidence`: eight sections (overview, workflow, assignment, scheduler, alerts, audit, ML, performance) with provenance on every figure, [screenshots](docs/screens/evidence/), and `npm run evidence:verify` to cross-check it against raw SQL |
+| [Evidence index](docs/evidence/README.md) | Start here: 33 generated charts and 5 architecture diagrams under `docs/evidence/visualizations/`, each with its source file, provenance and limits; `npm run evidence:verify` cross-checks the figures against independent SQL |
 | [Initial audit](docs/evidence/INITIAL_AUDIT.md) | What was measured in this repository before anything was added, including the one failing test it found |
 | [Architecture vs prototype](docs/evidence/ARCHITECTURE_VS_PROTOTYPE.md) | Phases 0 to 8 against what is built, with 37 features each marked Tested, Recorded demo or Not built |
 | [Workflow diagrams](docs/evidence/WORKFLOW.md) | Case lifecycle, assignment, escalation and rule-pack publish, each tied to its source file |
@@ -51,9 +51,8 @@ npm test                                             # API suite: all pass; 27 f
 npm run test:formcheck                               # 99 passed
 node --test scripts/*.test.mjs                       # pass 45, fail 0  (not "scripts/": that fails on Node 22)
 npm --workspace api run typecheck                    # tsc prints no errors, exit 0
-npm --workspace web run test                         # web suite: 18 files, 234 tests pass
 npm --workspace web run build                        # builds; warns about a ~919 kB chunk
-npm run evidence:verify                               # Evidence Center numbers vs independent SQL: prints "N checks, N agree, 0 disagree" and exits 0 (N was 250 here); needs the seeded dev database
+npm run evidence:verify                               # evidence figures vs independent SQL: prints "N checks, N agree, 0 disagree" and exits 0 (N was 250 here); needs the seeded dev database
 npm run evidence:snapshot                             # re-runs that comparison, refuses to write on any disagreement, then writes docs/evidence/visualizations/data/
 npm run evidence:visualize                            # regenerates every chart and README under docs/evidence/visualizations/ (byte-identical if the data is unchanged)
 npm run evidence:links                                # every relative link in README.md and docs/evidence/**/*.md resolves
